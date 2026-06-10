@@ -1,30 +1,53 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/chatBot/chatBot",
-    "pages/foodBuy/foodBuy"
+    "pages/detail/detail",
+    "pages/cart/cart",
+    "pages/checkout/checkout",
+    "pages/orders/orders",
+    "pages/mine/mine"
   ],
-  "usingComponents": {
-    "custom-map": "/components/toolCard/map/index",
-    "custom-weather": "/components/toolCard/weather/index",
-    "custom-food-list": "/components/toolCard/food-list/index",
-    "custom-business-list": "/components/toolCard/business-list/index"
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#ff5000",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "点餐",
+        "iconPath": "imgs/tab-home.png",
+        "selectedIconPath": "imgs/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单",
+        "iconPath": "imgs/tab-order.png",
+        "selectedIconPath": "imgs/tab-order-active.png"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车",
+        "iconPath": "imgs/tab-cart.png",
+        "selectedIconPath": "imgs/tab-cart-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "imgs/tab-mine.png",
+        "selectedIconPath": "imgs/tab-mine-active.png"
+      }
+    ]
   },
   "window": {
-    "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "腾讯云开发Agent-UI",
-    "backgroundColor": "#eeeeee",
-    "backgroundTextStyle": "light",
-    "enablePullDownRefresh": true
+    "navigationBarBackgroundColor": "#ff5000",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "美味点餐",
+    "backgroundColor": "#f5f5f5",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents",
-  "networkTimeout": {
-    "request": 300000,
-    "connectSocket": 60000,
-    "uploadFile": 60000,
-    "downloadFile": 60000
-  }
+  "lazyCodeLoading": "requiredComponents"
 }

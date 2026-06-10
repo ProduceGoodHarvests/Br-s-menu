@@ -1,0 +1,18 @@
+/* 全局样式 — 点餐小程序 */
+page {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", sans-serif;
+  font-size: 28rpx;
+  color: #333;
+  background: #f8f8f8;
+  box-sizing: border-box;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 160rpx 0; color: #bbb;
+}
+
+.empty-icon { font-size: 100rpx; margin-bottom: 24rpx; }
+.empty-text { font-size: 28rpx; color: #aaa; margin-bottom: 20rpx; }

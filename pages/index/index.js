@@ -1,291 +1,135 @@
+// pages/index/index.js — 点餐首页
+const mock = require('../../utils/mock-data');
+
 Page({
   data: {
-    introduction: [
-      {
-        title: "极简配置",
-        desc: "只需简单配置组件参数，对接腾讯云开发AI功能，支持最新deepseek大模型",
-      },
-      {
-        title: "超小体积",
-        desc: "超小的组件体积，提升组件加载速度和页面响应速度",
-      },
-      {
-        title: "可自定义",
-        desc: "源码级组件，可更具需要调整组件样式，扩充更多功能",
-      },
-    ],
-    agentExpand: false,
-    modelExpand: false,
-    agentUiConfig: {
-      initEnvID: `wx.cloud.init({
-  env: "你的环境ID",
-  traceUser: true,
-});`,
-      agentConfig: `data: {
-  chatMode: "bot", // bot 表示使用agent，model 表示使用大模型
-  showBotAvatar: true, // 是否在对话框左侧显示头像
-  agentConfig: {
-    botId: "bot-e7d1e736", // agent id,
-    allowWebSearch: true, // 允许客户端选择启用联网搜索（仅对配置型 agent 生效）
-    allowUploadFile: true, // 允许上传文件（仅对配置型 agent 生效）
-    allowPullRefresh: true, // 允许下拉刷新（仅对配置型 agent 生效）
-    allowUploadImage: true, // 允许上传图片（仅对配置型 agent 生效）
-    allowMultiConversation: true, // 允许客户端展示查看会话列表/新建会话按钮（仅对配置型 agent 生效）
-    allowVoice: true, // 允许语音（仅对配置型 agent 生效）
-    showToolCallDetail: true, // 是否展示 mcp server toolCall 细节（仅对配置型 agent 生效）
-    // 前端工具列表（仅对云托管或者云函数 agent 生效）
-       tools: [
-        {
-          name: "get_weather",
-          description: "获取指定城市的天气",
-          parameters: {
-            type: "object",
-            properties: { city: { type: "string" } },
-            required: ["city"],
-          },
-          // 同步函数示例
-          handler: async (params) => {
-            const { city } = params;
-            return \`城市$\{city\}的天气是晴朗的，温度是25摄氏度，无风\`;
-          }
-        },
-        {
-          name: "get_location",
-          description: "获取指定城市的经纬度",
-          parameters: {
-            type: "object",
-            properties: { city: { type: "string" } },
-            required: ["city"],
-          },
-          // 异步函数示例
-          handler: async (params) => {
-            const { city } = params;
-            // 模拟网络延迟
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve(\`城市$\{city\}的位置是东经114.305556度，北纬22.543056度\`);
-              }, 2000);
-            });
-          },
-        },
-      ],
-  }
-}`,
-      modelConfig1: `data: {
-  chatMode: "model", // bot 表示使用agent，model 表示使用大模型
-  showBotAvatar: true, // 是否在对话框左侧显示头像
-  modelConfig: {
-    modelProvider: "hunyuan-open", // 大模型服务厂商
-    quickResponseModel: "hunyuan-lite", //大模型名称
-    logo: "", // model 头像
-    welcomeMsg: "欢迎语", // model 欢迎语
+    searchKeyword: '',
+    categories: [],
+    activeCategory: 0, // 0 = 全部
+    foodList: [],
+    allFoods: [],
+    hotFoods: [],
+    cartCount: 0,
+    showSearch: false,
+    searchResults: [],
   },
-}`,
-      modelConfig2: `data: {
-  chatMode: "model", // bot 表示使用agent，model 表示使用大模型
-  showBotAvatar: true, // 是否在对话框左侧显示头像
-  modelConfig: {
-    modelProvider: "deepseek", // 大模型服务厂商
-    quickResponseModel: "deepseek-v3", //大模型名称
-    logo: "", // model 头像
-    welcomeMsg: "欢迎语", // model 欢迎语
+
+  onLoad: function () {
+    this.initData();
   },
-}`,
-    },
-    params: [
-      {
-        name: "chatMode",
-        type: "string",
-        desc: "组件对接的AI类型，值为 'bot' 或者 'model'，为 'bot' 时，对接 agent 能力；为 'model' 时，对接大模型能力",
-      },
-      {
-        name: "agentConfig.botId",
-        type: "string",
-        desc: "agent id，当 chatMode = 'bot' 时，必填",
-      },
-      {
-        name: "modelConfig.modelProvider",
-        type: "string",
-        desc: "大模型服务商，当 chatMode = 'model' 时，必填，值为 'hunyuan-open' | 'deepseek'",
-      },
-      {
-        name: "modelConfig.quickResponseModel",
-        type: "string",
-        desc: "具体使用的模型，当 chatMode = 'model' 时，必填。与 modelConfig.modelProvider 组合使用，可选的组合 [{modelProvider:'hunyuan-open',quickResponseModel:'hunyuan-lite'},{modelProvider:'hunyuan-exp',quickResponseModel:'hunyuan-lite'},{modelProvider:'deepseek',quickResponseModel:'deepseek-r1'},{modelProvider:'deepseek',quickResponseModel:'deepseek-v3'},{modelProvider:'hunyuan-open',quickResponseModel:'hunyuan-vision'}]",
-      },
-      {
-        name: "modelConfig.logo",
-        type: "string",
-        desc: "页面 logo，当 chatMode = 'model' 时，选填",
-      },
-      {
-        name: "modelConfig.welcomeMsg",
-        type: "string",
-        desc: "欢迎语，当 chatMode = 'model' 时，选填",
-      },
-      {
-        name: "agentConfig.allowWebSearch",
-        type: "boolean",
-        desc: "界面是否展示联网搜索开关 选填",
-      },
-      { name: "showBotAvatar", type: "boolean", desc: "界面是否展示左侧头像" },
-      {
-        name: "agentConfig.allowUploadFile",
-        type: "boolean",
-        desc: "界面是否展示文件上传",
-      },
-      {
-        name: "agentConfig.allowPullRefresh",
-        type: "boolean",
-        desc: "允许下拉刷新",
-      },
-      {
-        name: "agentConfig.allowMultiConversation",
-        type: "boolean",
-        desc: "允许展示会话列表&创建会话按钮",
-      },
-      {
-        name: "agentConfig.showToolCallDetail",
-        type: "boolean",
-        desc: "允许展示mcp server toolCall 细节",
-      },
-      {
-        name: "agentConfig.allowUploadImage",
-        type: "boolean",
-        desc: "允许展示上传图片按钮",
-      },
-      {
-        name: "agentConfig.allowVoice",
-        type: "boolean",
-        desc: "允许展示语音按钮",
-      },
-      {
-        name: "agentConfig.showBotName",
-        type: "boolean",
-        desc: "允许展示bot名称",
-      },
-      {
-        name: "envShareConfig.resourceAppid",
-        type: "boolean",
-        desc: "环境共享资源方 AppID",
-      },
-      {
-        name: "envShareConfig.resourceEnv",
-        type: "boolean",
-        desc: "环境共享资源方环境 ID",
-      },
-    ],
-    guide: [
-      `{
-  "usingComponents": {
-    "agent-ui":"/components/agent-ui/index"
+
+  onShow: function () {
+    this.updateCartBadge();
   },
-}`,
-      `&lt;agent-ui agentConfig="{{agentConfig}}" showBotAvatar="{{showBotAvatar}}" chatMode="{{chatMode}}" modelConfig="{{modelConfig}}""&gt;&lt;/agent-ui&gt;`,
-      `data: {
-  chatMode: "bot", // bot 表示使用agent，model 表示使用大模型
-  showBotAvatar: true, // 是否在对话框左侧显示头像
-  agentConfig: {
-    botId: "bot-e7d1e736", // agent id,
-    allowWebSearch: true, // 允许客户端选择展示联网搜索按钮（仅对配置型 agent 生效）
-    allowUploadFile: true, // 允许客户端展示上传文件按钮（仅对配置型 agent 生效）
-    allowPullRefresh: true, // 允许客户端展示下拉刷新（仅对配置型 agent 生效）
-    allowUploadImage: true, // 允许客户端展示上传图片按钮（仅对配置型 agent 生效）
-    allowMultiConversation: true, // 允许客户端展示查看会话列表/新建会话按钮（仅对配置型 agent 生效）
-    showToolCallDetail: true, // 是否展示 mcp server toolCall 细节（仅对配置型 agent 生效）
-    allowVoice: true, // 允许客户端展示语音按钮（仅对配置型 agent 生效）
-    showBotName: true, // 允许展示bot名称（仅对配置型 agent 生效）
-    // 前端工具列表（仅对云托管或者云函数 agent 生效）
-       tools: [
-        {
-          name: "get_weather",
-          description: "获取指定城市的天气",
-          parameters: {
-            type: "object",
-            properties: { city: { type: "string" } },
-            required: ["city"],
-          },
-          // 同步函数示例
-          handler: async (params) => {
-            const { city } = params;
-            return \`城市$\{city\}的天气是晴朗的，温度是25摄氏度，无风\`;
-          }
-        },
-        {
-          name: "get_location",
-          description: "获取指定城市的经纬度",
-          parameters: {
-            type: "object",
-            properties: { city: { type: "string" } },
-            required: ["city"],
-          },
-          // 异步函数示例
-          handler: async (params) => {
-            const { city } = params;
-            // 模拟网络延迟
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve(\`城市$\{city\}的位置是东经114.305556度，北纬22.543056度\`);
-              }, 2000);
-            });
-          },
-        },
-      ],
+
+  initData: function () {
+    const categories = mock.categories;
+    const allFoods = mock.foods;
+    const hotFoods = mock.getHotFoods(6);
+
+    // 添加"全部"分类
+    const allCategories = [
+      { id: 0, name: '全部', icon: '📋' },
+      ...categories
+    ];
+
+    this.setData({
+      categories: allCategories,
+      allFoods: allFoods,
+      foodList: allFoods,
+      hotFoods: hotFoods,
+    });
   },
-  modelConfig: {
-    modelProvider: "hunyuan-open", // 大模型服务厂商
-    quickResponseModel: "hunyuan-lite", // 大模型名称
-    logo: "", // model 头像
-    welcomeMsg: "欢迎语", // model 欢迎语
+
+  // 切换分类
+  switchCategory: function (e) {
+    const categoryId = parseInt(e.currentTarget.dataset.id);
+    this.setData({ activeCategory: categoryId });
+
+    if (categoryId === 0) {
+      this.setData({ foodList: this.data.allFoods });
+    } else {
+      const filtered = mock.getFoodsByCategory(categoryId);
+      this.setData({ foodList: filtered });
+    }
   },
-}`,
-    ],
+
+  // 搜索
+  onSearchInput: function (e) {
+    const keyword = e.detail.value;
+    this.setData({ searchKeyword: keyword });
+    if (keyword.trim()) {
+      const results = mock.searchFoods(keyword);
+      this.setData({ searchResults: results, showSearch: true });
+    } else {
+      this.setData({ showSearch: false, searchResults: [] });
+    }
   },
-  expandAgent: function () {
-    this.setData({ agentExpand: !this.data.agentExpand });
+
+  // 取消搜索
+  cancelSearch: function () {
+    this.setData({
+      searchKeyword: '',
+      showSearch: false,
+      searchResults: [],
+    });
   },
-  expandModel: function () {
-    this.setData({ modelExpand: !this.data.modelExpand });
-  },
-  goChatBot: function () {
+
+  // 去商品详情
+  goDetail: function (e) {
+    const foodId = parseInt(e.currentTarget.dataset.id);
     wx.navigateTo({
-      url: "/pages/chatBot/chatBot",
+      url: `/pages/detail/detail?id=${foodId}`,
     });
   },
-  scrollToAnchor: function (e) {
-    // 获取点击的锚点 ID
-    const anchorId = e.currentTarget.dataset.anchor;
-    // 使用 wx.createSelectorQuery() 获取锚点元素的位置
-    const query = wx.createSelectorQuery();
-    query.select("#" + anchorId).boundingClientRect();
-    query.selectViewport().scrollOffset();
-    query.exec((res) => {
-      if (res[0]) {
-        // 获取锚点元素距离页面顶部的距离
-        const scrollTop = res[1].scrollTop + res[0].top;
-        // 使用 wx.pageScrollTo 方法将页面滚动到锚点位置
-        wx.pageScrollTo({
-          scrollTop: scrollTop,
-          duration: 300, // 滚动动画的持续时间，单位为毫秒
-        });
-      }
+
+  // 加入购物车
+  addToCart: function (e) {
+    const foodId = parseInt(e.currentTarget.dataset.id);
+    const food = mock.getFoodById(foodId);
+    if (!food) return;
+
+    const defaultSpecs = food.specs && food.specs.length > 0
+      ? food.specs.map(s => ({ name: s.name, value: s.options[0] }))
+      : [];
+    const specKey = defaultSpecs.map(s => s.name + ':' + s.value).join('|');
+
+    let cart = wx.getStorageSync('cart') || [];
+    const index = cart.findIndex(item => item.id === foodId && (item.specKey || '') === specKey);
+
+    if (index > -1) {
+      cart[index].quantity += 1;
+    } else {
+      cart.push({
+        id: food.id,
+        name: food.name,
+        icon: food.icon,
+        price: food.price,
+        specs: defaultSpecs,
+        specKey: specKey,
+        quantity: 1,
+      });
+    }
+
+    wx.setStorageSync('cart', cart);
+    this.updateCartBadge();
+
+    wx.showToast({
+      title: '已加入购物车',
+      icon: 'success',
+      duration: 1000,
     });
   },
-  copyUrl: function () {
-    wx.setClipboardData({
-      data: "https://tcb.cloud.tencent.com/dev",
-      success: function (res) {
-        wx.showToast({
-          title: "链接复制成功",
-          icon: "success",
-        });
-      },
-      fail: function (err) {
-        wx.showToast({
-          title: "复制失败",
-          icon: "none",
-        });
-      },
-    });
+
+  // 更新购物车角标
+  updateCartBadge: function () {
+    const cart = wx.getStorageSync('cart') || [];
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    this.setData({ cartCount: count });
+
+    const app = getApp();
+    if (app) {
+      app.globalData.cartCount = count;
+    }
   },
 });

@@ -1,0 +1,82 @@
+<!--pages/detail/detail.wxml-->
+<view class="detail-page" wx:if="{{food}}">
+
+  <!-- 商品图片区 -->
+  <view class="food-hero">
+    <view class="hero-placeholder">{{food.icon || '🍽️'}}</view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="info-section">
+    <view class="food-title">
+      <text class="food-title-text">{{food.name}}</text>
+      <text class="food-tag" wx:if="{{food.tag}}">{{food.tag}}</text>
+    </view>
+    <view class="food-desc">{{food.desc}}</view>
+    <view class="food-stats">
+      <text class="rating">⭐ {{food.rating}}</text>
+      <text class="sales">已售 {{food.sales}}</text>
+    </view>
+  </view>
+
+  <!-- 价格 -->
+  <view class="price-section">
+    <view class="price-row">
+      <text class="current-price">
+        <text class="symbol">¥</text>{{totalPrice}}
+      </text>
+      <text class="original-price" wx:if="{{food.originalPrice > food.price}}">¥{{food.originalPrice}}</text>
+    </view>
+  </view>
+
+  <!-- 规格选择 -->
+  <block wx:if="{{food.specs && food.specs.length > 0}}">
+    <view class="spec-section" wx:for="{{food.specs}}" wx:key="name" wx:for-item="spec">
+      <view class="spec-title">{{spec.name}}</view>
+      <view class="spec-options">
+        <view
+          class="spec-option {{selectedSpecs[spec.name] === item ? 'active' : ''}}"
+          wx:for="{{spec.options}}"
+          wx:key="*this"
+          wx:for-item="option"
+          bindtap="selectSpec"
+          data-spec="{{spec.name}}"
+          data-value="{{option}}"
+        >
+          {{option}}
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 数量选择 -->
+  <view class="qty-section">
+    <text class="qty-title">数量</text>
+    <view class="qty-control">
+      <view class="qty-btn {{quantity <= 1 ? 'disabled' : ''}}" bindtap="decreaseQty">−</view>
+      <text class="qty-value">{{quantity}}</text>
+      <view class="qty-btn" bindtap="increaseQty">+</view>
+    </view>
+  </view>
+
+  <!-- 商品详情（模拟更多信息） -->
+  <view class="detail-section">
+    <view class="detail-title">商品详情</view>
+    <view class="detail-content">
+      <view class="detail-line">• 精选新鲜食材，品质保证</view>
+      <view class="detail-line">• 现点现做，美味值得等待</view>
+      <view class="detail-line">• 健康卫生，严格把控食品安全</view>
+      <view class="detail-line">• 如对食材有特殊要求，请在下单时备注</view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="bottom-cart" bindtap="goCart">
+      <text class="cart-icon">🛒</text>
+    </view>
+    <view class="btn-add-cart" bindtap="addToCart">加入购物车</view>
+    <view class="btn-buy-now" bindtap="buyNow">立即购买</view>
+  </view>
+
+</view>

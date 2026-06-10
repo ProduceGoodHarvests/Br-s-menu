@@ -1,18 +1,40 @@
-// app.js
+// app.js — 点餐小程序（纯本地模拟数据，无需服务端）
 
 App({
   onLaunch: function () {
-    if (!wx.cloud) {
-      console.error("请使用 2.2.3 或以上的基础库以使用云能力");
-    } else {
-      wx.cloud.init({
-        // env 参数说明：
-        //   env 参数决定接下来小程序发起的云开发调用（wx.cloud.xxx）会默认请求到哪个云环境的资源
-        //   此处请填入环境 ID, 环境 ID 可打开云控制台查看
-        //   如不填则使用默认环境（第一个创建的环境）
-        env: "luke-agent-dev-7g1nc8tqc2ab76af",
-        traceUser: true,
+    // 初始化购物车（存储到本地缓存）
+    const cart = wx.getStorageSync('cart');
+    if (!cart || !Array.isArray(cart)) {
+      wx.setStorageSync('cart', []);
+    }
+
+    // 初始化订单列表
+    const orders = wx.getStorageSync('orders');
+    if (!orders || !Array.isArray(orders)) {
+      wx.setStorageSync('orders', []);
+    }
+
+    console.log('点餐小程序启动完成 —— 离线模拟模式');
+  },
+
+  // 全局购物车操作
+  globalData: {
+    cartCount: 0,
+  },
+
+  // 更新购物车数量
+  updateCartCount: function () {
+    const cart = wx.getStorageSync('cart') || [];
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    this.globalData.cartCount = count;
+    // 更新tabBar角标
+    if (count > 0) {
+      wx.setTabBarBadge({
+        index: 2,
+        text: count > 99 ? '99+' : String(count),
       });
+    } else {
+      wx.removeTabBarBadge({ index: 2 });
     }
   },
 });

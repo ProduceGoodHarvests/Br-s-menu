@@ -1,0 +1,54 @@
+<!--pages/orders/orders.wxml-->
+<view class="orders-page">
+
+  <!-- 标签切换 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{activeTab === index ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="*this"
+      wx:for-index="index"
+      bindtap="onTabTap"
+      data-index="{{index}}"
+    >
+      {{item}}
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{isEmpty}}" class="empty-state">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无订单记录</text>
+  </view>
+
+  <!-- 订单列表 -->
+  <view wx:else class="order-list">
+    <view
+      class="order-card"
+      wx:for="{{orders}}"
+      wx:key="id"
+      bindtap="showDetail"
+      data-index="{{index}}"
+    >
+      <view class="order-header">
+        <text class="order-id">订单号：{{item.id}}</text>
+        <text class="order-status {{item.status}}">
+          {{item.status === 'pending' ? '处理中' : (item.status === 'completed' ? '已完成' : '已取消')}}
+        </text>
+      </view>
+      <view class="order-body">
+        <view class="order-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="food">
+          <text class="order-food-name">{{food.name}}</text>
+          <text class="order-food-qty">x{{food.quantity}}</text>
+          <text class="order-food-price">¥{{food.subtotal}}</text>
+        </view>
+      </view>
+      <view class="order-footer">
+        <text class="order-table">🏠 {{item.table}}</text>
+        <text class="order-time">{{item.createTime}}</text>
+        <text class="order-total">合计：<text class="total-amount">¥{{item.totalPrice}}</text></text>
+      </view>
+    </view>
+  </view>
+
+</view>
