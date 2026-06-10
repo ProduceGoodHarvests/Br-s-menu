@@ -5,7 +5,8 @@
     "pages/cart/cart",
     "pages/checkout/checkout",
     "pages/orders/orders",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/add-dish/add-dish"
   ],
   "tabBar": {
     "color": "#999999",
@@ -42,7 +43,7 @@
   "window": {
     "navigationBarBackgroundColor": "#ff5000",
     "navigationBarTextStyle": "white",
-    "navigationBarTitleText": "BR的菜单",
+    "navigationBarTitleText": "朱冰冉的私房菜",
     "backgroundColor": "#f5f5f5",
     "backgroundTextStyle": "dark",
     "enablePullDownRefresh": false

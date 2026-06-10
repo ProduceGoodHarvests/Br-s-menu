@@ -5,6 +5,7 @@ var KEYS = {
   ORDERS: 'food_orders',
   ROLE: 'app_role',       // 'customer' | 'merchant'
   CHECKOUT: 'food_checkout',
+  CUSTOM: 'food_custom',
 };
 
 // 通用读写
@@ -91,6 +92,14 @@ function clearCheckout() {
   remove(KEYS.CHECKOUT);
 }
 
+// --- 自定义菜品 ---
+function getCustomDishes() {
+  var d = get(KEYS.CUSTOM, []);
+  if (!Array.isArray(d)) d = [];
+  return d;
+}
+function setCustomDishes(dishes) { set(KEYS.CUSTOM, dishes); }
+
 // --- 工具 ---
 function formatNow() {
   var d = new Date();
@@ -141,4 +150,5 @@ module.exports = {
   getRole: getRole, setRole: setRole,
   getCheckout: getCheckout, setCheckout: setCheckout, clearCheckout: clearCheckout,
   seedDemoOrders: seedDemoOrders, formatNow: formatNow,
+  getCustomDishes: getCustomDishes, setCustomDishes: setCustomDishes,
 };

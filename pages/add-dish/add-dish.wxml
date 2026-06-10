@@ -1,0 +1,50 @@
+<!--pages/add-dish/add-dish.wxml-->
+<view class="add-page">
+
+  <!-- 添加表单 -->
+  <view class="form-section">
+    <view class="form-title">➕ 添加新菜品</view>
+
+    <view class="form-item">
+      <text class="label">菜品名称</text>
+      <input class="input" placeholder="如：红烧排骨" value="{{name}}" bindinput="onNameInput"/>
+    </view>
+
+    <view class="form-item">
+      <text class="label">价格 (¥)</text>
+      <input class="input" type="digit" placeholder="如：38" value="{{price}}" bindinput="onPriceInput"/>
+    </view>
+
+    <view class="form-item">
+      <text class="label">分类</text>
+      <view class="cat-select">
+        <view class="cat-opt {{categoryIndex === index ? 'active' : ''}}" wx:for="{{categories}}" wx:key="id" wx:for-index="index" bindtap="selectCategory" data-index="{{index}}">
+          <text>{{item.icon}} {{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="label">标签（选填）</text>
+      <input class="input" placeholder="如：招牌、新品" value="{{tag}}" bindinput="onTagInput"/>
+    </view>
+
+    <button class="submit-btn" bindtap="addDish">确认添加</button>
+  </view>
+
+  <!-- 我的菜品列表 -->
+  <view class="list-section" wx:if="{{myDishes.length > 0}}">
+    <view class="list-title">📋 我的菜品 ({{myDishes.length}})</view>
+    <view class="my-dish" wx:for="{{myDishes}}" wx:key="i">
+      <view class="dish-left">
+        <view class="dish-icon"><text>{{item.e}}</text></view>
+        <view class="dish-info">
+          <text class="dish-name">{{item.n}}</text>
+          <text class="dish-price">¥{{item.p}}</text>
+        </view>
+      </view>
+      <view class="dish-del" bindtap="deleteDish" data-index="{{index}}">✕</view>
+    </view>
+  </view>
+
+</view>

@@ -2,15 +2,26 @@
 var mock = require('../../utils/mock-data');
 var storage = require('../../utils/storage');
 
+var cn = {};
+mock.cats.forEach(function(c) { cn[c.id] = c.name; });
+
 function norm(f) {
-  return { id: f.i, name: f.n, icon: f.e, price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: (f.sp || []).map(function(s) { return { name: s.n, options: s.o }; }), categoryId: f.c };
+  return { id: f.i, name: f.n, icon: f.e, categoryName: cn[f.c] || '', price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: (f.sp || []).map(function(s) { return { name: s.n, options: s.o }; }), categoryId: f.c };
+}
+
+function findById(id) {
+  var f = mock.byId(id);
+  if (f) return f;
+  var custom = storage.getCustomDishes();
+  for (var i = 0; i < custom.length; i++) { if (custom[i].i === id) return custom[i]; }
+  return null;
 }
 
 Page({
   data: { food: null, quantity: 1, selectedSpecs: {}, totalPrice: 0 },
 
   onLoad: function (options) {
-    var f = mock.byId(parseInt(options.id));
+    var f = findById(parseInt(options.id));
     if (!f) { wx.showToast({ title: '菜品不存在', icon: 'none' }); return; }
     var food = norm(f);
     var sel = {};

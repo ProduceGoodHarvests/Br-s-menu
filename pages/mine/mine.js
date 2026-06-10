@@ -43,6 +43,7 @@ Page({
 
   goOrders: function () { wx.switchTab({ url: '/pages/orders/orders' }); },
   goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
+  goAddDish: function () { wx.navigateTo({ url: '/pages/add-dish/add-dish' }); },
 
   contactService: function () {
     wx.showModal({
@@ -54,7 +55,7 @@ Page({
 
   aboutUs: function () {
     wx.showModal({
-      title: '美味点餐',
+      title: '朱冰冉的私房菜',
       content: 'v2.0\n\n双人协作点餐小程序\n顾客下单 + 商家接单\n数据本地存储，无需服务端',
       showCancel: false, confirmText: '关闭',
     });

@@ -1,11 +1,53 @@
-// pages/index/index.js — 点餐首页
+// pages/index/index.js
 var mock = require('../../utils/mock-data');
 var storage = require('../../utils/storage');
 var PAGE_SIZE = 30;
 
-// 短字段 → 长字段映射
 function norm(f) {
   return { id: f.i, name: f.n, icon: f.e, price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: f.sp || [], categoryId: f.c };
+}
+
+// 合并内置+自定义菜品
+function allFoods() {
+  var custom = storage.getCustomDishes();
+  return mock.all.concat(custom);
+}
+
+// 根据分类获取（含自定义）
+function byCat(cid) {
+  var builtin = mock.byCat[cid] || [];
+  var custom = storage.getCustomDishes();
+  var result = builtin.slice();
+  for (var i = 0; i < custom.length; i++) {
+    if (custom[i].c === cid) result.push(custom[i]);
+  }
+  return result;
+}
+
+// 根据ID查找（含自定义）
+function byId(id) {
+  var f = mock.byId(id);
+  if (f) return f;
+  var custom = storage.getCustomDishes();
+  for (var i = 0; i < custom.length; i++) {
+    if (custom[i].i === id) return custom[i];
+  }
+  return null;
+}
+
+// 搜索（含自定义）
+function search(kw) {
+  var result = mock.search(kw).slice(0, 30);
+  var custom = storage.getCustomDishes();
+  kw = kw.toLowerCase();
+  for (var i = 0; i < custom.length; i++) {
+    var c = custom[i];
+    if (result.length >= 40) break;
+    if (c.n.toLowerCase().indexOf(kw) !== -1 || (c.t && c.t.toLowerCase().indexOf(kw) !== -1)) {
+      result.push(c);
+    }
+  }
+  return result;
 }
 
 Page({
@@ -16,7 +58,7 @@ Page({
   },
 
   onLoad: function () { this.initData(); },
-  onShow: function () { this.updateCartBadge(); },
+  onShow: function () { this.initData(); this.updateCartBadge(); },
 
   initData: function () {
     var cats = mock.cats;
@@ -28,7 +70,7 @@ Page({
 
   switchCategory: function (e) {
     var cid = parseInt(e.currentTarget.dataset.id);
-    var list = (cid === 0 ? mock.all : (mock.byCat[cid] || [])).map(norm);
+    var list = (cid === 0 ? allFoods() : byCat(cid)).map(norm);
     var page = list.slice(0, PAGE_SIZE);
     this.setData({ activeCategory: cid, foodList: page, hasMore: list.length > PAGE_SIZE });
     this._fullList = list;
@@ -45,7 +87,7 @@ Page({
     var kw = e.detail.value;
     this.setData({ searchKeyword: kw });
     if (kw.trim()) {
-      this.setData({ searchResults: mock.search(kw).slice(0, 40).map(norm), showSearch: true });
+      this.setData({ searchResults: search(kw).map(norm), showSearch: true });
     } else {
       this.setData({ showSearch: false, searchResults: [] });
     }
@@ -61,7 +103,7 @@ Page({
 
   addToCart: function (e) {
     var foodId = parseInt(e.currentTarget.dataset.id);
-    var f = mock.byId(foodId);
+    var f = byId(foodId);
     if (!f) return;
     var specs = f.sp ? f.sp.map(function(s) { return { name: s.n, value: s.o[0] }; }) : [];
     var specKey = specs.map(function(s) { return s.name + ':' + s.value; }).join('|');

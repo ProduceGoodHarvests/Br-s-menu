@@ -2,8 +2,9 @@
 <view class="detail-page" wx:if="{{food}}">
 
   <!-- 商品图片区 -->
-  <view class="food-hero">
-    <view class="hero-placeholder">{{food.icon || '🍽️'}}</view>
+  <view class="food-hero c-{{food.categoryId}}">
+    <text class="hero-emoji">{{food.icon}}</text>
+    <text class="hero-cat">{{food.categoryName}}</text>
   </view>
 
   <!-- 基本信息 -->
