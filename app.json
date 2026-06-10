@@ -42,7 +42,7 @@
   "window": {
     "navigationBarBackgroundColor": "#ff5000",
     "navigationBarTextStyle": "white",
-    "navigationBarTitleText": "美味点餐",
+    "navigationBarTitleText": "BR的菜单",
     "backgroundColor": "#f5f5f5",
     "backgroundTextStyle": "dark",
     "enablePullDownRefresh": false

@@ -1,45 +1,23 @@
 // pages/orders/orders.js
+var storage = require('../../utils/storage');
+
 Page({
   data: {
     orders: [],
     activeTab: 0,
-    tabs: ['全部', '待处理', '已完成'],
+    tabs: ['全部', '待接单', '已完成'],
     isEmpty: true,
+    isMerchant: false,
   },
 
   onShow: function () {
+    var app = getApp();
+    this.setData({ isMerchant: app.getRole() === 'merchant' });
     this.loadOrders();
   },
 
   loadOrders: function () {
-    let orders = wx.getStorageSync('orders') || [];
-    if (!Array.isArray(orders)) orders = [];
-
-    // 首次进入添加模拟历史订单
-    if (orders.length === 0) {
-      orders = [
-        {
-          id: 'ORD1718000000001',
-          table: 'B02 桌 B区靠窗',
-          items: [
-            { name: '招牌红烧牛肉面', price: 32, quantity: 2, subtotal: '64.00', specs: [{ name: '份量', value: '大份' }] },
-            { name: '柠檬气泡水', price: 10, quantity: 1, subtotal: '10.00', specs: [] },
-          ],
-          totalPrice: '74.00', remark: '', status: 'completed', createTime: '2026-06-09 12:30',
-        },
-        {
-          id: 'ORD1718000000002',
-          table: 'A01 桌 A区大厅',
-          items: [
-            { name: '麻辣小龙虾盖饭', price: 38, quantity: 1, subtotal: '38.00', specs: [{ name: '辣度', value: '中辣' }] },
-            { name: '珍珠奶茶', price: 12, quantity: 2, subtotal: '24.00', specs: [{ name: '甜度', value: '半糖' }, { name: '温度', value: '加冰' }] },
-          ],
-          totalPrice: '62.00', remark: '少放盐', status: 'completed', createTime: '2026-06-08 18:45',
-        },
-      ];
-      wx.setStorageSync('orders', orders);
-    }
-
+    var orders = storage.getOrders();
     this.setData({ orders: orders, isEmpty: orders.length === 0 });
     this.doFilter();
   },
@@ -51,16 +29,58 @@ Page({
   },
 
   doFilter: function () {
-    var all = wx.getStorageSync('orders') || [];
-    if (!Array.isArray(all)) all = [];
+    var all = storage.getOrders();
     var tab = this.data.activeTab;
     var filtered = all;
-    if (tab == 1) filtered = all.filter(function(o) { return o.status === 'pending'; });
-    else if (tab == 2) filtered = all.filter(function(o) { return o.status === 'completed'; });
+    if (tab == 1) {
+      filtered = [];
+      for (var i = 0; i < all.length; i++) {
+        if (all[i].status === 'pending') filtered.push(all[i]);
+      }
+    } else if (tab == 2) {
+      filtered = [];
+      for (var i = 0; i < all.length; i++) {
+        if (all[i].status === 'completed') filtered.push(all[i]);
+      }
+    }
     this.setData({ orders: filtered, isEmpty: filtered.length === 0 });
   },
 
-  // 查看订单详情
+  // 商家：确认接单
+  confirmOrder: function (e) {
+    var that = this;
+    var orderId = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '确认接单',
+      content: '确定接单并开始制作吗？',
+      success: function (res) {
+        if (res.confirm) {
+          storage.updateOrderStatus(orderId, 'confirmed');
+          wx.showToast({ title: '已接单', icon: 'success' });
+          that.loadOrders();
+        }
+      },
+    });
+  },
+
+  // 商家：完成订单
+  completeOrder: function (e) {
+    var that = this;
+    var orderId = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '完成订单',
+      content: '确定该订单已完成制作吗？',
+      success: function (res) {
+        if (res.confirm) {
+          storage.updateOrderStatus(orderId, 'completed');
+          wx.showToast({ title: '已完成', icon: 'success' });
+          that.loadOrders();
+        }
+      },
+    });
+  },
+
+  // 查看详情
   showDetail: function (e) {
     var idx = parseInt(e.currentTarget.dataset.index);
     var order = this.data.orders[idx];
@@ -70,8 +90,12 @@ Page({
       var it = order.items[i];
       lines.push(it.name + ' x' + it.quantity + ' ¥' + it.subtotal);
     }
-    var statusText = order.status === 'completed' ? '已完成' : '处理中';
-    var content = '桌号：' + order.table + '\n时间：' + order.createTime + '\n状态：' + statusText + '\n\n' + lines.join('\n') + '\n\n合计：¥' + order.totalPrice;
+    var statusMap = { pending: '待接单', confirmed: '制作中', completed: '已完成' };
+    var content = '桌号：' + order.table +
+      '\n时间：' + order.createTime +
+      '\n状态：' + (statusMap[order.status] || order.status) +
+      '\n\n' + lines.join('\n') +
+      '\n\n合计：¥' + order.totalPrice;
     if (order.remark) content += '\n备注：' + order.remark;
     wx.showModal({
       title: '订单 ' + order.id,

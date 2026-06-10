@@ -1,66 +1,77 @@
 // pages/mine/mine.js
+var storage = require('../../utils/storage');
+
 Page({
   data: {
-    userInfo: {
-      avatar: '',
-      nickname: '食客',
-      phone: '138****8888',
-    },
+    userInfo: { avatar: '', nickname: '食客', phone: '138****8888' },
     orderCount: 0,
+    isMerchant: false,
   },
 
   onShow: function () {
-    const orders = wx.getStorageSync('orders') || [];
+    var app = getApp();
+    var isMerchant = app.getRole() === 'merchant';
+    this.setData({ isMerchant: isMerchant });
+    var orders = storage.getOrders();
     this.setData({ orderCount: orders.length });
   },
 
-  // 点击头像
   onTapAvatar: function () {
-    wx.showToast({ title: '欢迎使用美味点餐', icon: 'none' });
+    var role = this.data.isMerchant ? '商家模式' : '顾客模式';
+    wx.showToast({ title: '当前：' + role, icon: 'none' });
   },
 
-  // 我的订单
-  goOrders: function () {
-    wx.switchTab({ url: '/pages/orders/orders' });
+  // 切换角色
+  toggleRole: function () {
+    var that = this;
+    var currentRole = this.data.isMerchant ? 'merchant' : 'customer';
+    var newRole = currentRole === 'merchant' ? 'customer' : 'merchant';
+    var label = newRole === 'merchant' ? '商家模式' : '顾客模式';
+    wx.showModal({
+      title: '切换角色',
+      content: '确定切换到「' + label + '」吗？\n\n顾客：浏览菜单、下单\n商家：查看订单、接单出餐',
+      success: function (res) {
+        if (res.confirm) {
+          var app = getApp();
+          app.switchRole(newRole);
+          that.setData({ isMerchant: newRole === 'merchant' });
+          wx.showToast({ title: '已切换到' + label, icon: 'success' });
+        }
+      },
+    });
   },
 
-  // 购物车
-  goCart: function () {
-    wx.switchTab({ url: '/pages/cart/cart' });
-  },
+  goOrders: function () { wx.switchTab({ url: '/pages/orders/orders' }); },
+  goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
 
-  // 联系客服（模拟）
   contactService: function () {
     wx.showModal({
       title: '联系客服',
       content: '客服电话：400-123-4567\n工作时间：09:00-21:00',
-      showCancel: false,
-      confirmText: '知道了',
+      showCancel: false, confirmText: '知道了',
     });
   },
 
-  // 关于我们
   aboutUs: function () {
     wx.showModal({
       title: '美味点餐',
-      content: 'v1.0.0\n\n纯前端模拟点餐小程序\n无需服务端，数据全模拟\n\n适用于小程序学习和演示',
-      showCancel: false,
-      confirmText: '关闭',
+      content: 'v2.0\n\n双人协作点餐小程序\n顾客下单 + 商家接单\n数据本地存储，无需服务端',
+      showCancel: false, confirmText: '关闭',
     });
   },
 
-  // 清空缓存
   clearCache: function () {
+    var that = this;
     wx.showModal({
-      title: '提示',
-      content: '确定要清空所有数据吗？（购物车和订单记录将被清除）',
-      success: (res) => {
+      title: '清空数据',
+      content: '确定清空购物车和所有订单吗？',
+      success: function (res) {
         if (res.confirm) {
-          wx.removeStorageSync('cart');
-          wx.removeStorageSync('orders');
-          wx.removeStorageSync('checkoutItems');
+          storage.clearCart();
+          storage.setOrders([]);
+          storage.clearCheckout();
           wx.showToast({ title: '已清空', icon: 'success' });
-          this.setData({ orderCount: 0 });
+          that.setData({ orderCount: 0 });
         }
       },
     });

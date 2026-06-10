@@ -9,9 +9,13 @@
         <text class="avatar-placeholder" wx:else>👤</text>
       </view>
       <view class="user-info">
-        <view class="nickname">{{userInfo.nickname}}</view>
-        <view class="phone">{{userInfo.phone}}</view>
+        <view class="nickname">{{isMerchant ? '商家' : '食客'}}</view>
+        <view class="phone">{{isMerchant ? '接单出餐' : '138****8888'}}</view>
       </view>
+    </view>
+    <view class="role-tag" bindtap="toggleRole">
+      <text>{{isMerchant ? '🔔 商家模式' : '🍽️ 顾客模式'}}</text>
+      <text class="role-hint">点击切换</text>
     </view>
   </view>
 
@@ -33,6 +37,11 @@
 
   <!-- 功能菜单 -->
   <view class="menu-section">
+    <view class="menu-item role-switch" bindtap="toggleRole">
+      <text class="menu-icon">{{isMerchant ? '👨‍🍳' : '👤'}}</text>
+      <text class="menu-text">切换为{{isMerchant ? '顾客模式' : '商家模式'}}</text>
+      <text class="menu-arrow">›</text>
+    </view>
     <view class="menu-item" bindtap="goOrders">
       <text class="menu-icon">📋</text>
       <text class="menu-text">我的订单</text>

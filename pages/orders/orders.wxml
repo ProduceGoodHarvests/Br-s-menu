@@ -1,6 +1,11 @@
 <!--pages/orders/orders.wxml-->
 <view class="orders-page">
 
+  <!-- 角色提示条 -->
+  <view class="role-banner" wx:if="{{isMerchant}}">
+    <text>🔔 商家模式 · 接单处理</text>
+  </view>
+
   <!-- 标签切换 -->
   <view class="tab-bar">
     <view
@@ -17,8 +22,8 @@
 
   <!-- 空状态 -->
   <view wx:if="{{isEmpty}}" class="empty-state">
-    <text class="empty-icon">📋</text>
-    <text class="empty-text">暂无订单记录</text>
+    <text class="empty-icon">{{isMerchant ? '✅' : '📋'}}</text>
+    <text class="empty-text">{{isMerchant ? '暂无待处理订单' : '暂无订单记录'}}</text>
   </view>
 
   <!-- 订单列表 -->
@@ -27,16 +32,14 @@
       class="order-card"
       wx:for="{{orders}}"
       wx:key="id"
-      bindtap="showDetail"
-      data-index="{{index}}"
     >
-      <view class="order-header">
+      <view class="order-header" bindtap="showDetail" data-index="{{index}}">
         <text class="order-id">订单号：{{item.id}}</text>
         <text class="order-status {{item.status}}">
-          {{item.status === 'pending' ? '处理中' : (item.status === 'completed' ? '已完成' : '已取消')}}
+          {{item.status === 'pending' ? '待接单' : (item.status === 'confirmed' ? '制作中' : '已完成')}}
         </text>
       </view>
-      <view class="order-body">
+      <view class="order-body" bindtap="showDetail" data-index="{{index}}">
         <view class="order-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="food">
           <text class="order-food-name">{{food.name}}</text>
           <text class="order-food-qty">x{{food.quantity}}</text>
@@ -47,6 +50,12 @@
         <text class="order-table">🏠 {{item.table}}</text>
         <text class="order-time">{{item.createTime}}</text>
         <text class="order-total">合计：<text class="total-amount">¥{{item.totalPrice}}</text></text>
+      </view>
+
+      <!-- 商家操作按钮 -->
+      <view class="merchant-actions" wx:if="{{isMerchant && item.status !== 'completed'}}">
+        <button class="btn-confirm" wx:if="{{item.status === 'pending'}}" bindtap="confirmOrder" data-id="{{item.id}}">接单制作</button>
+        <button class="btn-complete" wx:if="{{item.status === 'confirmed'}}" bindtap="completeOrder" data-id="{{item.id}}">完成出餐</button>
       </view>
     </view>
   </view>

@@ -1,134 +1,73 @@
 // pages/detail/detail.js
-const mock = require('../../utils/mock-data');
+var mock = require('../../utils/mock-data');
+var storage = require('../../utils/storage');
+
+function norm(f) {
+  return { id: f.i, name: f.n, icon: f.e, price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: (f.sp || []).map(function(s) { return { name: s.n, options: s.o }; }), categoryId: f.c };
+}
 
 Page({
-  data: {
-    food: null,
-    quantity: 1,
-    selectedSpecs: {}, // { specName: optionValue }
-    totalPrice: 0,
-  },
+  data: { food: null, quantity: 1, selectedSpecs: {}, totalPrice: 0 },
 
   onLoad: function (options) {
-    const foodId = parseInt(options.id);
-    const food = mock.getFoodById(foodId);
-
-    if (!food) {
-      wx.showToast({ title: '菜品不存在', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 1500);
-      return;
+    var f = mock.byId(parseInt(options.id));
+    if (!f) { wx.showToast({ title: '菜品不存在', icon: 'none' }); return; }
+    var food = norm(f);
+    var sel = {};
+    if (food.specs.length > 0) {
+      for (var i = 0; i < food.specs.length; i++) { sel[food.specs[i].name] = food.specs[i].options[0]; }
     }
-
-    // 初始化规格选择（默认选第一个）
-    const selectedSpecs = {};
-    if (food.specs && food.specs.length > 0) {
-      food.specs.forEach(spec => {
-        selectedSpecs[spec.name] = spec.options[0];
-      });
-    }
-
-    this.setData({
-      food: food,
-      selectedSpecs: selectedSpecs,
-      totalPrice: food.price,
-    });
+    this.setData({ food: food, selectedSpecs: sel, totalPrice: food.price });
   },
 
-  // 选择规格
   selectSpec: function (e) {
-    const specName = e.currentTarget.dataset.spec;
-    const optionValue = e.currentTarget.dataset.value;
-
-    const selectedSpecs = { ...this.data.selectedSpecs, [specName]: optionValue };
-    this.setData({ selectedSpecs });
-
-    // 重新计算价格（如果有加价选项）
+    var name = e.currentTarget.dataset.spec;
+    var val = e.currentTarget.dataset.value;
+    var sel = {};
+    for (var k in this.data.selectedSpecs) sel[k] = this.data.selectedSpecs[k];
+    sel[name] = val;
+    this.setData({ selectedSpecs: sel });
     this.calcTotalPrice();
   },
 
-  // 计算总价
   calcTotalPrice: function () {
-    const food = this.data.food;
-    let price = food.price;
-
-    // 检查是否有加价选项
-    Object.entries(this.data.selectedSpecs).forEach(([name, value]) => {
-      const match = value.match(/\+¥(\d+)/);
-      if (match) {
-        price += parseInt(match[1]);
-      }
-    });
-
+    var price = this.data.food.price;
+    var sel = this.data.selectedSpecs;
+    for (var k in sel) {
+      var m = sel[k].match(/\+¥(\d+)/);
+      if (m) price += parseInt(m[1]);
+    }
     this.setData({ totalPrice: price * this.data.quantity });
   },
 
-  // 减少数量
   decreaseQty: function () {
     if (this.data.quantity <= 1) return;
-    const qty = this.data.quantity - 1;
-    this.setData({ quantity: qty });
+    this.setData({ quantity: this.data.quantity - 1 });
     this.calcTotalPrice();
   },
 
-  // 增加数量
   increaseQty: function () {
-    const qty = this.data.quantity + 1;
-    this.setData({ quantity: qty });
+    this.setData({ quantity: this.data.quantity + 1 });
     this.calcTotalPrice();
   },
 
-  // 加入购物车
   addToCart: function () {
-    const food = this.data.food;
-    let cart = wx.getStorageSync('cart') || [];
-
-    // 生成一个唯一标识（id + 规格组合）
-    const specsArray = Object.entries(this.data.selectedSpecs).map(([name, value]) => ({
-      name,
-      value,
-    }));
-    const specKey = specsArray.map(s => s.name + ':' + s.value).join('|');
-
-    // 查找是否已存在相同规格的商品
-    const existingIndex = cart.findIndex(item =>
-      item.id === food.id &&
-      (item.specKey || '') === specKey
-    );
-
-    if (existingIndex > -1) {
-      cart[existingIndex].quantity += this.data.quantity;
-    } else {
-      cart.push({
-        id: food.id,
-        name: food.name,
-        icon: food.icon,
-        price: this.data.totalPrice / this.data.quantity, // 单价
-        specs: specsArray,
-        specKey: specKey,
-        quantity: this.data.quantity,
-      });
+    var food = this.data.food;
+    var specs = [], keys = [];
+    var sel = this.data.selectedSpecs;
+    for (var k in sel) { specs.push({ name: k, value: sel[k] }); keys.push(k + ':' + sel[k]); }
+    var specKey = keys.join('|');
+    var cart = storage.getCart();
+    var idx = -1;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id === food.id && (cart[i].specKey || '') === specKey) { idx = i; break; }
     }
-
-    wx.setStorageSync('cart', cart);
-
-    wx.showToast({
-      title: '已加入购物车',
-      icon: 'success',
-    });
+    if (idx > -1) { cart[idx].quantity += this.data.quantity; }
+    else { cart.push({ id: food.id, name: food.name, icon: food.icon, price: this.data.totalPrice / this.data.quantity, specs: specs, specKey: specKey, quantity: this.data.quantity }); }
+    storage.setCart(cart);
+    wx.showToast({ title: '已加入购物车', icon: 'success' });
   },
 
-  // 立即购买
-  buyNow: function () {
-    this.addToCart();
-    wx.switchTab({
-      url: '/pages/cart/cart',
-    });
-  },
-
-  // 去购物车
-  goCart: function () {
-    wx.switchTab({
-      url: '/pages/cart/cart',
-    });
-  },
+  buyNow: function () { this.addToCart(); wx.switchTab({ url: '/pages/cart/cart' }); },
+  goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
 });

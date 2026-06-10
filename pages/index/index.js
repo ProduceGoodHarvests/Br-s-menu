@@ -1,135 +1,87 @@
 // pages/index/index.js — 点餐首页
-const mock = require('../../utils/mock-data');
+var mock = require('../../utils/mock-data');
+var storage = require('../../utils/storage');
+var PAGE_SIZE = 30;
+
+// 短字段 → 长字段映射
+function norm(f) {
+  return { id: f.i, name: f.n, icon: f.e, price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: f.sp || [], categoryId: f.c };
+}
 
 Page({
   data: {
-    searchKeyword: '',
-    categories: [],
-    activeCategory: 0, // 0 = 全部
-    foodList: [],
-    allFoods: [],
-    hotFoods: [],
-    cartCount: 0,
-    showSearch: false,
-    searchResults: [],
+    searchKeyword: '', categories: [], activeCategory: 0,
+    foodList: [], hotFoods: [], cartCount: 0,
+    showSearch: false, searchResults: [], hasMore: false,
   },
 
-  onLoad: function () {
-    this.initData();
-  },
-
-  onShow: function () {
-    this.updateCartBadge();
-  },
+  onLoad: function () { this.initData(); },
+  onShow: function () { this.updateCartBadge(); },
 
   initData: function () {
-    const categories = mock.categories;
-    const allFoods = mock.foods;
-    const hotFoods = mock.getHotFoods(6);
-
-    // 添加"全部"分类
-    const allCategories = [
-      { id: 0, name: '全部', icon: '📋' },
-      ...categories
-    ];
-
-    this.setData({
-      categories: allCategories,
-      allFoods: allFoods,
-      foodList: allFoods,
-      hotFoods: hotFoods,
-    });
+    var cats = mock.cats;
+    var hot = mock.hot.slice(0, 8).map(norm);
+    var allCats = [{ id: 0, name: '全部', icon: '📋' }].concat(cats);
+    this.setData({ categories: allCats, hotFoods: hot });
+    this.switchCategory({ currentTarget: { dataset: { id: '0' } } });
   },
 
-  // 切换分类
   switchCategory: function (e) {
-    const categoryId = parseInt(e.currentTarget.dataset.id);
-    this.setData({ activeCategory: categoryId });
-
-    if (categoryId === 0) {
-      this.setData({ foodList: this.data.allFoods });
-    } else {
-      const filtered = mock.getFoodsByCategory(categoryId);
-      this.setData({ foodList: filtered });
-    }
+    var cid = parseInt(e.currentTarget.dataset.id);
+    var list = (cid === 0 ? mock.all : (mock.byCat[cid] || [])).map(norm);
+    var page = list.slice(0, PAGE_SIZE);
+    this.setData({ activeCategory: cid, foodList: page, hasMore: list.length > PAGE_SIZE });
+    this._fullList = list;
   },
 
-  // 搜索
+  loadMore: function () {
+    if (!this.data.hasMore) return;
+    var cur = this.data.foodList;
+    var more = this._fullList.slice(cur.length, cur.length + PAGE_SIZE);
+    this.setData({ foodList: cur.concat(more), hasMore: (cur.length + more.length) < this._fullList.length });
+  },
+
   onSearchInput: function (e) {
-    const keyword = e.detail.value;
-    this.setData({ searchKeyword: keyword });
-    if (keyword.trim()) {
-      const results = mock.searchFoods(keyword);
-      this.setData({ searchResults: results, showSearch: true });
+    var kw = e.detail.value;
+    this.setData({ searchKeyword: kw });
+    if (kw.trim()) {
+      this.setData({ searchResults: mock.search(kw).slice(0, 40).map(norm), showSearch: true });
     } else {
       this.setData({ showSearch: false, searchResults: [] });
     }
   },
 
-  // 取消搜索
   cancelSearch: function () {
-    this.setData({
-      searchKeyword: '',
-      showSearch: false,
-      searchResults: [],
-    });
+    this.setData({ searchKeyword: '', showSearch: false, searchResults: [] });
   },
 
-  // 去商品详情
   goDetail: function (e) {
-    const foodId = parseInt(e.currentTarget.dataset.id);
-    wx.navigateTo({
-      url: `/pages/detail/detail?id=${foodId}`,
-    });
+    wx.navigateTo({ url: '/pages/detail/detail?id=' + parseInt(e.currentTarget.dataset.id) });
   },
 
-  // 加入购物车
   addToCart: function (e) {
-    const foodId = parseInt(e.currentTarget.dataset.id);
-    const food = mock.getFoodById(foodId);
-    if (!food) return;
-
-    const defaultSpecs = food.specs && food.specs.length > 0
-      ? food.specs.map(s => ({ name: s.name, value: s.options[0] }))
-      : [];
-    const specKey = defaultSpecs.map(s => s.name + ':' + s.value).join('|');
-
-    let cart = wx.getStorageSync('cart') || [];
-    const index = cart.findIndex(item => item.id === foodId && (item.specKey || '') === specKey);
-
-    if (index > -1) {
-      cart[index].quantity += 1;
-    } else {
-      cart.push({
-        id: food.id,
-        name: food.name,
-        icon: food.icon,
-        price: food.price,
-        specs: defaultSpecs,
-        specKey: specKey,
-        quantity: 1,
-      });
+    var foodId = parseInt(e.currentTarget.dataset.id);
+    var f = mock.byId(foodId);
+    if (!f) return;
+    var specs = f.sp ? f.sp.map(function(s) { return { name: s.n, value: s.o[0] }; }) : [];
+    var specKey = specs.map(function(s) { return s.name + ':' + s.value; }).join('|');
+    var cart = storage.getCart();
+    var idx = -1;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id === foodId && (cart[i].specKey || '') === specKey) { idx = i; break; }
     }
-
-    wx.setStorageSync('cart', cart);
+    if (idx > -1) { cart[idx].quantity += 1; }
+    else { cart.push({ id: f.i, name: f.n, icon: f.e, price: f.p, specs: specs, specKey: specKey, quantity: 1 }); }
+    storage.setCart(cart);
     this.updateCartBadge();
-
-    wx.showToast({
-      title: '已加入购物车',
-      icon: 'success',
-      duration: 1000,
-    });
+    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 800 });
   },
 
-  // 更新购物车角标
   updateCartBadge: function () {
-    const cart = wx.getStorageSync('cart') || [];
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    var cart = storage.getCart(), count = 0;
+    for (var i = 0; i < cart.length; i++) count += cart[i].quantity;
     this.setData({ cartCount: count });
-
-    const app = getApp();
-    if (app) {
-      app.globalData.cartCount = count;
-    }
+    var app = getApp();
+    if (app) app.globalData.cartCount = count;
   },
 });

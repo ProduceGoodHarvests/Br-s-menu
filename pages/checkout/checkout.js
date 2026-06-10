@@ -1,4 +1,6 @@
 // pages/checkout/checkout.js
+var storage = require('../../utils/storage');
+
 Page({
   data: {
     items: [],
@@ -15,7 +17,7 @@ Page({
   },
 
   onLoad: function () {
-    var items = wx.getStorageSync('checkoutItems') || [];
+    var items = storage.getCheckout();
     if (!Array.isArray(items)) items = [];
     var itemsWithSubtotal = [];
     var total = 0;
@@ -78,21 +80,20 @@ Page({
         createTime: time,
       };
 
-      var orders = wx.getStorageSync('orders') || [];
-      if (!Array.isArray(orders)) orders = [];
-      orders.unshift(order);
-      wx.setStorageSync('orders', orders);
+      storage.addOrder(order);
 
       // 清空购物车中已购买的商品
-      var cart = wx.getStorageSync('cart') || [];
-      if (!Array.isArray(cart)) cart = [];
+      var cart = storage.getCart();
       var checkoutIds = [];
       for (var j = 0; j < dataItems.length; j++) {
         checkoutIds.push(dataItems[j].id);
       }
-      cart = cart.filter(function (c) { return checkoutIds.indexOf(c.id) === -1; });
-      wx.setStorageSync('cart', cart);
-      wx.removeStorageSync('checkoutItems');
+      var newCart = [];
+      for (var k = 0; k < cart.length; k++) {
+        if (checkoutIds.indexOf(cart[k].id) === -1) newCart.push(cart[k]);
+      }
+      storage.setCart(newCart);
+      storage.clearCheckout();
       that.setData({ submitting: false });
 
       wx.showModal({
