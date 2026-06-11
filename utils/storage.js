@@ -6,6 +6,7 @@ var KEYS = {
   ROLE: 'app_role',       // 'customer' | 'merchant'
   CHECKOUT: 'food_checkout',
   CUSTOM: 'food_custom',
+  MENU_VERSION: 'food_menu_version',
 };
 
 // 通用读写
@@ -100,6 +101,16 @@ function getCustomDishes() {
 }
 function setCustomDishes(dishes) { set(KEYS.CUSTOM, dishes); }
 
+function ensureMenuVersion(version) {
+  if (get(KEYS.MENU_VERSION, '') !== version) {
+    setCustomDishes([]);
+    clearCart();
+    clearCheckout();
+    setOrders([]);
+    set(KEYS.MENU_VERSION, version);
+  }
+}
+
 // --- 工具 ---
 function formatNow() {
   var d = new Date();
@@ -121,10 +132,10 @@ function seedDemoOrders() {
         id: 'ORD1718000000001',
         table: 'B02 桌 B区靠窗',
         items: [
-          { name: '招牌红烧牛肉面', price: 32, quantity: 2, subtotal: '64.00', specs: [{ name: '份量', value: '大份' }] },
-          { name: '柠檬气泡水', price: 10, quantity: 1, subtotal: '10.00', specs: [] },
+          { name: '冷吃牛肉', price: 32, quantity: 1, subtotal: '32.00', specs: [{ name: '辣度', value: '中辣' }] },
+          { name: '番茄炒鸡蛋', price: 18, quantity: 1, subtotal: '18.00', specs: [] },
         ],
-        totalPrice: '74.00', remark: '',
+        totalPrice: '50.00', remark: '',
         status: 'completed', createTime: '2026-06-08 12:30',
         confirmTime: '2026-06-08 12:35', completeTime: '2026-06-08 12:50',
       },
@@ -132,10 +143,10 @@ function seedDemoOrders() {
         id: 'ORD1718000000002',
         table: 'A01 桌 A区大厅',
         items: [
-          { name: '麻辣小龙虾盖饭', price: 38, quantity: 1, subtotal: '38.00', specs: [{ name: '辣度', value: '中辣' }] },
-          { name: '珍珠奶茶', price: 12, quantity: 2, subtotal: '24.00', specs: [{ name: '甜度', value: '半糖' }, { name: '温度', value: '加冰' }] },
+          { name: '青椒炒肉', price: 26, quantity: 1, subtotal: '26.00', specs: [{ name: '辣度', value: '微辣' }] },
+          { name: '素炒小白菜', price: 16, quantity: 1, subtotal: '16.00', specs: [] },
         ],
-        totalPrice: '62.00', remark: '少放盐',
+        totalPrice: '42.00', remark: '少放盐',
         status: 'pending', createTime: '2026-06-09 18:45',
       },
     ];
@@ -151,4 +162,5 @@ module.exports = {
   getCheckout: getCheckout, setCheckout: setCheckout, clearCheckout: clearCheckout,
   seedDemoOrders: seedDemoOrders, formatNow: formatNow,
   getCustomDishes: getCustomDishes, setCustomDishes: setCustomDishes,
+  ensureMenuVersion: ensureMenuVersion,
 };

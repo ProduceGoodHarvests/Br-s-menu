@@ -71,6 +71,7 @@ Page({
           storage.clearCart();
           storage.setOrders([]);
           storage.clearCheckout();
+          storage.setCustomDishes([]);
           wx.showToast({ title: '已清空', icon: 'success' });
           that.setData({ orderCount: 0 });
         }

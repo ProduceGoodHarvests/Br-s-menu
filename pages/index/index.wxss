@@ -27,7 +27,7 @@
 .hot-price { color: #ff5000; font-size: 30rpx; font-weight: 700; margin-top: 6rpx; }
 
 /* === 菜系配色 === */
-.c-1  { --c-bg: #fde8e8; } /* 川菜 */
+.c-1  { --c-bg: #fde8e8; } /* 家常菜 */
 .c-2  { --c-bg: #d1f2eb; } /* 粤菜 */
 .c-3  { --c-bg: #fdebd0; } /* 鲁菜 */
 .c-4  { --c-bg: #d6eaf8; } /* 苏菜 */

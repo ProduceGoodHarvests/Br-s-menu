@@ -6,7 +6,7 @@ var cn = {};
 mock.cats.forEach(function(c) { cn[c.id] = c.name; });
 
 function norm(f) {
-  return { id: f.i, name: f.n, icon: f.e, categoryName: cn[f.c] || '', price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: (f.sp || []).map(function(s) { return { name: s.n, options: s.o }; }), categoryId: f.c };
+  return { id: f.i, name: f.n, icon: f.e, categoryName: cn[f.c] || '', price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', desc: f.d || '', specs: (f.sp || []).map(function(s) { return { name: s.n, options: s.o }; }), categoryId: f.c };
 }
 
 function findById(id) {

@@ -3,6 +3,7 @@ var storage = require('./utils/storage');
 
 App({
   onLaunch: function () {
+    storage.ensureMenuVersion('four-dishes-2026-06-11');
     storage.seedDemoOrders();
     console.log('点餐小程序启动 —— 当前角色:', storage.getRole());
   },
