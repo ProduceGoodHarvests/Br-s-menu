@@ -1,0 +1,46 @@
+<view class="data-page">
+  <view class="sync-panel">
+    <view class="panel-head">
+      <view>
+        <view class="panel-title">云端同步</view>
+        <view class="panel-subtitle">账号：{{accountText}}</view>
+      </view>
+      <view class="status-pill status-{{syncStatus}}">{{syncStatusText}}</view>
+    </view>
+    <view class="sync-desc">{{syncDesc}}</view>
+    <view class="sync-meta">
+      <text>最近同步</text>
+      <text>{{lastSyncText}}</text>
+    </view>
+    <view class="sync-error" wx:if="{{errorText}}">{{errorText}}</view>
+  </view>
+
+  <view class="stats-panel">
+    <view class="panel-title">本机数据</view>
+    <view class="stats-grid">
+      <view class="stat-cell">
+        <text class="stat-value">{{orderCount}}</text>
+        <text class="stat-label">订单</text>
+      </view>
+      <view class="stat-cell">
+        <text class="stat-value">{{cartCount}}</text>
+        <text class="stat-label">购物车件数</text>
+      </view>
+      <view class="stat-cell">
+        <text class="stat-value">{{customDishCount}}</text>
+        <text class="stat-label">自定义菜品</text>
+      </view>
+      <view class="stat-cell">
+        <text class="stat-value">{{tagCount}}</text>
+        <text class="stat-label">标签</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="actions-panel">
+    <button class="action-btn primary" loading="{{syncing}}" disabled="{{syncing}}" bindtap="syncNow">立即同步</button>
+    <button class="action-btn" disabled="{{syncing}}" bindtap="uploadLocal">上传本机数据</button>
+    <button class="action-btn" disabled="{{syncing}}" bindtap="downloadCloud">从云端恢复</button>
+    <button class="action-btn danger" disabled="{{syncing}}" bindtap="clearLocal">清空数据</button>
+  </view>
+</view>

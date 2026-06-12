@@ -9,44 +9,53 @@ Page({
     categoryIndex: 0,
     price: '',
     tag: '',
-    tags: ['招牌','人气','爆款','新品','下饭','品质','夏日','推荐','鲜香'],
+    tags: [],
     myDishes: [],
   },
 
   onLoad: function () {
     this.setData({ categories: mock.cats });
-    this.loadMyDishes();
+    this.loadData();
   },
 
   onShow: function () {
-    this.loadMyDishes();
+    this.loadData();
   },
 
-  loadMyDishes: function () {
-    var dishes = storage.getCustomDishes();
-    this.setData({ myDishes: dishes });
+  loadData: function () {
+    this.setData({
+      tags: storage.getDishTags(),
+      myDishes: storage.getCustomDishes(),
+    });
   },
 
-  // 选择分类
   selectCategory: function (e) {
     this.setData({ categoryIndex: parseInt(e.currentTarget.dataset.index) });
   },
 
-  // 输入
+  selectTag: function (e) {
+    this.setData({ tag: e.currentTarget.dataset.tag || '' });
+  },
+
+  goTagManager: function () {
+    wx.navigateTo({ url: '/pages/tag-manager/tag-manager' });
+  },
+
   onNameInput: function (e) { this.setData({ name: e.detail.value }); },
   onPriceInput: function (e) { this.setData({ price: e.detail.value }); },
   onTagInput: function (e) { this.setData({ tag: e.detail.value }); },
 
-  // 添加菜品
   addDish: function () {
     var name = this.data.name.trim();
     var price = parseFloat(this.data.price);
+    var tag = this.data.tag.replace(/^#+/, '').trim();
     if (!name) { wx.showToast({ title: '请输入菜品名称', icon: 'none' }); return; }
     if (!price || price <= 0) { wx.showToast({ title: '请输入有效价格', icon: 'none' }); return; }
+    if (tag && this.data.tags.indexOf(tag) === -1) storage.addDishTag(tag);
 
     var cat = this.data.categories[this.data.categoryIndex];
     var dish = {
-      i: Date.now(),  // 用时间戳做唯一ID
+      i: Date.now(),
       c: cat.id,
       n: name,
       e: cat.e ? cat.e[Math.floor(Math.random() * cat.e.length)] : '🍽️',
@@ -54,19 +63,18 @@ Page({
       o: price,
       s: 0,
       r: 5.0,
-      t: this.data.tag.trim() || '',
+      t: tag,
       custom: true,
     };
 
     var dishes = storage.getCustomDishes();
     dishes.unshift(dish);
     storage.setCustomDishes(dishes);
-
-    this.setData({ name: '', price: '', tag: '', myDishes: dishes });
-    wx.showToast({ title: '添加成功！', icon: 'success' });
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+    this.setData({ name: '', price: '', tag: '', tags: storage.getDishTags(), myDishes: dishes });
+    wx.showToast({ title: '添加成功', icon: 'success' });
   },
 
-  // 删除自定义菜品
   deleteDish: function (e) {
     var that = this;
     var idx = parseInt(e.currentTarget.dataset.index);

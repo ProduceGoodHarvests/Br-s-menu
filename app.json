@@ -6,7 +6,9 @@
     "pages/checkout/checkout",
     "pages/orders/orders",
     "pages/mine/mine",
-    "pages/add-dish/add-dish"
+    "pages/data-manager/data-manager",
+    "pages/add-dish/add-dish",
+    "pages/tag-manager/tag-manager"
   ],
   "tabBar": {
     "color": "#999999",

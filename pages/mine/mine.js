@@ -1,5 +1,6 @@
 // pages/mine/mine.js
 var storage = require('../../utils/storage');
+var cloudSync = require('../../utils/cloud-sync');
 
 Page({
   data: {
@@ -43,7 +44,9 @@ Page({
 
   goOrders: function () { wx.switchTab({ url: '/pages/orders/orders' }); },
   goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
+  goDataManager: function () { wx.navigateTo({ url: '/pages/data-manager/data-manager' }); },
   goAddDish: function () { wx.navigateTo({ url: '/pages/add-dish/add-dish' }); },
+  goTagManager: function () { wx.navigateTo({ url: '/pages/tag-manager/tag-manager' }); },
 
   contactService: function () {
     wx.showModal({
@@ -56,7 +59,7 @@ Page({
   aboutUs: function () {
     wx.showModal({
       title: '朱冰冉的私房菜',
-      content: 'v2.0\n\n双人协作点餐小程序\n顾客下单 + 商家接单\n数据本地存储，无需服务端',
+      content: 'v2.0\n\n双人协作点餐小程序\n顾客下单 + 商家接单\n支持本地缓存与云端同步',
       showCancel: false, confirmText: '关闭',
     });
   },
@@ -65,13 +68,11 @@ Page({
     var that = this;
     wx.showModal({
       title: '清空数据',
-      content: '确定清空购物车和所有订单吗？',
+      content: '确定清空购物车、订单、自定义菜品和标签吗？清空结果会同步到云端。',
       success: function (res) {
         if (res.confirm) {
-          storage.clearCart();
-          storage.setOrders([]);
-          storage.clearCheckout();
-          storage.setCustomDishes([]);
+          storage.clearBusinessData();
+          cloudSync.queueSync(100);
           wx.showToast({ title: '已清空', icon: 'success' });
           that.setData({ orderCount: 0 });
         }

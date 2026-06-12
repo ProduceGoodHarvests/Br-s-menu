@@ -1,0 +1,158 @@
+/* pages/tag-manager/tag-manager.wxss */
+
+.tag-page {
+  min-height: 100vh;
+  background: #f6f7f9;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.summary-panel,
+.add-panel,
+.tag-card {
+  background: #fff;
+  border-radius: 18rpx;
+  box-shadow: 0 6rpx 20rpx rgba(20, 25, 35, 0.05);
+}
+
+.summary-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  margin-bottom: 18rpx;
+  animation: fadeUp 240ms ease both;
+}
+
+.summary-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-title {
+  font-size: 34rpx;
+  color: #222;
+  font-weight: 700;
+}
+
+.summary-count {
+  margin-top: 6rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+.reset-btn {
+  padding: 14rpx 22rpx;
+  border-radius: 28rpx;
+  background: #fff5f0;
+  color: #ff5000;
+  font-size: 24rpx;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.reset-btn:active {
+  transform: scale(0.95);
+  background: #ffe8dc;
+}
+
+.add-panel {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx;
+  margin-bottom: 18rpx;
+  animation: fadeUp 260ms ease both;
+}
+
+.tag-input {
+  flex: 1;
+  height: 76rpx;
+  background: #f7f7f7;
+  border-radius: 14rpx;
+  padding: 0 22rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.add-btn {
+  width: 132rpx;
+  height: 76rpx;
+  border-radius: 38rpx;
+  background: linear-gradient(135deg, #ff5000, #ff7b33);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 18rpx rgba(255, 80, 0, 0.22);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 4rpx 10rpx rgba(255, 80, 0, 0.25);
+}
+
+.tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.tag-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 20rpx;
+  animation: fadeUp 260ms ease both;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.tag-card:active {
+  transform: scale(0.985);
+  box-shadow: 0 3rpx 12rpx rgba(20, 25, 35, 0.08);
+}
+
+.tag-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-name {
+  color: #222;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.tag-count {
+  color: #999;
+  font-size: 23rpx;
+  margin-top: 6rpx;
+}
+
+.delete-btn {
+  padding: 12rpx 22rpx;
+  border-radius: 28rpx;
+  background: #f7f7f7;
+  color: #888;
+  font-size: 24rpx;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.delete-btn:active {
+  transform: scale(0.94);
+  background: #fff0f0;
+  color: #e64340;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

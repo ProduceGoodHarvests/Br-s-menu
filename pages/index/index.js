@@ -4,16 +4,24 @@ var storage = require('../../utils/storage');
 var PAGE_SIZE = 30;
 
 function norm(f) {
-  return { id: f.i, name: f.n, icon: f.e, price: f.p, originalPrice: f.o, sales: f.s, rating: f.r, tag: f.t || '', specs: f.sp || [], categoryId: f.c };
+  return {
+    id: f.i,
+    name: f.n,
+    icon: f.e,
+    price: f.p,
+    originalPrice: f.o,
+    sales: f.s,
+    rating: f.r,
+    tag: f.t || '',
+    specs: f.sp || [],
+    categoryId: f.c,
+  };
 }
 
-// 合并内置+自定义菜品
 function allFoods() {
-  var custom = storage.getCustomDishes();
-  return mock.all.concat(custom);
+  return mock.all.concat(storage.getCustomDishes());
 }
 
-// 根据分类获取（含自定义）
 function byCat(cid) {
   var builtin = mock.byCat[cid] || [];
   var custom = storage.getCustomDishes();
@@ -24,7 +32,6 @@ function byCat(cid) {
   return result;
 }
 
-// 根据ID查找（含自定义）
 function byId(id) {
   var f = mock.byId(id);
   if (f) return f;
@@ -35,7 +42,19 @@ function byId(id) {
   return null;
 }
 
-// 搜索（含自定义）
+function collectTags(list) {
+  var tags = [{ name: '全部', value: '' }];
+  var seen = {};
+  for (var i = 0; i < list.length; i++) {
+    var tag = list[i].t || '';
+    if (tag && !seen[tag]) {
+      seen[tag] = true;
+      tags.push({ name: tag, value: tag });
+    }
+  }
+  return tags;
+}
+
 function search(kw) {
   var result = mock.search(kw).slice(0, 30);
   var custom = storage.getCustomDishes();
@@ -43,7 +62,10 @@ function search(kw) {
   for (var i = 0; i < custom.length; i++) {
     var c = custom[i];
     if (result.length >= 40) break;
-    if (c.n.toLowerCase().indexOf(kw) !== -1 || (c.t && c.t.toLowerCase().indexOf(kw) !== -1)) {
+    if (
+      c.n.toLowerCase().indexOf(kw) !== -1 ||
+      (c.t && c.t.toLowerCase().indexOf(kw) !== -1)
+    ) {
       result.push(c);
     }
   }
@@ -52,35 +74,77 @@ function search(kw) {
 
 Page({
   data: {
-    searchKeyword: '', categories: [], activeCategory: 0,
-    foodList: [], hotFoods: [], cartCount: 0,
-    showSearch: false, searchResults: [], hasMore: false,
+    searchKeyword: '',
+    categories: [],
+    activeCategory: 0,
+    activeTag: '',
+    tags: [],
+    foodList: [],
+    hotFoods: [],
+    cartCount: 0,
+    showSearch: false,
+    searchResults: [],
+    hasMore: false,
   },
 
-  onLoad: function () { this.initData(); },
-  onShow: function () { this.initData(); this.updateCartBadge(); },
+  onLoad: function () {
+    this.initData();
+  },
+
+  onShow: function () {
+    this.initData();
+    this.updateCartBadge();
+  },
 
   initData: function () {
-    var cats = mock.cats;
-    var hot = mock.hot.slice(0, 8).map(norm);
-    var allCats = [{ id: 0, name: '全部', icon: '📋' }].concat(cats);
-    this.setData({ categories: allCats, hotFoods: hot });
-    this.switchCategory({ currentTarget: { dataset: { id: '0' } } });
+    var list = allFoods();
+    var hot = list.slice(0, 8).map(norm);
+    var allCats = [{ id: 0, name: '全部', icon: '📋' }].concat(mock.cats);
+    this.setData({ categories: allCats, hotFoods: hot, tags: collectTags(list) });
+    this.applyFilters();
+  },
+
+  baseList: function () {
+    var cid = this.data.activeCategory;
+    return cid === 0 ? allFoods() : byCat(cid);
+  },
+
+  applyFilters: function () {
+    var list = this.baseList();
+    var tag = this.data.activeTag;
+    if (tag) {
+      var filtered = [];
+      for (var i = 0; i < list.length; i++) {
+        if ((list[i].t || '') === tag) filtered.push(list[i]);
+      }
+      list = filtered;
+    }
+    var normalized = list.map(norm);
+    this._fullList = normalized;
+    this.setData({
+      foodList: normalized.slice(0, PAGE_SIZE),
+      hasMore: normalized.length > PAGE_SIZE,
+    });
   },
 
   switchCategory: function (e) {
-    var cid = parseInt(e.currentTarget.dataset.id);
-    var list = (cid === 0 ? allFoods() : byCat(cid)).map(norm);
-    var page = list.slice(0, PAGE_SIZE);
-    this.setData({ activeCategory: cid, foodList: page, hasMore: list.length > PAGE_SIZE });
-    this._fullList = list;
+    this.setData({ activeCategory: parseInt(e.currentTarget.dataset.id) });
+    this.applyFilters();
+  },
+
+  selectTag: function (e) {
+    this.setData({ activeTag: e.currentTarget.dataset.tag || '' });
+    this.applyFilters();
   },
 
   loadMore: function () {
     if (!this.data.hasMore) return;
     var cur = this.data.foodList;
     var more = this._fullList.slice(cur.length, cur.length + PAGE_SIZE);
-    this.setData({ foodList: cur.concat(more), hasMore: (cur.length + more.length) < this._fullList.length });
+    this.setData({
+      foodList: cur.concat(more),
+      hasMore: cur.length + more.length < this._fullList.length,
+    });
   },
 
   onSearchInput: function (e) {
@@ -105,22 +169,27 @@ Page({
     var foodId = parseInt(e.currentTarget.dataset.id);
     var f = byId(foodId);
     if (!f) return;
-    var specs = f.sp ? f.sp.map(function(s) { return { name: s.n, value: s.o[0] }; }) : [];
-    var specKey = specs.map(function(s) { return s.name + ':' + s.value; }).join('|');
+    var specs = f.sp ? f.sp.map(function (s) { return { name: s.n, value: s.o[0] }; }) : [];
+    var specKey = specs.map(function (s) { return s.name + ':' + s.value; }).join('|');
     var cart = storage.getCart();
     var idx = -1;
     for (var i = 0; i < cart.length; i++) {
-      if (cart[i].id === foodId && (cart[i].specKey || '') === specKey) { idx = i; break; }
+      if (cart[i].id === foodId && (cart[i].specKey || '') === specKey) {
+        idx = i;
+        break;
+      }
     }
-    if (idx > -1) { cart[idx].quantity += 1; }
-    else { cart.push({ id: f.i, name: f.n, icon: f.e, price: f.p, specs: specs, specKey: specKey, quantity: 1 }); }
+    if (idx > -1) cart[idx].quantity += 1;
+    else cart.push({ id: f.i, name: f.n, icon: f.e, price: f.p, specs: specs, specKey: specKey, quantity: 1 });
     storage.setCart(cart);
     this.updateCartBadge();
-    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 800 });
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 700 });
   },
 
   updateCartBadge: function () {
-    var cart = storage.getCart(), count = 0;
+    var cart = storage.getCart();
+    var count = 0;
     for (var i = 0; i < cart.length; i++) count += cart[i].quantity;
     this.setData({ cartCount: count });
     var app = getApp();
