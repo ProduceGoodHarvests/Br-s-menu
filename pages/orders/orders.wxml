@@ -1,44 +1,33 @@
-<!--pages/orders/orders.wxml-->
 <view class="orders-page">
-
-  <!-- 角色提示条 -->
   <view class="role-banner" wx:if="{{isMerchant}}">
-    <text>🔔 商家模式 · 接单处理</text>
+    商家模式：可在订单卡片中接单和完成出餐
   </view>
 
-  <!-- 标签切换 -->
   <view class="tab-bar">
     <view
-      class="tab-item {{activeTab === index ? 'active' : ''}}"
+      class="tab-item {{activeTab === item.value ? 'active' : ''}}"
       wx:for="{{tabs}}"
-      wx:key="*this"
-      wx:for-index="index"
+      wx:key="value"
       bindtap="onTabTap"
-      data-index="{{index}}"
+      data-value="{{item.value}}"
     >
-      {{item}}
+      {{item.label}}
     </view>
   </view>
 
-  <!-- 空状态 -->
   <view wx:if="{{isEmpty}}" class="empty-state">
-    <text class="empty-icon">{{isMerchant ? '✅' : '📋'}}</text>
-    <text class="empty-text">{{isMerchant ? '暂无待处理订单' : '暂无订单记录'}}</text>
+    <text class="empty-icon">📋</text>
+    <text class="empty-title">暂无订单</text>
+    <text class="empty-text">订单提交后会显示在这里</text>
   </view>
 
-  <!-- 订单列表 -->
   <view wx:else class="order-list">
-    <view
-      class="order-card"
-      wx:for="{{orders}}"
-      wx:key="id"
-    >
+    <view class="order-card" wx:for="{{orders}}" wx:key="id">
       <view class="order-header" bindtap="showDetail" data-index="{{index}}">
         <text class="order-id">订单号：{{item.id}}</text>
-        <text class="order-status {{item.status}}">
-          {{item.status === 'pending' ? '待接单' : (item.status === 'confirmed' ? '制作中' : '已完成')}}
-        </text>
+        <text class="order-status {{item.status}}">{{item.statusText}}</text>
       </view>
+
       <view class="order-body" bindtap="showDetail" data-index="{{index}}">
         <view class="order-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="food">
           <text class="order-food-name">{{food.name}}</text>
@@ -46,18 +35,24 @@
           <text class="order-food-price">¥{{food.subtotal}}</text>
         </view>
       </view>
+
       <view class="order-footer">
-        <text class="order-table">🏠 {{item.table}}</text>
-        <text class="order-time">{{item.createTime}}</text>
-        <text class="order-total">合计：<text class="total-amount">¥{{item.totalPrice}}</text></text>
+        <view class="order-main">
+          <text class="order-table">{{item.table}}</text>
+          <text class="order-time">{{item.createTime}}</text>
+        </view>
+        <view class="order-total">
+          <text>合计 </text>
+          <text class="total-amount">¥{{item.totalPrice}}</text>
+        </view>
       </view>
 
-      <!-- 商家操作按钮 -->
+      <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+
       <view class="merchant-actions" wx:if="{{isMerchant && item.status !== 'completed'}}">
         <button class="btn-confirm" wx:if="{{item.status === 'pending'}}" bindtap="confirmOrder" data-id="{{item.id}}">接单制作</button>
         <button class="btn-complete" wx:if="{{item.status === 'confirmed'}}" bindtap="completeOrder" data-id="{{item.id}}">完成出餐</button>
       </view>
     </view>
   </view>
-
 </view>

@@ -1,7 +1,4 @@
-<!--pages/checkout/checkout.wxml-->
 <view class="checkout-page">
-
-  <!-- 选择桌号 -->
   <view class="section">
     <view class="section-title">选择桌号</view>
     <view class="table-list">
@@ -19,48 +16,45 @@
     </view>
   </view>
 
-  <!-- 商品清单 -->
   <view class="section">
-    <view class="section-title">商品清单</view>
+    <view class="section-title">菜品清单</view>
     <view class="item-list">
-      <view class="item" wx:for="{{items}}" wx:key="*this">
+      <view class="item" wx:for="{{items}}" wx:key="specKey">
         <view class="item-left">
           <view class="item-name">{{item.name}}</view>
           <view class="item-specs" wx:if="{{item.specs && item.specs.length > 0}}">
-            <text wx:for="{{item.specs}}" wx:key="name" wx:for-item="spec">{{spec.name}}：{{spec.value}} </text>
+            <text wx:for="{{item.specs}}" wx:key="name" wx:for-item="spec">
+              {{spec.name}}：{{spec.value}} 
+            </text>
           </view>
         </view>
         <view class="item-right">
-          <text class="item-price">¥{{item.subtotal}}</text>
           <text class="item-qty">x{{item.quantity}}</text>
+          <text class="item-price">¥{{item.subtotal}}</text>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 备注 -->
   <view class="section">
     <view class="section-title">订单备注</view>
     <textarea
       class="remark-input"
-      placeholder="如有特殊要求请在此备注..."
+      placeholder="口味、忌口、打包等要求"
       value="{{remark}}"
       bindinput="onRemarkInput"
       maxlength="100"
     />
   </view>
 
-  <!-- 总计 -->
   <view class="total-section">
     <text class="total-label">合计金额</text>
     <text class="total-price">¥{{totalPrice}}</text>
   </view>
 
-  <!-- 提交按钮 -->
-  <view class="submit-area">
+  <view class="submit-area safe-bottom">
     <button class="submit-btn" bindtap="submitOrder" disabled="{{submitting}}">
       {{submitting ? '提交中...' : '提交订单'}}
     </button>
   </view>
-
 </view>

@@ -1,0 +1,270 @@
+.merchant-page {
+  min-height: 100vh;
+  background: #f6f7fb;
+}
+
+.tab-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  background: #fff;
+  box-shadow: 0 1rpx 0 rgba(31, 35, 41, 0.06);
+}
+
+.tab {
+  flex: 1;
+  height: 88rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a8f99;
+  font-size: 28rpx;
+}
+
+.tab.active {
+  color: #ff6a2a;
+  font-weight: 700;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 52rpx;
+  height: 4rpx;
+  border-radius: 2rpx;
+  transform: translateX(-50%);
+  background: #ff6a2a;
+}
+
+.panel {
+  padding: 16rpx;
+}
+
+.order-card,
+.dish-item,
+.add-form,
+.add-bar {
+  border-radius: 8rpx;
+  background: #fff;
+  box-shadow: 0 6rpx 18rpx rgba(31, 35, 41, 0.04);
+}
+
+.order-card {
+  margin-bottom: 14rpx;
+  padding: 22rpx;
+}
+
+.order-head,
+.order-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-table {
+  color: #1f2329;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.order-status {
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.order-status.pending {
+  background: #fff4d6;
+  color: #9a6500;
+}
+
+.order-status.confirmed {
+  background: #e8f1ff;
+  color: #1f6feb;
+}
+
+.order-status.completed {
+  background: #e8f7ee;
+  color: #16833a;
+}
+
+.order-time {
+  margin-top: 8rpx;
+  color: #8a8f99;
+  font-size: 23rpx;
+}
+
+.order-items {
+  margin: 16rpx 0;
+  padding: 16rpx 0;
+  border-top: 1rpx solid #eef0f4;
+  border-bottom: 1rpx solid #eef0f4;
+  color: #5f6570;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+
+.order-total {
+  color: #ff6a2a;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.order-btns {
+  display: flex;
+  gap: 12rpx;
+}
+
+.btn-confirm,
+.btn-complete,
+.btn-done {
+  height: 60rpx;
+  min-width: 128rpx;
+  padding: 0 20rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.btn-confirm {
+  background: #ff6a2a;
+}
+
+.btn-complete {
+  background: #1f6feb;
+}
+
+.btn-done {
+  background: #16833a;
+}
+
+.add-bar {
+  height: 82rpx;
+  margin-bottom: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff6a2a;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.add-form {
+  margin-bottom: 14rpx;
+  padding: 20rpx;
+}
+
+.inp {
+  width: 100%;
+  height: 74rpx;
+  margin-bottom: 14rpx;
+  padding: 0 18rpx;
+  border-radius: 8rpx;
+  background: #f1f3f7;
+  color: #1f2329;
+  font-size: 26rpx;
+}
+
+.cat-row {
+  margin-bottom: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.cat-label {
+  width: 100%;
+  color: #5f6570;
+  font-size: 24rpx;
+}
+
+.cat-opt {
+  min-height: 54rpx;
+  padding: 0 16rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  background: #f1f3f7;
+  border: 2rpx solid transparent;
+  color: #5f6570;
+  font-size: 23rpx;
+}
+
+.cat-opt.active {
+  background: #fff0e8;
+  border-color: #ff6a2a;
+  color: #ff6a2a;
+  font-weight: 700;
+}
+
+.btn-add {
+  width: 100%;
+  height: 78rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6a2a;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.dish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.dish-item {
+  min-height: 92rpx;
+  padding: 16rpx 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.dish-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dish-name {
+  color: #1f2329;
+  font-size: 28rpx;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dish-meta {
+  margin-top: 6rpx;
+  color: #8a8f99;
+  font-size: 22rpx;
+}
+
+.dish-price {
+  margin-left: 14rpx;
+  color: #ff6a2a;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.dish-del {
+  margin-left: 16rpx;
+  padding: 8rpx 12rpx;
+  color: #c23b22;
+  font-size: 24rpx;
+}

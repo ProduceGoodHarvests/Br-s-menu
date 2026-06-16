@@ -1,38 +1,207 @@
-/* pages/cart/cart.wxss */
-
-.cart-page { min-height: 100vh; background: #f8f8f8; }
-.cart-content { padding-bottom: 260rpx; }
-.cart-list { padding: 16rpx 0; }
-
-.cart-item {
-  display: flex; align-items: center; background: #fff;
-  margin: 0 16rpx 12rpx; padding: 20rpx 16rpx;
-  border-radius: 16rpx; box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.03);
+.cart-page {
+  min-height: 100vh;
+  background: #f6f7fb;
 }
 
-.check-wrap { padding: 8rpx; margin-right: 10rpx; }
-.check-box { width: 44rpx; height: 44rpx; border-radius: 50%; border: 3rpx solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 24rpx; color: #fff; }
-.check-box.checked { background: #ff5000; border-color: #ff5000; }
+.cart-content {
+  padding: 16rpx 0 260rpx;
+}
 
-.item-image-wrap { width: 150rpx; height: 150rpx; border-radius: 14rpx; background: linear-gradient(135deg, #fff5f0, #ffe8d9); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 16rpx; }
-.item-image-placeholder { font-size: 56rpx; }
+.cart-list {
+  padding: 0 16rpx;
+}
 
-.item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 150rpx; }
-.item-name { font-size: 28rpx; font-weight: 600; color: #222; line-height: 1.3; }
-.item-specs { font-size: 22rpx; color: #999; margin-top: 4rpx; }
-.item-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 8rpx; }
-.item-price { color: #ff5000; font-size: 32rpx; font-weight: 700; }
-.item-qty-control { display: flex; align-items: center; }
-.item-qty-control .qty-btn { width: 50rpx; height: 50rpx; border-radius: 50%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 30rpx; color: #333; }
-.item-qty-control .qty-value { width: 64rpx; text-align: center; font-size: 28rpx; font-weight: 600; }
-.item-delete { padding: 8rpx 0 8rpx 16rpx; font-size: 30rpx; }
+.cart-item {
+  min-height: 172rpx;
+  margin-bottom: 14rpx;
+  padding: 18rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  box-shadow: 0 6rpx 18rpx rgba(31, 35, 41, 0.04);
+}
 
-.bottom-bar { position: fixed; bottom: 100rpx; left: 0; right: 0; background: #fff; padding: 16rpx 24rpx; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4rpx 20rpx rgba(0,0,0,0.06); z-index: 100; }
-.bottom-left { display: flex; align-items: center; gap: 12rpx; }
-.check-all-text { font-size: 26rpx; color: #666; }
-.bottom-right { display: flex; align-items: center; gap: 16rpx; }
-.total-info { display: flex; align-items: baseline; }
-.total-label { font-size: 26rpx; color: #666; }
-.total-price { font-size: 38rpx; color: #ff5000; font-weight: 700; }
-.checkout-btn { background: linear-gradient(135deg, #ff5000, #ff7b33); color: #fff; padding: 18rpx 44rpx; border-radius: 40rpx; font-size: 28rpx; font-weight: 600; box-shadow: 0 6rpx 16rpx rgba(255,80,0,0.25); }
-.empty-btn { margin-top: 24rpx; padding: 18rpx 60rpx; background: linear-gradient(135deg, #ff5000, #ff7b33); color: #fff; border-radius: 40rpx; font-size: 28rpx; }
+.check-wrap {
+  padding: 10rpx 12rpx 10rpx 0;
+}
+
+.check-box {
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 21rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid #c5c9d2;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.check-box.checked {
+  border-color: #ff6a2a;
+  background: #ff6a2a;
+}
+
+.item-image {
+  width: 126rpx;
+  height: 126rpx;
+  margin-right: 18rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #fff0e8;
+  font-size: 52rpx;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  color: #1f2329;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 38rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-specs {
+  min-height: 32rpx;
+  margin-top: 6rpx;
+  color: #8a8f99;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.item-bottom {
+  margin-top: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-price {
+  color: #ff6a2a;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.item-qty-control {
+  display: flex;
+  align-items: center;
+}
+
+.qty-btn {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 25rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f3f7;
+  color: #1f2329;
+  font-size: 30rpx;
+}
+
+.qty-value {
+  width: 64rpx;
+  text-align: center;
+  color: #1f2329;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.item-delete {
+  width: 48rpx;
+  height: 48rpx;
+  margin-left: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a8adb7;
+  font-size: 38rpx;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 100rpx;
+  z-index: 30;
+  min-height: 112rpx;
+  padding: 16rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  box-shadow: 0 -8rpx 24rpx rgba(31, 35, 41, 0.08);
+}
+
+.bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.check-all-text {
+  color: #5f6570;
+  font-size: 26rpx;
+}
+
+.bottom-right {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.total-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.total-label {
+  color: #8a8f99;
+  font-size: 22rpx;
+}
+
+.total-price {
+  color: #ff6a2a;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.checkout-btn {
+  min-width: 168rpx;
+  height: 72rpx;
+  padding: 0 26rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6a2a;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.empty-btn {
+  margin-top: 28rpx;
+  height: 72rpx;
+  padding: 0 46rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6a2a;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 700;
+}

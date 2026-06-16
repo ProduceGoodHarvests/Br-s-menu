@@ -1,36 +1,48 @@
-// app.js — 点餐小程序
 var storage = require('./utils/storage');
-var cloudSync = require('./utils/cloud-sync');
+var api = require('./utils/cloud-api');
 
 App({
+  globalData: {
+    cartCount: 0,
+  },
+
   onLaunch: function () {
-    var that = this;
-    storage.ensureMenuVersion('four-dishes-2026-06-11');
     storage.seedDemoOrders();
-    cloudSync.init().then(function () {
-      that.updateCartCount();
-    });
-    console.log('点餐小程序启动 —— 当前角色:', storage.getRole());
+    api.init();
+    this.updateCartCount();
+    console.log('点餐小程序启动，当前角色：', storage.getRole());
   },
 
   onShow: function () {
-    cloudSync.queueSync(300);
+    this.updateCartCount();
   },
 
-  globalData: { cartCount: 0 },
+  getRole: function () {
+    return storage.getRole();
+  },
 
-  getRole: function () { return storage.getRole(); },
-  switchRole: function (role) { storage.setRole(role); },
-  syncData: function (options) { return cloudSync.sync(options || {}); },
+  switchRole: function (role) {
+    storage.setRole(role);
+  },
 
   updateCartCount: function () {
     var cart = storage.getCart();
     var count = 0;
-    for (var i = 0; i < cart.length; i++) { count += cart[i].quantity; }
+
+    for (var i = 0; i < cart.length; i++) {
+      count += cart[i].quantity || 0;
+    }
+
     this.globalData.cartCount = count;
+
+    if (typeof wx === 'undefined' || !wx.setTabBarBadge) return;
+
     if (count > 0) {
-      wx.setTabBarBadge({ index: 2, text: count > 99 ? '99+' : String(count) });
-    } else {
+      wx.setTabBarBadge({
+        index: 2,
+        text: count > 99 ? '99+' : String(count),
+      });
+    } else if (wx.removeTabBarBadge) {
       wx.removeTabBarBadge({ index: 2 });
     }
   },

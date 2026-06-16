@@ -1,102 +1,157 @@
-// pages/orders/orders.js
 var storage = require('../../utils/storage');
+var api = require('../../utils/cloud-api');
+var format = require('../../utils/format');
+
+var STATUS_TEXT = {
+  pending: '待接单',
+  confirmed: '制作中',
+  completed: '已完成',
+};
+
+function normalizeOrder(order) {
+  return {
+    id: order._id || order.id,
+    table: order.table || '',
+    items: order.items || [],
+    totalPrice: order.totalPrice || '0.00',
+    remark: order.remark || '',
+    status: order.status || 'pending',
+    statusText: STATUS_TEXT[order.status] || order.status || '待接单',
+    createTime: format.formatDateTime(order.createTime),
+  };
+}
 
 Page({
   data: {
     orders: [],
-    activeTab: 0,
-    tabs: ['全部', '待接单', '已完成'],
+    tabs: [
+      { label: '全部', value: 'all' },
+      { label: '待处理', value: 'active' },
+      { label: '已完成', value: 'completed' },
+    ],
+    activeTab: 'all',
     isEmpty: true,
     isMerchant: false,
   },
 
   onShow: function () {
     var app = getApp();
-    this.setData({ isMerchant: app.getRole() === 'merchant' });
+    this.setData({ isMerchant: app && app.getRole && app.getRole() === 'merchant' });
     this.loadOrders();
   },
 
   loadOrders: function () {
-    var orders = storage.getOrders();
-    this.setData({ orders: orders, isEmpty: orders.length === 0 });
-    this.doFilter();
+    var that = this;
+
+    api.getOrders().then(function (res) {
+      that.setAllOrders(res.orders || []);
+    }).catch(function () {
+      that.setAllOrders(storage.getOrders());
+    });
+  },
+
+  setAllOrders: function (orders) {
+    var list = [];
+
+    for (var i = 0; i < orders.length; i++) {
+      list.push(normalizeOrder(orders[i]));
+    }
+
+    this._allOrders = list;
+    this.applyFilter();
   },
 
   onTabTap: function (e) {
-    var idx = parseInt(e.currentTarget.dataset.index);
-    this.setData({ activeTab: idx });
-    this.doFilter();
+    this.setData({ activeTab: e.currentTarget.dataset.value });
+    this.applyFilter();
   },
 
-  doFilter: function () {
-    var all = storage.getOrders();
+  applyFilter: function () {
+    var all = this._allOrders || [];
     var tab = this.data.activeTab;
-    var filtered = all;
-    if (tab == 1) {
-      filtered = [];
-      for (var i = 0; i < all.length; i++) {
-        if (all[i].status === 'pending') filtered.push(all[i]);
-      }
-    } else if (tab == 2) {
-      filtered = [];
-      for (var i = 0; i < all.length; i++) {
-        if (all[i].status === 'completed') filtered.push(all[i]);
+    var filtered = [];
+
+    for (var i = 0; i < all.length; i++) {
+      if (tab === 'all') {
+        filtered.push(all[i]);
+      } else if (tab === 'active' && all[i].status !== 'completed') {
+        filtered.push(all[i]);
+      } else if (tab === 'completed' && all[i].status === 'completed') {
+        filtered.push(all[i]);
       }
     }
-    this.setData({ orders: filtered, isEmpty: filtered.length === 0 });
+
+    this.setData({
+      orders: filtered,
+      isEmpty: filtered.length === 0,
+    });
   },
 
-  // 商家：确认接单
+  updateStatus: function (orderId, status, toastTitle) {
+    var that = this;
+
+    api.updateOrderStatus(orderId, status).catch(function () {
+      storage.updateOrderStatus(orderId, status);
+    }).finally(function () {
+      wx.showToast({ title: toastTitle, icon: 'success' });
+      that.loadOrders();
+    });
+  },
+
   confirmOrder: function (e) {
     var that = this;
     var orderId = e.currentTarget.dataset.id;
+
     wx.showModal({
       title: '确认接单',
-      content: '确定接单并开始制作吗？',
+      content: '确认接单并开始制作吗？',
       success: function (res) {
         if (res.confirm) {
-          storage.updateOrderStatus(orderId, 'confirmed');
-          wx.showToast({ title: '已接单', icon: 'success' });
-          that.loadOrders();
+          that.updateStatus(orderId, 'confirmed', '已接单');
         }
       },
     });
   },
 
-  // 商家：完成订单
   completeOrder: function (e) {
     var that = this;
     var orderId = e.currentTarget.dataset.id;
+
     wx.showModal({
       title: '完成订单',
-      content: '确定该订单已完成制作吗？',
+      content: '确认这笔订单已经完成吗？',
       success: function (res) {
         if (res.confirm) {
-          storage.updateOrderStatus(orderId, 'completed');
-          wx.showToast({ title: '已完成', icon: 'success' });
-          that.loadOrders();
+          that.updateStatus(orderId, 'completed', '已完成');
         }
       },
     });
   },
 
-  // 查看详情
   showDetail: function (e) {
-    var idx = parseInt(e.currentTarget.dataset.index);
-    var order = this.data.orders[idx];
+    var order = this.data.orders[Number(e.currentTarget.dataset.index)];
     if (!order) return;
+
     var lines = [];
     for (var i = 0; i < order.items.length; i++) {
-      var it = order.items[i];
-      lines.push(it.name + ' x' + it.quantity + ' ¥' + it.subtotal);
+      var item = order.items[i];
+      lines.push(item.name + ' x' + item.quantity + '  ¥' + (item.subtotal || format.formatMoney(item.price * item.quantity)));
     }
-    var statusMap = { pending: '待接单', confirmed: '制作中', completed: '已完成' };
-    var content = '桌号：' + order.table +
-      '\n时间：' + order.createTime +
-      '\n状态：' + (statusMap[order.status] || order.status) +
-      '\n\n' + lines.join('\n') +
-      '\n\n合计：¥' + order.totalPrice;
+
+    var content =
+      '桌号：' +
+      order.table +
+      '\n时间：' +
+      order.createTime +
+      '\n状态：' +
+      order.statusText +
+      '\n\n' +
+      lines.join('\n') +
+      '\n\n合计：¥' +
+      order.totalPrice;
+
     if (order.remark) content += '\n备注：' + order.remark;
+
     wx.showModal({
       title: '订单 ' + order.id,
       content: content,

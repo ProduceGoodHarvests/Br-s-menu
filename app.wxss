@@ -1,18 +1,67 @@
-/* 全局样式 — 点餐小程序 */
 page {
+  background: #f6f7fb;
+  color: #1f2329;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", sans-serif;
   font-size: 28rpx;
-  color: #333;
-  background: #f8f8f8;
   box-sizing: border-box;
 }
 
-/* 空状态 */
-.empty-state {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 160rpx 0; color: #bbb;
+view,
+text,
+input,
+textarea,
+button {
+  box-sizing: border-box;
 }
 
-.empty-icon { font-size: 100rpx; margin-bottom: 24rpx; }
-.empty-text { font-size: 28rpx; color: #aaa; margin-bottom: 20rpx; }
+button {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+button::after {
+  border: none;
+}
+
+.empty-state {
+  min-height: 360rpx;
+  padding: 88rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8a8f99;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #ff6a2a;
+  font-size: 54rpx;
+  margin-bottom: 22rpx;
+  box-shadow: 0 10rpx 30rpx rgba(31, 35, 41, 0.06);
+}
+
+.empty-title {
+  color: #1f2329;
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.empty-text {
+  color: #8a8f99;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

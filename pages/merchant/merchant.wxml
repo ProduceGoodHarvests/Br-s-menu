@@ -1,0 +1,73 @@
+<view class="merchant-page">
+  <view class="tab-bar">
+    <view class="tab {{tab === 'orders' ? 'active' : ''}}" bindtap="switchTab" data-tab="orders">订单处理</view>
+    <view class="tab {{tab === 'dishes' ? 'active' : ''}}" bindtap="switchTab" data-tab="dishes">菜品管理</view>
+  </view>
+
+  <view wx:if="{{tab === 'orders'}}" class="panel">
+    <view wx:if="{{orders.length === 0}}" class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-title">暂无订单</text>
+      <text class="empty-text">订单来了会显示在这里</text>
+    </view>
+
+    <view wx:else>
+      <view class="order-card" wx:for="{{orders}}" wx:key="id">
+        <view class="order-head">
+          <text class="order-table">{{item.table}}</text>
+          <text class="order-status {{item.status}}">{{item.statusText}}</text>
+        </view>
+        <view class="order-time">{{item.createTime}}</view>
+        <view class="order-items">
+          <text wx:for="{{item.items}}" wx:key="name" wx:for-item="food">
+            {{food.name}} x{{food.quantity}} 
+          </text>
+        </view>
+        <view class="order-foot">
+          <text class="order-total">¥{{item.totalPrice}}</text>
+          <view class="order-btns">
+            <button class="btn-confirm" wx:if="{{item.status === 'pending'}}" bindtap="confirmOrder" data-id="{{item.id}}">接单</button>
+            <button class="btn-complete" wx:if="{{item.status === 'confirmed'}}" bindtap="completeOrder" data-id="{{item.id}}">完成</button>
+            <button class="btn-done" wx:if="{{item.status === 'completed'}}">已完成</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="panel">
+    <view class="add-bar" bindtap="toggleAddForm">＋ 添加自定义菜品</view>
+
+    <view class="add-form" wx:if="{{showAddForm}}">
+      <input class="inp" placeholder="菜品名称" value="{{dishName}}" bindinput="onDishName" />
+      <input class="inp" type="digit" placeholder="价格" value="{{dishPrice}}" bindinput="onDishPrice" />
+
+      <view class="cat-row">
+        <text class="cat-label">分类</text>
+        <view
+          class="cat-opt {{dishCat === item.id ? 'active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="id"
+          bindtap="onDishCat"
+          data-id="{{item.id}}"
+        >
+          {{item.icon}} {{item.name}}
+        </view>
+      </view>
+
+      <input class="inp" placeholder="标签（选填）" value="{{dishTag}}" bindinput="onDishTag" />
+      <button class="btn-add" bindtap="addDish">保存菜品</button>
+    </view>
+
+    <view class="dish-list">
+      <view class="dish-item" wx:for="{{dishes}}" wx:key="id">
+        <view class="dish-main">
+          <text class="dish-name">{{item.name}}</text>
+          <text class="dish-meta">{{item.tag || '未分类标签'}}</text>
+        </view>
+        <text class="dish-price">¥{{item.price}}</text>
+        <text class="dish-del" wx:if="{{item.canDelete}}" bindtap="deleteDish" data-id="{{item.id}}">删除</text>
+      </view>
+    </view>
+  </view>
+</view>
