@@ -6,7 +6,10 @@
     "pages/checkout/checkout",
     "pages/orders/orders",
     "pages/mine/mine",
-    "pages/merchant/merchant"
+    "pages/merchant/merchant",
+    "pages/add-dish/add-dish",
+    "pages/data-manager/data-manager",
+    "pages/tag-manager/tag-manager"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ff6a2a",

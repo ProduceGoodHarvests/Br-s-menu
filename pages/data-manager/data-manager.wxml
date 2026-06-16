@@ -1,0 +1,5 @@
+<view class="legacy-page">
+  <view class="legacy-title">页面已迁移</view>
+  <view class="legacy-text">数据管理入口已合并到我的页面。</view>
+  <button class="legacy-btn" bindtap="redirect">返回我的</button>
+</view>

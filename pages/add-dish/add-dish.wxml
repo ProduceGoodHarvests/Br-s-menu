@@ -1,0 +1,5 @@
+<view class="legacy-page">
+  <view class="legacy-title">页面已迁移</view>
+  <view class="legacy-text">添加菜品功能已合并到商家后台。</view>
+  <button class="legacy-btn" bindtap="redirect">打开商家后台</button>
+</view>
