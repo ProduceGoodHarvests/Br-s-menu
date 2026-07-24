@@ -6,6 +6,8 @@ var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '
 var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包带走', pickup: '到店自提' };
 
 function normalize(order) {
+  var coinUsed = Number(order.coinUsed || 0);
+  var payPrice = Number(order.payPrice || 0);
   order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
   order.typeText = TYPE_TEXT[order.type] || order.type;
   order.timeText = format.formatDateTime(order.createTime);
@@ -17,6 +19,11 @@ function normalize(order) {
     order.orderStatus === 'pending_payment' ? 'payment' : 'active-status';
   order.progress = { paid: 1, accepted: 2, cooking: 3, ready: 4, completed: 5 }[order.orderStatus] || 0;
   order.sceneIcon = { dine_in: '🍽', takeaway: '🥡', pickup: '🛍' }[order.type] || '🍽';
+  order.coinUsedText = coinUsed.toFixed(2);
+  order.payPriceText = payPrice.toFixed(2);
+  order.hasCoinPayment = coinUsed > 0;
+  order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
+  order.isMixedPayment = order.paymentMethod === 'mixed' || (coinUsed > 0 && payPrice > 0);
   return order;
 }
 
@@ -59,7 +66,9 @@ Page({
 
   cancelOrder: function (e) {
     var that = this;
-    wx.showModal({ title: '取消订单', content: '取消后会立即释放库存，确定继续吗？', success: function (res) {
+    var hasCoins = Number(e.currentTarget.dataset.coin || 0) > 0;
+    var content = hasCoins ? '取消后库存和已抵扣的虚拟金币会自动返还，确定继续吗？' : '取消后会立即释放库存，确定继续吗？';
+    wx.showModal({ title: '取消订单', content: content, success: function (res) {
       if (!res.confirm) return;
       api.cancelOrder(e.currentTarget.dataset.id).then(function () { wx.showToast({ title: '已取消', icon: 'success' }); that.loadOrders(); }).catch(function (err) { wx.showToast({ title: err.msg || '取消失败', icon: 'none' }); });
     } });

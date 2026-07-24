@@ -1,1 +1,5 @@
-/* 页面样式统一由 app.wxss 管理 */
+.admin-payment-summary { margin-top: 15rpx; padding: 12rpx 15rpx; border-radius: 15rpx; background: #f8f6f3; }
+.admin-payment-summary > view { display: flex; align-items: center; justify-content: space-between; min-height: 42rpx; color: #8e8882; font-size: 19rpx; }
+.admin-payment-summary > view:last-child { margin-top: 3rpx; padding-top: 7rpx; border-top: 1rpx dashed #e5e0da; color: #4b4641; font-weight: 700; }
+.admin-payment-summary .coin-value { color: #ad760e; font-weight: 700; }
+.admin-payment-summary .pay-value { color: #e2572f; font-size: 22rpx; font-weight: 800; }

@@ -60,8 +60,8 @@
             <text>积分</text>
           </view>
           <view>
-            <text>¥{{item.balanceText}}</text>
-            <text>余额</text>
+            <text class="coin-metric-value">{{item.balanceText}}</text>
+            <text>虚拟金币</text>
           </view>
           <view>
             <text>{{item.consumeCount}}</text>
@@ -72,6 +72,12 @@
         <view class="member-actions">
           <view data-openid="{{item.openid}}" bindtap="copyOpenid">复制OpenID</view>
           <view class="primary-action" data-index="{{index}}" bindtap="openEdit">编辑</view>
+          <view
+            wx:if="{{canGrantCoins}}"
+            class="coin-action"
+            data-index="{{index}}"
+            bindtap="openCoinEdit"
+          >发放金币</view>
           <view
             wx:if="{{canManageAdmins}}"
             class="admin-action {{item.isCurrentUser && item.admin ? 'self-admin' : ''}}"
@@ -93,6 +99,50 @@
     <view class="empty-title">暂无用户</view>
     <view class="empty-desc">用户扫码进入小程序后会自动成为会员</view>
   </view>
+</view>
+
+<view wx:if="{{coinEditing}}" class="sheet-mask" bindtap="closeCoinEdit"></view>
+<view class="coin-sheet {{coinEditing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="coin-sheet-head">
+    <view>
+      <text>调整虚拟金币</text>
+      <text>{{coinMember.displayName}} · 当前 {{coinMember.balanceText}} 金币</text>
+    </view>
+    <view bindtap="closeCoinEdit">×</view>
+  </view>
+
+  <view class="coin-admin-note">
+    <view>金</view>
+    <view><text>仅超级管理员可操作</text><text>虚拟金币可用于下单抵扣，用户端不提供充值入口；每次调整都会记录操作日志。</text></view>
+  </view>
+
+  <view class="coin-mode-tabs">
+    <view class="{{coinMode === 'grant' ? 'active grant' : ''}}" data-mode="grant" bindtap="selectCoinMode">
+      <text>＋</text><view><text>发放金币</text><text>增加用户可用金币</text></view>
+    </view>
+    <view class="{{coinMode === 'deduct' ? 'active deduct' : ''}}" data-mode="deduct" bindtap="selectCoinMode">
+      <text>−</text><view><text>扣减金币</text><text>不能低于零金币</text></view>
+    </view>
+  </view>
+
+  <view class="coin-form-block">
+    <view class="coin-form-label"><text>{{coinMode === 'grant' ? '发放数量' : '扣减数量'}}</text><text>1金币抵1元 · 最多两位小数</text></view>
+    <view class="coin-amount-input"><input type="digit" value="{{coinAmount}}" maxlength="12" placeholder="0.00" focus="{{coinEditing}}" bindinput="onCoinAmountInput" /><text>金币</text></view>
+  </view>
+  <view class="coin-form-block">
+    <view class="coin-form-label"><text>变动原因</text><text>选填，最多100字</text></view>
+    <textarea value="{{coinReason}}" maxlength="100" placeholder="例如：活动奖励、人工补偿、误发扣回" bindinput="onCoinReasonInput"></textarea>
+  </view>
+
+  <view class="coin-preview">
+    <text>本次金币变动</text>
+    <text>{{coinMode === 'grant' ? '+' : '-'}} {{coinAmount || '0.00'}} 金币</text>
+  </view>
+  <view class="coin-submit {{coinSaving ? 'disabled' : ''}} {{coinMode}}" bindtap="saveCoinAdjustment">
+    {{coinSaving ? '正在提交…' : (coinMode === 'grant' ? '确认发放金币' : '确认扣减金币')}}
+  </view>
+  <view class="safe-bottom"></view>
 </view>
 
 <view wx:if="{{adminEditing}}" class="sheet-mask" bindtap="closeAdminEdit"></view>
@@ -159,10 +209,6 @@
   <view class="form-row">
     <text>积分</text>
     <input type="number" value="{{form.score}}" bindinput="onScoreInput" />
-  </view>
-  <view class="form-row">
-    <text>余额</text>
-    <input type="digit" value="{{form.balance}}" bindinput="onBalanceInput" />
   </view>
   <view class="form-row switch-row">
     <view>

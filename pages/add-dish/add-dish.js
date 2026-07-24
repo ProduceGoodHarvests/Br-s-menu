@@ -72,6 +72,41 @@ function normalizeDish(item, categoryMap) {
   });
 }
 
+function getImageSize(filePath) {
+  return new Promise(function (resolve, reject) {
+    wx.getFileInfo({
+      filePath: filePath,
+      success: function (res) { resolve(Number(res.size || 0)); },
+      fail: reject
+    });
+  });
+}
+
+function compressImageOnce(filePath, quality) {
+  if (!wx.compressImage) return Promise.reject(new Error('当前微信版本不支持图片压缩'));
+  return new Promise(function (resolve, reject) {
+    wx.compressImage({
+      src: filePath,
+      quality: quality,
+      compressedWidth: 1200,
+      success: function (res) { resolve(res.tempFilePath || filePath); },
+      fail: reject
+    });
+  });
+}
+
+function prepareDishImage(filePath, step) {
+  var qualities = [72, 55, 40, 28];
+  var index = Number(step || 0);
+  return getImageSize(filePath).then(function (size) {
+    if (size > 0 && size <= 560 * 1024) return filePath;
+    if (index >= qualities.length) throw new Error('图片处理后仍超过560KB，请选择尺寸更小的图片');
+    return compressImageOnce(filePath, qualities[index]).then(function (compressedPath) {
+      return prepareDishImage(compressedPath, index + 1);
+    });
+  });
+}
+
 Page({
   data: {
     loading: true,
@@ -89,6 +124,7 @@ Page({
     categoryIndex: 0,
     saving: false,
     uploading: false,
+    uploadingText: '正在处理图片…',
     actionDishId: '',
     stockEditing: false,
     stockDish: null,
@@ -227,30 +263,27 @@ Page({
   chooseImage: function () {
     var that = this;
     if (this.data.uploading) return;
-    wx.chooseMedia({
+    wx.chooseImage({
       count: 1,
-      mediaType: ['image'],
       sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
       success: function (result) {
-        var file = result.tempFiles[0];
-        if (!file) return;
-        if (Number(file.size || 0) > 650 * 1024 && wx.compressImage) {
-          wx.compressImage({
-            src: file.tempFilePath,
-            quality: 50,
-            success: function (compressed) { that.uploadImageFile(compressed.tempFilePath); },
-            fail: function () { that.uploadImageFile(file.tempFilePath); }
-          });
-        } else {
-          that.uploadImageFile(file.tempFilePath);
-        }
+        var filePath = result.tempFilePaths && result.tempFilePaths[0];
+        if (!filePath) return;
+        that.setData({ uploading: true, uploadingText: '正在压缩图片…' });
+        prepareDishImage(filePath).then(function (preparedPath) {
+          that.uploadImageFile(preparedPath);
+        }).catch(function (err) {
+          that.setData({ uploading: false });
+          wx.showModal({ title: '图片处理失败', content: err.message || '请重新选择图片', showCancel: false });
+        });
       }
     });
   },
 
   uploadImageFile: function (filePath) {
     var that = this;
-    this.setData({ uploading: true });
+    this.setData({ uploading: true, uploadingText: '正在上传云存储…' });
     wx.getFileSystemManager().readFile({
       filePath: filePath,
       encoding: 'base64',
@@ -259,15 +292,15 @@ Page({
         var extension = (cleanPath.split('.').pop() || 'jpg').toLowerCase();
         if (['jpg', 'jpeg', 'png', 'webp'].indexOf(extension) < 0) extension = 'jpg';
         api.uploadImage(read.data, extension, 'dish').then(function (uploaded) {
-          that.setData({ 'form.img': uploaded.fileID, uploading: false });
+          that.setData({ 'form.img': uploaded.fileID, uploading: false, uploadingText: '正在处理图片…' });
           wx.showToast({ title: '图片上传成功', icon: 'success' });
         }).catch(function (err) {
-          that.setData({ uploading: false });
+          that.setData({ uploading: false, uploadingText: '正在处理图片…' });
           wx.showModal({ title: '上传失败', content: err.msg || '图片上传失败', showCancel: false });
         });
       },
       fail: function () {
-        that.setData({ uploading: false });
+        that.setData({ uploading: false, uploadingText: '正在处理图片…' });
         wx.showToast({ title: '读取图片失败', icon: 'none' });
       }
     });

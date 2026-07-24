@@ -111,7 +111,7 @@
     <image wx:if="{{form.img}}" src="{{form.img}}" mode="aspectFill" />
     <view wx:else class="dish-image-empty"><text>＋</text><text>上传菜品图片</text><text>建议使用 1:1 高清图片</text></view>
     <view class="dish-image-change" wx:if="{{form.img && !uploading}}">更换图片</view>
-    <view class="dish-image-uploading" wx:if="{{uploading}}"><view></view><text>正在上传…</text></view>
+    <view class="dish-image-uploading" wx:if="{{uploading}}"><view></view><text>{{uploadingText}}</text></view>
   </view>
 
   <view class="dish-form-section">

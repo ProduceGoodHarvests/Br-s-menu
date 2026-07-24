@@ -52,6 +52,7 @@ Page({
     total: 0,
     hasMore: false,
     canManageAdmins: false,
+    canGrantCoins: false,
     adminRoles: ADMIN_ROLES,
     adminEditing: false,
     adminSaving: false,
@@ -59,12 +60,17 @@ Page({
     adminRole: 'operator',
     adminRoleIndex: 0,
     adminStatus: true,
+    coinEditing: false,
+    coinSaving: false,
+    coinMember: null,
+    coinMode: 'grant',
+    coinAmount: '',
+    coinReason: '',
     editing: false,
     currentMember: null,
     form: {
       level: 1,
       score: 0,
-      balance: 0,
       status: true,
       remark: ''
     }
@@ -100,6 +106,7 @@ Page({
         page: 1,
         hasMore: !!res.hasMore,
         canManageAdmins: !!res.canManageAdmins,
+        canGrantCoins: !!res.canGrantCoins,
         loading: false
       });
     }).catch(function (err) {
@@ -157,6 +164,83 @@ Page({
     wx.setClipboardData({
       data: openid,
       success: function () { wx.showToast({ title: 'OpenID已复制', icon: 'success' }); }
+    });
+  },
+
+  openCoinEdit: function (e) {
+    if (!this.data.canGrantCoins) {
+      return wx.showToast({ title: '仅超级管理员可调整金币', icon: 'none' });
+    }
+    var index = Number(e.currentTarget.dataset.index);
+    var member = this.data.members[index];
+    if (!member) return;
+    this.setData({
+      coinEditing: true,
+      coinMember: member,
+      coinMode: 'grant',
+      coinAmount: '',
+      coinReason: ''
+    });
+  },
+
+  closeCoinEdit: function () {
+    if (this.data.coinSaving) return;
+    this.setData({ coinEditing: false, coinMember: null });
+  },
+
+  selectCoinMode: function (e) {
+    this.setData({ coinMode: e.currentTarget.dataset.mode });
+  },
+
+  onCoinAmountInput: function (e) {
+    this.setData({ coinAmount: e.detail.value });
+  },
+
+  onCoinReasonInput: function (e) {
+    this.setData({ coinReason: e.detail.value });
+  },
+
+  saveCoinAdjustment: function () {
+    var that = this;
+    var member = this.data.coinMember;
+    if (!member || this.data.coinSaving) return;
+    var amount = Number(this.data.coinAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return wx.showToast({ title: '请输入有效的金币数量', icon: 'none' });
+    }
+    amount = Math.round(amount * 100) / 100;
+    if (amount > 100000) {
+      return wx.showToast({ title: '单次最多调整100000金币', icon: 'none' });
+    }
+    if (this.data.coinMode === 'deduct') {
+      amount = -amount;
+      if (Math.abs(amount) > Number(member.balance || 0)) {
+        return wx.showToast({ title: '扣减数量不能超过当前金币', icon: 'none' });
+      }
+    }
+    var actionText = amount > 0 ? '发放' : '扣减';
+    wx.showModal({
+      title: '确认' + actionText + '金币',
+      content: '将为“' + member.displayName + '”' + actionText + ' ' + Math.abs(amount).toFixed(2) + ' 金币。该操作会记录管理员日志。',
+      confirmText: '确认' + actionText,
+      confirmColor: amount > 0 ? '#d99a20' : '#d84a3a',
+      success: function (res) {
+        if (!res.confirm) return;
+        that.setData({ coinSaving: true });
+        api.adminAdjustMemberCoins(member._id, amount, that.data.coinReason).then(function (result) {
+          var balance = Number(result.balance || 0).toFixed(2);
+          wx.vibrateShort({ type: 'medium' });
+          wx.showToast({ title: actionText + '成功', icon: 'success' });
+          that.setData({ coinSaving: false, coinEditing: false, coinMember: null });
+          that.loadMembers();
+          setTimeout(function () {
+            wx.showToast({ title: '当前金币 ' + balance, icon: 'none' });
+          }, 1200);
+        }).catch(function (err) {
+          that.setData({ coinSaving: false });
+          wx.showModal({ title: actionText + '失败', content: err.msg || '金币调整失败', showCancel: false });
+        });
+      }
     });
   },
 
@@ -249,7 +333,6 @@ Page({
       form: {
         level: Number(member.level || 1),
         score: Number(member.score || 0),
-        balance: Number(member.balance || 0),
         status: member.status !== false,
         remark: member.remark || ''
       }
@@ -265,7 +348,6 @@ Page({
 
   onLevelInput: function (e) { this.setData({ 'form.level': e.detail.value }); },
   onScoreInput: function (e) { this.setData({ 'form.score': e.detail.value }); },
-  onBalanceInput: function (e) { this.setData({ 'form.balance': e.detail.value }); },
   onRemarkInput: function (e) { this.setData({ 'form.remark': e.detail.value }); },
 
   onStatusSwitch: function (e) {
@@ -293,7 +375,6 @@ Page({
     var payload = {
       level: Math.floor(Number(form.level || 1)),
       score: Math.floor(Number(form.score || 0)),
-      balance: Number(form.balance || 0),
       status: form.status !== false,
       remark: form.remark || ''
     };
@@ -301,8 +382,8 @@ Page({
       wx.showToast({ title: '等级需为1-99', icon: 'none' });
       return;
     }
-    if (payload.score < 0 || payload.balance < 0 || !Number.isFinite(payload.balance)) {
-      wx.showToast({ title: '积分和余额不能为负', icon: 'none' });
+    if (payload.score < 0) {
+      wx.showToast({ title: '积分不能为负', icon: 'none' });
       return;
     }
     this.setData({ saving: true });

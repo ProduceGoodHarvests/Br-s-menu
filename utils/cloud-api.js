@@ -33,7 +33,7 @@ function getAppConfig() { return call('app.config'); }
 function getMenu() { return call('menu.list'); }
 function getDish(goodsId) { return call('menu.detail', { goodsId: goodsId }); }
 function getTables() { return call('table.list'); }
-function quoteOrder(goodsList) { return call('order.quote', { goodsList: goodsList }); }
+function quoteOrder(goodsList, useCoins) { return call('order.quote', { goodsList: goodsList, useCoins: useCoins === true }); }
 function createOrder(data) { return call('order.create', data); }
 function getOrders(data) { return call('order.list', data || {}); }
 function getOrder(orderId) { return call('order.detail', { orderId: orderId }); }
@@ -54,6 +54,7 @@ function adminSaveTable(table) { return call('admin.table.save', { table: table 
 function adminDeleteTable(tableNo) { return call('admin.table.delete', { tableNo: tableNo }); }
 function adminMembers(data) { return call('admin.member.list', data || {}); }
 function adminUpdateMember(memberId, member) { return call('admin.member.update', { memberId: memberId, member: member }); }
+function adminAdjustMemberCoins(memberId, amount, reason) { return call('admin.member.coins.adjust', { memberId: memberId, amount: amount, reason: reason || '' }); }
 function adminList() { return call('admin.list'); }
 function adminSave(openid, role, status) { return call('admin.save', { openid: openid, role: role, status: status }); }
 function adminRemove(adminId) { return call('admin.remove', { adminId: adminId }); }
@@ -91,6 +92,7 @@ module.exports = {
   adminDeleteTable: adminDeleteTable,
   adminMembers: adminMembers,
   adminUpdateMember: adminUpdateMember,
+  adminAdjustMemberCoins: adminAdjustMemberCoins,
   adminList: adminList,
   adminSave: adminSave,
   adminRemove: adminRemove,

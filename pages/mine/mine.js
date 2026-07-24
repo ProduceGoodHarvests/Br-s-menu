@@ -1,6 +1,12 @@
 var storage = require('../../utils/storage');
 var api = require('../../utils/cloud-api');
 
+function normalizeMember(member) {
+  if (!member) return null;
+  member.coinText = Number(member.balance || 0).toFixed(2);
+  return member;
+}
+
 function compressAvatar(filePath) {
   if (!wx.compressImage) return Promise.resolve(filePath);
   return new Promise(function (resolve) {
@@ -56,7 +62,7 @@ Page({
     for (var i = 0; i < cart.length; i++) count += Number(cart[i].quantity || 0);
     this.setData({ cartCount: count });
     getApp().refreshSession().then(function (session) {
-      that.setData({ loading: false, isAdmin: session.isAdmin, member: session.member });
+      that.setData({ loading: false, isAdmin: session.isAdmin, member: normalizeMember(session.member) });
     }).catch(function (err) {
       that.setData({ loading: false });
       wx.showToast({ title: err.msg || '身份加载失败', icon: 'none' });
@@ -133,7 +139,7 @@ Page({
         avatarExtension: avatarData.extension,
       });
     }).then(function (res) {
-      var member = res.member || Object.assign({}, that.data.member || {}, { nickname: nickname });
+      var member = normalizeMember(res.member || Object.assign({}, that.data.member || {}, { nickname: nickname }));
       var app = getApp();
       if (app.globalData.session) app.globalData.session.member = member;
       that.setData({

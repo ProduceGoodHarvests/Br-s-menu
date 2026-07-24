@@ -1,1 +1,4 @@
-/* 页面样式统一由 app.wxss 管理 */
+.order-amount > view { margin-top: 2rpx; color: #b17a12; font-size: 17rpx; font-weight: 700; }
+.coin-order-amount > text:nth-child(2) { margin-left: 7rpx; color: #b0780c; font-size: 32rpx; font-weight: 800; }
+.coin-order-amount > text:last-child { margin-left: 4rpx; color: #95722f; font-size: 19rpx; }
+.payment-alert text:last-child { line-height: 1.45; }

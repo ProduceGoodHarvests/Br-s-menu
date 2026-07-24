@@ -5,9 +5,16 @@ var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '
 var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包', pickup: '自提' };
 
 function normalize(order) {
+  var coinUsed = Number(order.coinUsed || 0);
+  var payPrice = Number(order.payPrice || 0);
   order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
   order.typeText = TYPE_TEXT[order.type] || order.type;
   order.timeText = format.formatDateTime(order.createTime);
+  order.coinUsedText = coinUsed.toFixed(2);
+  order.payPriceText = payPrice.toFixed(2);
+  order.totalPriceText = Number(order.totalPrice || 0).toFixed(2);
+  order.hasCoinPayment = coinUsed > 0;
+  order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
   return order;
 }
 
@@ -61,7 +68,8 @@ Page({
       }).catch(function (err) { wx.showModal({ title: '更新失败', content: err.msg || '状态更新失败', showCancel: false }); });
     };
     if (status === 'completed' || status === 'cancelled') {
-      wx.showModal({ title: labels[status], content: status === 'completed' ? '确认顾客已经取餐或用餐完成吗？' : '取消后会释放库存和桌台，确定继续吗？', confirmColor: '#ee5b2b', success: function (res) { if (res.confirm) execute(); } });
+      var cancelContent = Number(e.currentTarget.dataset.coin || 0) > 0 ? '取消后会释放库存、桌台并自动返还用户金币，确定继续吗？' : '取消后会释放库存和桌台，确定继续吗？';
+      wx.showModal({ title: labels[status], content: status === 'completed' ? '确认顾客已经取餐或用餐完成吗？' : cancelContent, confirmColor: '#ee5b2b', success: function (res) { if (res.confirm) execute(); } });
     } else {
       execute();
     }

@@ -1,1 +1,26 @@
-/* 页面样式统一由 app.wxss 管理 */
+.coin-pay-card { overflow: hidden; border: 1rpx solid #f2dfb8; background: linear-gradient(155deg, #fffefb, #fff9ea); }
+.coin-pay-head { display: flex; align-items: center; }
+.coin-pay-icon { width: 68rpx; height: 68rpx; flex: 0 0 68rpx; display: flex; align-items: center; justify-content: center; border: 5rpx solid #ffe9ac; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #efbf51, #d99a20); box-shadow: 0 8rpx 18rpx rgba(202,139,24,.2); font-size: 23rpx; font-weight: 900; }
+.coin-pay-copy { flex: 1; min-width: 0; margin: 0 15rpx; }
+.coin-pay-copy text { display: block; }
+.coin-pay-copy text:first-child { color: #493a24; font-size: 27rpx; font-weight: 800; }
+.coin-pay-copy text:last-child { margin-top: 4rpx; color: #9e7d3d; font-size: 19rpx; }
+.coin-no-recharge { display: flex; align-items: flex-start; margin-top: 18rpx; padding: 13rpx 15rpx; border-radius: 15rpx; color: #91733c; background: rgba(236,186,73,.11); font-size: 18rpx; line-height: 1.5; }
+.coin-no-recharge text:first-child { width: 29rpx; height: 29rpx; flex: 0 0 29rpx; margin: 0 9rpx 0 0; border-radius: 50%; color: #fff; background: #dca22b; font-size: 17rpx; font-weight: 800; line-height: 29rpx; text-align: center; }
+.coin-pay-updating { display: flex; align-items: center; justify-content: center; gap: 12rpx; min-height: 90rpx; margin-top: 14rpx; border-top: 1rpx solid rgba(218,169,64,.17); color: #9b7b3f; font-size: 20rpx; }
+.coin-pay-updating .button-spinner { width: 24rpx; height: 24rpx; border-color: rgba(216,154,32,.18); border-top-color: #d89a20; }
+.coin-deduction-detail { margin-top: 17rpx; padding-top: 8rpx; border-top: 1rpx solid rgba(218,169,64,.17); }
+.coin-deduction-detail > view { display: flex; align-items: center; justify-content: space-between; min-height: 53rpx; color: #81776d; font-size: 21rpx; }
+.coin-deduction-detail > view:first-child text:last-child { color: #b1780d; font-weight: 800; }
+.coin-deduction-detail > view:last-child { border-top: 1rpx dashed rgba(186,139,47,.16); }
+.coin-deduction-detail > view:last-child text:last-child { color: #e3572e; font-size: 24rpx; font-weight: 800; }
+.coin-empty-tip { margin-top: 16rpx; padding: 15rpx; border-radius: 15rpx; color: #a19a92; background: rgba(115,106,97,.06); font-size: 19rpx; line-height: 1.5; text-align: center; }
+.checkout-total > text:last-child { display: block; margin-top: 2rpx; color: #b28225; font-size: 17rpx; }
+.checkout-total .coin-total { display: inline-flex; align-items: baseline; color: #b77b09; }
+.checkout-total .coin-total text { margin-left: 4rpx; color: #997129; }
+
+@media (max-width: 340px) {
+  .coin-pay-copy text:last-child { font-size: 17rpx; }
+  .checkout-footer { gap: 12rpx; }
+  .pay-button { width: 345rpx; }
+}

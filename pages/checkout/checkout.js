@@ -3,7 +3,7 @@ var storage = require('../../utils/storage');
 
 Page({
   data: {
-    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', submitting: false, loading: true, subscribeTemplateIds: [],
+    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', useCoins: false, quoteUpdating: false, submitting: false, loading: true, subscribeTemplateIds: [],
     types: [{ value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包带走' }, { value: 'pickup', label: '到店自提' }],
   },
 
@@ -19,7 +19,7 @@ Page({
 
   loadData: function () {
     var that = this;
-    Promise.all([api.quoteOrder(storage.toGoodsList(this.data.items)), api.getTables()]).then(function (results) {
+    Promise.all([api.quoteOrder(storage.toGoodsList(this.data.items), this.data.useCoins), api.getTables()]).then(function (results) {
       var tables = results[1].tables || [];
       var tableNo = that.data.tableNo;
       if (!tableNo && tables[0]) tableNo = tables[0].tableNo;
@@ -54,8 +54,21 @@ Page({
 
   onRemarkInput: function (e) { this.setData({ remark: e.detail.value || '' }); },
 
+  onCoinSwitch: function (e) {
+    var that = this;
+    var useCoins = e.detail.value;
+    if (this.data.quoteUpdating) return;
+    this.setData({ useCoins: useCoins, quoteUpdating: true });
+    api.quoteOrder(storage.toGoodsList(this.data.items), useCoins).then(function (quote) {
+      that.setData({ quote: quote, useCoins: !!quote.useCoins, quoteUpdating: false });
+    }).catch(function (err) {
+      that.setData({ useCoins: !useCoins, quoteUpdating: false });
+      wx.showToast({ title: err.msg || '金币抵扣计算失败', icon: 'none' });
+    });
+  },
+
   submitOrder: function () {
-    if (this.data.submitting || !this.data.quote) return;
+    if (this.data.submitting || this.data.quoteUpdating || !this.data.quote) return;
     if (this.data.type === 'dine_in' && !this.data.tableNo) return wx.showToast({ title: '请选择或输入桌号', icon: 'none' });
     var that = this;
     if (this.data.subscribeTemplateIds.length && wx.requestSubscribeMessage) {
@@ -73,6 +86,7 @@ Page({
       type: this.data.type,
       tableNo: this.data.type === 'dine_in' ? this.data.tableNo : '',
       remark: this.data.remark,
+      useCoins: this.data.useCoins,
       goodsList: storage.toGoodsList(this.data.items),
     }).then(function (order) {
       storage.clearCart();
@@ -88,6 +102,12 @@ Page({
   },
 
   startPayment: function (order) {
+    if (order.paymentRequired === false) {
+      return new Promise(function (resolve) {
+        wx.showToast({ title: '金币支付成功', icon: 'success' });
+        setTimeout(function () { wx.switchTab({ url: '/pages/orders/orders' }); resolve(); }, 600);
+      });
+    }
     return api.getPayParams(order.orderId).then(function (result) {
       return new Promise(function (resolve) {
         wx.requestPayment(Object.assign({}, result.payment, {
