@@ -1,12 +1,89 @@
 <view class="mine-page">
-  <view class="mine-hero"><view class="mine-decoration one"></view><view class="mine-decoration two"></view><view class="user-card"><view class="avatar-wrap"><text class="avatar-placeholder">🍚</text><view class="avatar-badge">食客</view></view><view class="user-info"><view class="nickname">欢迎来吃饭</view><view class="role-line">无需授权资料，微信身份已安全识别</view></view></view><view class="member-banner"><view><text>会员成长计划</text><text>积分、等级与储值功能已为后续开放预留</text></view><view>敬请期待</view></view></view>
-  <view class="stats-section" wx:if="{{member}}"><view class="stat-item"><text class="stat-value">V{{member.level}}</text><text class="stat-label">当前等级</text></view><view class="stat-divider"></view><view class="stat-item"><text class="stat-value">{{member.score}}</text><text class="stat-label">可用积分</text></view><view class="stat-divider"></view><view class="stat-item" bindtap="goCart"><text class="stat-value">{{cartCount}}</text><text class="stat-label">餐篮菜品</text></view></view>
-  <view class="admin-entry" wx:if="{{isAdmin}}" bindtap="goMerchant"><view class="admin-entry-icon">▣</view><view><text>商家管理后台</text><text>订单、菜品、桌台和打印管理</text></view><text>进入 ›</text></view>
+  <view class="mine-hero">
+    <view class="mine-decoration one"></view>
+    <view class="mine-decoration two"></view>
+    <view class="user-card" bindtap="openProfileEditor">
+      <view class="avatar-wrap">
+        <image wx:if="{{member && member.avatar}}" class="profile-avatar" src="{{member.avatar}}" mode="aspectFill" />
+        <text wx:else class="avatar-placeholder">🍚</text>
+        <view class="avatar-badge">V{{member ? member.level : 1}}</view>
+      </view>
+      <view class="user-info">
+        <view class="nickname">{{member && member.nickname ? member.nickname : '欢迎来吃饭'}}</view>
+        <view class="role-line">{{member && member.nickname ? '微信食客 · 点击编辑个人资料' : '点击完善头像和用户名称'}}</view>
+      </view>
+      <view class="profile-edit-icon">✎</view>
+    </view>
+    <view class="profile-privacy-tip" wx:if="{{member && !member.nickname}}">
+      <text>i</text>
+      <text>资料授权完全自愿，不影响免授权点餐</text>
+    </view>
+    <view class="member-banner">
+      <view><text>会员成长计划</text><text>积分、等级与储值功能已为后续开放预留</text></view>
+      <view>敬请期待</view>
+    </view>
+  </view>
+
+  <view class="stats-section" wx:if="{{member}}">
+    <view class="stat-item"><text class="stat-value">V{{member.level}}</text><text class="stat-label">当前等级</text></view>
+    <view class="stat-divider"></view>
+    <view class="stat-item"><text class="stat-value">{{member.score}}</text><text class="stat-label">可用积分</text></view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="goCart"><text class="stat-value">{{cartCount}}</text><text class="stat-label">餐篮菜品</text></view>
+  </view>
+
+  <view class="admin-entry" wx:if="{{isAdmin}}" bindtap="goMerchant">
+    <view class="admin-entry-icon">▣</view>
+    <view><text>商家管理后台</text><text>订单、菜品、桌台和打印管理</text></view>
+    <text>进入 ›</text>
+  </view>
+
   <view class="mine-section-title">常用服务</view>
   <view class="menu-section">
     <view class="menu-item" bindtap="goOrders"><view class="menu-icon orange">📋</view><view class="menu-text"><text>我的订单</text><text>查看制作进度和历史订单</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="goCart"><view class="menu-icon green">🛒</view><view class="menu-text"><text>我的餐篮</text><text>{{cartCount ? '已有 ' + cartCount + ' 件菜品待结算' : '还没有添加菜品'}}</text></view><text class="menu-arrow">›</text></view>
+    <view class="menu-item" bindtap="openProfileEditor"><view class="menu-icon profile-menu-icon">☺</view><view class="menu-text"><text>个人资料</text><text>{{member && member.nickname ? '修改头像和用户名称' : '完善头像和用户名称'}}</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="about"><view class="menu-icon blue">i</view><view class="menu-text"><text>关于门店</text><text>查看小程序与门店信息</text></view><text class="menu-arrow">›</text></view>
   </view>
   <view class="mine-footer">微信云开发提供安全服务支持</view>
+</view>
+
+<view wx:if="{{profileEditing}}" class="sheet-mask profile-sheet-mask" bindtap="closeProfileEditor"></view>
+<view class="profile-sheet {{profileEditing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="profile-sheet-head">
+    <view><text>个人资料</text><text>头像和名称仅用于小程序内展示</text></view>
+    <view bindtap="closeProfileEditor">×</view>
+  </view>
+
+  <button class="profile-avatar-picker" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+    <view class="profile-avatar-preview">
+      <image wx:if="{{avatarTempPath}}" src="{{avatarTempPath}}" mode="aspectFill" />
+      <text wx:else>🍚</text>
+      <view>✎</view>
+    </view>
+    <view class="avatar-picker-copy"><text>选择头像</text><text>点击使用微信头像或从相册选择</text></view>
+    <text class="picker-arrow">›</text>
+  </button>
+
+  <view class="profile-field">
+    <view class="profile-field-label"><text>用户名称</text><text>最多 30 个字符</text></view>
+    <view class="profile-name-input">
+      <text>☺</text>
+      <input type="nickname" maxlength="30" value="{{profileForm.nickname}}" placeholder="请输入您的名称" bindinput="onNicknameInput" />
+    </view>
+  </view>
+
+  <view class="wechat-profile-fill {{profileAuthorizing ? 'disabled' : ''}}" bindtap="useWechatProfile">
+    <text>微</text>
+    <view><text>{{profileAuthorizing ? '正在获取微信昵称…' : '微信昵称快速填充'}}</text><text>头像请点击上方“选择头像”获取</text></view>
+    <text>›</text>
+  </view>
+
+  <view class="profile-consent"><text>✓</text><text>保存即表示同意在本小程序内展示该头像和名称；不完善资料也可正常浏览、点餐和支付。</text></view>
+
+  <button class="primary profile-save-button" loading="{{profileSaving}}" disabled="{{profileSaving || profileAuthorizing}}" bindtap="saveProfile">
+    {{profileSaving ? '正在保存…' : '保存个人资料'}}
+  </button>
+  <view class="safe-bottom"></view>
 </view>

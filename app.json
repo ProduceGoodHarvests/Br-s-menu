@@ -9,7 +9,8 @@
     "pages/merchant/merchant",
     "pages/add-dish/add-dish",
     "pages/data-manager/data-manager",
-    "pages/tag-manager/tag-manager"
+    "pages/tag-manager/tag-manager",
+    "pages/user-manager/user-manager"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ff6a2a",

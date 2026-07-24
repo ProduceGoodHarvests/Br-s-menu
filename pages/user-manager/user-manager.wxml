@@ -1,0 +1,184 @@
+<view class="page user-page">
+  <view class="user-hero">
+    <view>
+      <text>用户管理</text>
+      <text>会员资料、账号状态与管理员分配</text>
+    </view>
+    <view class="user-total">
+      <text>{{total}}</text>
+      <text>位用户</text>
+    </view>
+  </view>
+
+  <view class="search-box user-search">
+    <text class="search-icon">⌕</text>
+    <input value="{{keyword}}" placeholder="搜索 OpenID" confirm-type="search" bindinput="onSearchInput" />
+    <view wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">×</view>
+  </view>
+
+  <view class="tabs user-tabs">
+    <view wx:for="{{statusTabs}}" wx:key="value" class="tab {{status === item.value ? 'active' : ''}}" data-status="{{item.value}}" bindtap="changeStatus">{{item.label}}</view>
+  </view>
+
+  <block wx:if="{{loading}}">
+    <view wx:for="{{[1,2,3]}}" wx:key="*this" class="card member-card">
+      <view class="member-avatar shimmer"></view>
+      <view class="member-main">
+        <view class="skeleton-line wide shimmer"></view>
+        <view class="skeleton-line shimmer"></view>
+        <view class="member-metrics">
+          <view class="metric-skeleton shimmer"></view>
+          <view class="metric-skeleton shimmer"></view>
+          <view class="metric-skeleton shimmer"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:elif="{{members.length}}">
+    <view wx:for="{{members}}" wx:key="_id" class="card member-card {{!item.status ? 'disabled' : ''}}">
+      <view class="member-avatar">
+        <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" />
+        <text wx:else>{{item.levelText}}</text>
+      </view>
+      <view class="member-main">
+        <view class="member-top">
+          <view class="member-openid">
+            <text>{{item.displayName}}</text>
+            <text>{{item.openidShort}} · 加入 {{item.timeText || '--'}}</text>
+          </view>
+          <view class="member-badges">
+            <view wx:if="{{item.admin}}" class="admin-pill {{item.admin.status ? item.admin.role : 'admin-off'}}">
+              {{item.adminStatusText || item.adminRoleText}}
+            </view>
+            <view class="status-pill {{item.status ? 'ok' : 'off'}}">{{item.statusText}}</view>
+          </view>
+        </view>
+        <view class="member-metrics">
+          <view>
+            <text>{{item.score}}</text>
+            <text>积分</text>
+          </view>
+          <view>
+            <text>¥{{item.balanceText}}</text>
+            <text>余额</text>
+          </view>
+          <view>
+            <text>{{item.consumeCount}}</text>
+            <text>消费次数</text>
+          </view>
+        </view>
+        <view wx:if="{{item.remark}}" class="member-remark">{{item.remark}}</view>
+        <view class="member-actions">
+          <view data-openid="{{item.openid}}" bindtap="copyOpenid">复制OpenID</view>
+          <view class="primary-action" data-index="{{index}}" bindtap="openEdit">编辑</view>
+          <view
+            wx:if="{{canManageAdmins}}"
+            class="admin-action {{item.isCurrentUser && item.admin ? 'self-admin' : ''}}"
+            data-index="{{index}}"
+            bindtap="openAdminEdit"
+          >{{item.isCurrentUser && item.admin ? '当前管理员' : (item.admin ? '管理权限' : '设为管理员')}}</view>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{loadingMore}}" class="loading-more">加载中...</view>
+    <view wx:elif="{{!hasMore}}" class="list-end">没有更多用户了</view>
+  </block>
+
+  <view wx:else class="empty-card">
+    <view class="empty-illustration">
+      <text>👥</text>
+      <view></view>
+    </view>
+    <view class="empty-title">暂无用户</view>
+    <view class="empty-desc">用户扫码进入小程序后会自动成为会员</view>
+  </view>
+</view>
+
+<view wx:if="{{adminEditing}}" class="sheet-mask" bindtap="closeAdminEdit"></view>
+<view class="admin-role-sheet {{adminEditing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="admin-sheet-head">
+    <view>
+      <text>{{adminMember.admin ? '管理管理员权限' : '分配管理员'}}</text>
+      <text>{{adminMember.displayName}} · {{adminMember.openidShort}}</text>
+    </view>
+    <view bindtap="closeAdminEdit">×</view>
+  </view>
+
+  <view class="admin-security-note" wx:if="{{adminMember.isCurrentUser && adminMember.admin}}">
+    <text>!</text>
+    <view><text>这是当前登录账号</text><text>为避免失去后台访问权限，不能修改或撤销自己的管理员身份。</text></view>
+  </view>
+
+  <view class="admin-role-title"><text>管理员角色</text><text>请选择该用户可使用的后台功能</text></view>
+  <view class="admin-role-list">
+    <view
+      wx:for="{{adminRoles}}"
+      wx:key="value"
+      class="admin-role-option {{adminRole === item.value ? 'active' : ''}} {{adminMember.isCurrentUser && adminMember.admin ? 'locked' : ''}}"
+      data-role="{{item.value}}"
+      data-index="{{index}}"
+      bindtap="selectAdminRole"
+    >
+      <view class="role-icon {{item.value}}">{{item.value === 'super_admin' ? '冠' : (item.value === 'operator' ? '营' : '厨')}}</view>
+      <view class="role-copy"><text>{{item.label}}</text><text>{{item.desc}}</text></view>
+      <view class="role-check">{{adminRole === item.value ? '✓' : ''}}</view>
+    </view>
+  </view>
+
+  <view class="admin-status-row">
+    <view><text>管理员账号状态</text><text>{{adminStatus ? '允许进入商家管理后台' : '暂时禁止进入管理后台'}}</text></view>
+    <switch checked="{{adminStatus}}" disabled="{{adminMember.isCurrentUser && adminMember.admin}}" color="#f05228" bindchange="onAdminStatusSwitch" />
+  </view>
+
+  <view class="admin-sheet-actions">
+    <view
+      wx:if="{{adminMember.admin && !adminMember.isCurrentUser}}"
+      class="revoke-admin-button {{adminSaving ? 'disabled' : ''}}"
+      bindtap="removeAdminRole"
+    >撤销管理员</view>
+    <view
+      class="save-admin-button {{adminSaving || (adminMember.isCurrentUser && adminMember.admin) ? 'disabled' : ''}}"
+      bindtap="saveAdminRole"
+    >{{adminSaving ? '保存中…' : (adminMember.admin ? '保存权限' : '确认分配')}}</view>
+  </view>
+  <view class="safe-bottom"></view>
+</view>
+
+<view wx:if="{{editing}}" class="sheet-mask" bindtap="closeEdit"></view>
+<view class="member-sheet {{editing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="sheet-title">编辑用户</view>
+  <view class="sheet-subtitle">{{currentMember.openidShort}}</view>
+
+  <view class="form-row">
+    <text>会员等级</text>
+    <input type="number" value="{{form.level}}" bindinput="onLevelInput" />
+  </view>
+  <view class="form-row">
+    <text>积分</text>
+    <input type="number" value="{{form.score}}" bindinput="onScoreInput" />
+  </view>
+  <view class="form-row">
+    <text>余额</text>
+    <input type="digit" value="{{form.balance}}" bindinput="onBalanceInput" />
+  </view>
+  <view class="form-row switch-row">
+    <view>
+      <text>账号状态</text>
+      <text>{{form.status ? '允许下单' : '禁止下单'}}</text>
+    </view>
+    <switch checked="{{form.status}}" color="#f05228" bindchange="onStatusSwitch" />
+  </view>
+  <view class="form-block">
+    <text>备注</text>
+    <textarea value="{{form.remark}}" maxlength="200" placeholder="可填写客户偏好、内部备注" bindinput="onRemarkInput"></textarea>
+  </view>
+
+  <view class="sheet-actions">
+    <view class="cancel-button" bindtap="closeEdit">取消</view>
+    <view class="save-button {{saving ? 'disabled' : ''}}" bindtap="saveMember">{{saving ? '保存中...' : '保存'}}</view>
+  </view>
+  <view class="safe-bottom"></view>
+</view>

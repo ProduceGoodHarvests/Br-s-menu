@@ -1,5 +1,322 @@
-<view class="page admin-page">
-  <view class="tabs"><view class="tab {{tab === 'category' ? 'active' : ''}}" data-tab="category" bindtap="switchTab">分类管理</view><view class="tab {{tab === 'table' ? 'active' : ''}}" data-tab="table" bindtap="switchTab">桌台管理</view></view>
-  <view wx:if="{{tab === 'category'}}"><view class="inline-form"><input placeholder="分类名称" value="{{categoryName}}" bindinput="onCategoryName" /><input type="number" placeholder="排序" value="{{categorySort}}" bindinput="onCategorySort" /><button class="primary small" bindtap="saveCategory">{{categoryId ? '更新' : '新增'}}</button></view><view class="manage-row" wx:for="{{categories}}" wx:key="_id"><text>{{item.name}}</text><text>排序 {{item.sort}}</text><button data-index="{{index}}" bindtap="editCategory">编辑</button><button class="danger" data-id="{{item._id}}" bindtap="deleteCategory">删除</button></view></view>
-  <view wx:else><view class="inline-form"><input placeholder="桌号，例如 A01" value="{{tableNo}}" bindinput="onTableNo" /><input placeholder="区域" value="{{tableArea}}" bindinput="onTableArea" /><button class="primary small" bindtap="saveTable">保存</button></view><view class="manage-row" wx:for="{{tables}}" wx:key="tableNo"><text>{{item.tableNo}} · {{item.area}}</text><text class="status">{{item.status}}</text><button wx:if="{{item.status !== 'disabled'}}" data-no="{{item.tableNo}}" data-area="{{item.area}}" bindtap="disableTable">停用</button><button class="danger" data-no="{{item.tableNo}}" bindtap="deleteTable">删除</button></view></view>
+<view class="page admin-page data-manager-page">
+  <view class="manager-hero">
+    <view>
+      <text>基础数据</text>
+      <text>维护菜单分类与门店桌台</text>
+    </view>
+    <view class="hero-decoration"></view>
+  </view>
+
+  <view class="tabs manager-tabs">
+    <view class="tab {{tab === 'category' ? 'active' : ''}}" data-tab="category" bindtap="switchTab">
+      <text>分类管理</text>
+      <text>{{categories.length}}</text>
+    </view>
+    <view class="tab {{tab === 'table' ? 'active' : ''}}" data-tab="table" bindtap="switchTab">
+      <text>桌台管理</text>
+      <text>{{tableStats.total}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{tab === 'category'}}" class="category-panel">
+    <view class="category-overview">
+      <view class="overview-head category-overview-head">
+        <view>
+          <text>菜单分类</text>
+          <text>数字越小，在顾客菜单中越靠前</text>
+        </view>
+        <view class="add-table-button add-category-button" bindtap="openCreateCategory">
+          <text>＋</text>
+          <text>新增分类</text>
+        </view>
+      </view>
+      <view class="category-stats">
+        <view><text>{{categoryStats.total}}</text><text>全部分类</text></view>
+        <view><text>{{categoryStats.enabled}}</text><text>展示中</text></view>
+        <view><text>{{categoryStats.disabled}}</text><text>已隐藏</text></view>
+        <view><text>{{categoryStats.dishes}}</text><text>关联菜品</text></view>
+      </view>
+    </view>
+
+    <view class="category-toolbar">
+      <view class="table-search category-search">
+        <text>⌕</text>
+        <input placeholder="搜索分类名称" value="{{categorySearch}}" bindinput="onCategorySearch" />
+        <text wx:if="{{categorySearch}}" class="search-clear" bindtap="clearCategorySearch">×</text>
+      </view>
+      <scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="filter-list">
+          <view
+            wx:for="{{categoryStatusFilters}}"
+            wx:key="value"
+            class="filter-chip {{categoryStatusFilter === item.value ? 'active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="selectCategoryStatus"
+          >{{item.label}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="category-skeleton-list" wx:if="{{loading}}">
+      <view class="category-skeleton" wx:for="{{[1,2,3]}}" wx:key="*this">
+        <view class="shimmer category-skeleton-icon"></view>
+        <view class="category-skeleton-main"><view class="shimmer"></view><view class="shimmer"></view></view>
+      </view>
+    </view>
+
+    <view class="category-manage-list" wx:elif="{{displayCategories.length}}">
+      <view class="category-card {{item.statusClass}}" wx:for="{{displayCategories}}" wx:key="_id">
+        <view class="category-card-main">
+          <view class="category-order"><text>{{item.sort}}</text><text>排序</text></view>
+          <view class="category-info">
+            <view class="category-title-row">
+              <text>{{item.name}}</text>
+              <view class="category-status {{item.statusClass}}"><view></view>{{item.statusText}}</view>
+            </view>
+            <view class="category-dish-meta">
+              <text>{{item.dishCount}} 道菜品</text>
+              <text>·</text>
+              <text>{{item.enabledDishCount}} 道已上架</text>
+            </view>
+          </view>
+          <view class="category-edit-entry" data-id="{{item._id}}" bindtap="editCategory">›</view>
+        </view>
+        <view class="category-card-actions">
+          <view data-id="{{item._id}}" bindtap="editCategory">编辑</view>
+          <view data-id="{{item._id}}" bindtap="toggleCategory">{{item.status ? '隐藏' : '展示'}}</view>
+          <view
+            class="delete-action {{item.dishCount ? 'action-disabled' : ''}}"
+            data-id="{{item._id}}"
+            bindtap="deleteCategory"
+          >删除</view>
+        </view>
+        <view class="card-loading" wx:if="{{categoryActionId === item._id}}"><view class="loading-spinner"></view></view>
+      </view>
+    </view>
+
+    <view class="empty-card compact-empty" wx:else>
+      <view class="empty-illustration"><text>▤</text><view></view></view>
+      <view class="empty-title">{{categoryStats.total ? '没有匹配的分类' : '还没有菜品分类'}}</view>
+      <view class="empty-desc">{{categoryStats.total ? '试试清除搜索或状态筛选' : '创建分类后即可添加并归类菜品'}}</view>
+      <view wx:if="{{categoryStats.total}}" class="empty-action" bindtap="resetCategoryFilters">清除筛选</view>
+      <view wx:else class="empty-action primary-empty-action" bindtap="openCreateCategory">新增第一个分类</view>
+    </view>
+  </view>
+
+  <view wx:else class="table-panel">
+    <view class="table-overview">
+      <view class="overview-head">
+        <view>
+          <text>桌台概览</text>
+          <text>状态随堂食订单自动联动</text>
+        </view>
+        <view class="add-table-button" bindtap="openCreateTable">
+          <text>＋</text>
+          <text>新增桌台</text>
+        </view>
+      </view>
+      <view class="overview-stats">
+        <view>
+          <text>{{tableStats.total}}</text>
+          <text>全部</text>
+        </view>
+        <view>
+          <text class="idle-text">{{tableStats.idle}}</text>
+          <text>空闲</text>
+        </view>
+        <view>
+          <text class="occupied-text">{{tableStats.occupied}}</text>
+          <text>使用中</text>
+        </view>
+        <view>
+          <text class="disabled-text">{{tableStats.disabled}}</text>
+          <text>已停用</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="table-toolbar">
+      <view class="table-search">
+        <text>⌕</text>
+        <input placeholder="搜索桌号或区域" value="{{tableSearch}}" bindinput="onTableSearch" />
+        <text wx:if="{{tableSearch}}" class="search-clear" bindtap="clearTableSearch">×</text>
+      </view>
+      <scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="filter-list">
+          <view
+            wx:for="{{tableStatusFilters}}"
+            wx:key="value"
+            class="filter-chip {{tableStatusFilter === item.value ? 'active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="selectTableStatus"
+          >{{item.label}}</view>
+        </view>
+      </scroll-view>
+      <scroll-view wx:if="{{tableAreas.length > 1}}" class="filter-scroll area-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="filter-list">
+          <view class="filter-chip area-chip {{tableAreaFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="selectTableArea">全部区域</view>
+          <view
+            wx:for="{{tableAreas}}"
+            wx:key="*this"
+            class="filter-chip area-chip {{tableAreaFilter === item ? 'active' : ''}}"
+            data-value="{{item}}"
+            bindtap="selectTableArea"
+          >{{item}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="table-skeleton-grid" wx:if="{{loading}}">
+      <view class="table-skeleton" wx:for="{{[1,2,3,4]}}" wx:key="*this">
+        <view class="shimmer skeleton-table-no"></view>
+        <view class="shimmer skeleton-table-line"></view>
+        <view class="shimmer skeleton-table-action"></view>
+      </view>
+    </view>
+
+    <view class="table-grid" wx:elif="{{displayTables.length}}">
+      <view class="table-card {{item.statusClass}}" wx:for="{{displayTables}}" wx:key="tableNo">
+        <view class="table-card-top">
+          <view class="table-symbol {{item.statusClass}}">▦</view>
+          <view class="table-status {{item.statusClass}}"><view></view>{{item.statusText}}</view>
+        </view>
+        <text class="table-number">{{item.tableNo}}</text>
+        <view class="table-meta">
+          <text>{{item.area}}</text>
+          <text>·</text>
+          <text>{{item.statusHint}}</text>
+        </view>
+        <view class="occupied-order" wx:if="{{item.status === 'occupied'}}">
+          <text>当前订单</text>
+          <text>{{item.orderId ? '已绑定' : '处理中'}}</text>
+        </view>
+        <view class="table-card-actions">
+          <view data-no="{{item.tableNo}}" bindtap="editTable">编辑</view>
+          <view
+            class="{{item.status === 'occupied' ? 'action-disabled' : ''}}"
+            data-no="{{item.tableNo}}"
+            bindtap="toggleTable"
+          >{{item.status === 'disabled' ? '启用' : '停用'}}</view>
+          <view
+            class="delete-action {{item.status === 'occupied' ? 'action-disabled' : ''}}"
+            data-no="{{item.tableNo}}"
+            bindtap="deleteTable"
+          >删除</view>
+        </view>
+        <view class="card-loading" wx:if="{{tableActionNo === item.tableNo}}"><view class="loading-spinner"></view></view>
+      </view>
+    </view>
+
+    <view class="empty-card table-empty" wx:else>
+      <view class="empty-illustration"><text>▦</text><view></view></view>
+      <view class="empty-title">{{tableStats.total ? '没有匹配的桌台' : '还没有桌台'}}</view>
+      <view class="empty-desc">{{tableStats.total ? '试试清除筛选条件' : '新增桌台后，顾客即可在堂食时选择'}}</view>
+      <view wx:if="{{tableStats.total}}" class="empty-action" bindtap="resetTableFilters">清除筛选</view>
+      <view wx:else class="empty-action primary-empty-action" bindtap="openCreateTable">新增第一个桌台</view>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{categorySheetVisible}}" class="modal-mask table-sheet-mask" bindtap="closeCategorySheet">
+  <view class="form-modal table-form-sheet category-form-sheet" catchtap="preventBubble">
+    <view class="sheet-handle"></view>
+    <view class="table-sheet-head">
+      <view>
+        <text>{{categoryEditing ? '编辑分类' : '新增分类'}}</text>
+        <text>设置分类名称、菜单顺序和展示状态</text>
+      </view>
+      <view bindtap="closeCategorySheet">×</view>
+    </view>
+
+    <view class="table-form-field">
+      <view class="field-label"><text>分类名称</text><text>必填，最多 30 字</text></view>
+      <view class="field-input">
+        <text>▤</text>
+        <input value="{{categoryName}}" maxlength="30" placeholder="例如 招牌热菜、主食饮品" bindinput="onCategoryName" />
+      </view>
+    </view>
+
+    <view class="table-form-field">
+      <view class="field-label"><text>显示排序</text><text>数字越小越靠前</text></view>
+      <view class="field-input">
+        <text>⇅</text>
+        <input type="number" value="{{categorySort}}" placeholder="例如 10" bindinput="onCategorySort" />
+      </view>
+      <view class="sort-help"><text>建议按 10 递增</text><text>后续插入新分类时更方便调整顺序</text></view>
+    </view>
+
+    <view class="table-enable-row category-enable-row">
+      <view>
+        <text>在顾客菜单中展示</text>
+        <text>{{categoryStatus ? '分类及分类内已上架菜品正常展示' : '分类暂时隐藏，数据和菜品不会删除'}}</text>
+      </view>
+      <switch checked="{{categoryStatus}}" color="#ee582e" bindchange="onCategoryEnabledChange" />
+    </view>
+
+    <button class="primary table-save-button" loading="{{categorySaving}}" disabled="{{categorySaving}}" bindtap="saveCategory">
+      {{categorySaving ? '正在保存…' : (categoryEditing ? '保存修改' : '确认新增')}}
+    </button>
+    <view class="safe-bottom"></view>
+  </view>
+</view>
+
+<view wx:if="{{tableSheetVisible}}" class="modal-mask table-sheet-mask" bindtap="closeTableSheet">
+  <view class="form-modal table-form-sheet" catchtap="preventBubble">
+    <view class="sheet-handle"></view>
+    <view class="table-sheet-head">
+      <view>
+        <text>{{tableEditing ? '编辑桌台' : '新增桌台'}}</text>
+        <text>{{tableEditing ? '桌号创建后不可修改，可调整区域和状态' : '填写桌号和所属区域'}}</text>
+      </view>
+      <view bindtap="closeTableSheet">×</view>
+    </view>
+
+    <view class="table-form-field">
+      <view class="field-label"><text>桌号</text><text>必填</text></view>
+      <view class="field-input {{tableEditing ? 'readonly' : ''}}">
+        <text>▦</text>
+        <input
+          value="{{tableNo}}"
+          disabled="{{tableEditing}}"
+          maxlength="30"
+          placeholder="例如 A01、VIP-1"
+          bindinput="onTableNo"
+        />
+      </view>
+    </view>
+
+    <view class="table-form-field">
+      <view class="field-label"><text>所属区域</text><text>方便筛选和找桌</text></view>
+      <view class="field-input">
+        <text>⌖</text>
+        <input value="{{tableArea}}" maxlength="30" placeholder="例如 大厅、靠窗、包间" bindinput="onTableArea" />
+      </view>
+      <view class="area-suggestions" wx:if="{{tableAreas.length}}">
+        <view
+          wx:for="{{tableAreas}}"
+          wx:key="*this"
+          class="{{tableArea === item ? 'active' : ''}}"
+          data-value="{{item}}"
+          bindtap="selectFormArea"
+        >{{item}}</view>
+      </view>
+    </view>
+
+    <view class="table-enable-row" wx:if="{{tableStatus !== 'occupied'}}">
+      <view>
+        <text>允许顾客选择</text>
+        <text>{{tableStatus === 'disabled' ? '当前停用，不会出现在顾客可选列表' : '当前启用，可正常用于堂食点餐'}}</text>
+      </view>
+      <switch checked="{{tableStatus !== 'disabled'}}" color="#ee582e" bindchange="onTableEnabledChange" />
+    </view>
+    <view class="occupied-tip" wx:else>
+      <text>!</text>
+      <view><text>桌台正在使用中</text><text>订单完成或取消后，桌台会自动恢复为空闲状态。</text></view>
+    </view>
+
+    <button class="primary table-save-button" loading="{{tableSaving}}" disabled="{{tableSaving}}" bindtap="saveTable">
+      {{tableSaving ? '正在保存…' : (tableEditing ? '保存修改' : '确认新增')}}
+    </button>
+    <view class="safe-bottom"></view>
+  </view>
 </view>

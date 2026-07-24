@@ -28,6 +28,7 @@ function call(action, data) {
 }
 
 function getCurrentUser() { return call('auth.current'); }
+function updateMemberProfile(profile) { return call('member.profile.update', profile || {}); }
 function getAppConfig() { return call('app.config'); }
 function getMenu() { return call('menu.list'); }
 function getDish(goodsId) { return call('menu.detail', { goodsId: goodsId }); }
@@ -51,6 +52,8 @@ function adminDeleteCategory(categoryId) { return call('admin.category.delete', 
 function adminTables() { return call('admin.table.list'); }
 function adminSaveTable(table) { return call('admin.table.save', { table: table }); }
 function adminDeleteTable(tableNo) { return call('admin.table.delete', { tableNo: tableNo }); }
+function adminMembers(data) { return call('admin.member.list', data || {}); }
+function adminUpdateMember(memberId, member) { return call('admin.member.update', { memberId: memberId, member: member }); }
 function adminList() { return call('admin.list'); }
 function adminSave(openid, role, status) { return call('admin.save', { openid: openid, role: role, status: status }); }
 function adminRemove(adminId) { return call('admin.remove', { adminId: adminId }); }
@@ -63,6 +66,7 @@ module.exports = {
   init: init,
   call: call,
   getCurrentUser: getCurrentUser,
+  updateMemberProfile: updateMemberProfile,
   getAppConfig: getAppConfig,
   getMenu: getMenu,
   getDish: getDish,
@@ -85,6 +89,8 @@ module.exports = {
   adminTables: adminTables,
   adminSaveTable: adminSaveTable,
   adminDeleteTable: adminDeleteTable,
+  adminMembers: adminMembers,
+  adminUpdateMember: adminUpdateMember,
   adminList: adminList,
   adminSave: adminSave,
   adminRemove: adminRemove,

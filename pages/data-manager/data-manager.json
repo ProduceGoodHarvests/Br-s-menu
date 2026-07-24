@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "分类与桌台",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
   "usingComponents": {}
 }

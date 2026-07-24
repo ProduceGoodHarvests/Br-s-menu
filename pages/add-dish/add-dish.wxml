@@ -1,17 +1,168 @@
-<view class="page admin-page">
-  <view class="section-head"><text>菜品管理</text><button class="primary small" bindtap="addDish">新增菜品</button></view>
-  <view class="manage-card" wx:for="{{dishes}}" wx:key="_id">
-    <image class="manage-image" wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill" /><view class="manage-image placeholder" wx:else>🍲</view>
-    <view class="manage-main"><view class="manage-name">{{item.name}} <text class="off" wx:if="{{!item.status}}">已下架</text></view><view>¥{{item.price}} · 库存 {{item.stock}} · 排序 {{item.sort}}</view><view class="manage-actions"><button data-index="{{index}}" bindtap="editDish">编辑</button><button class="danger" data-id="{{item._id}}" bindtap="deleteDish">删除</button></view></view>
+<view class="page admin-page dish-manager-page">
+  <view class="dish-hero">
+    <view class="dish-hero-decoration one"></view>
+    <view class="dish-hero-decoration two"></view>
+    <view class="dish-hero-head">
+      <view><text>菜品管理</text><text>价格、库存与上下架状态</text></view>
+      <view class="dish-add-button" bindtap="addDish"><text>＋</text><text>新增菜品</text></view>
+    </view>
+    <view class="dish-summary">
+      <view><text>{{stats.total}}</text><text>全部菜品</text></view>
+      <view><text>{{stats.enabled}}</text><text>已上架</text></view>
+      <view><text>{{stats.disabled}}</text><text>已下架</text></view>
+      <view class="{{stats.low ? 'warning' : ''}}"><text>{{stats.low}}</text><text>库存预警</text></view>
+    </view>
   </view>
-  <view class="modal-mask" wx:if="{{formVisible}}"><scroll-view scroll-y class="form-modal"><view class="modal-title">{{editingId ? '编辑菜品' : '新增菜品'}}</view>
-    <view class="field"><text>菜名</text><input value="{{form.name}}" data-field="name" bindinput="onField" /></view>
-    <picker range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategory"><view class="field"><text>分类</text><text>{{categories[categoryIndex].name || '请选择'}} ›</text></view></picker>
-    <view class="field"><text>售价</text><input type="digit" value="{{form.price}}" data-field="price" bindinput="onField" /></view><view class="field"><text>库存</text><input type="number" value="{{form.stock}}" data-field="stock" bindinput="onField" /></view><view class="field"><text>排序</text><input type="number" value="{{form.sort}}" data-field="sort" bindinput="onField" /></view>
-    <view class="field"><text>上架</text><switch checked="{{form.status}}" bindchange="onStatus" color="#ff6a2a" /></view>
-    <view class="field column"><text>食材说明</text><textarea value="{{form.desc}}" data-field="desc" bindinput="onField" /></view>
-    <view class="field column"><text>规格（例：辣度:微辣,中辣;份量:标准,加量+6）</text><textarea value="{{form.specText}}" data-field="specText" bindinput="onField" /></view>
-    <view class="upload" bindtap="chooseImage"><image wx:if="{{form.img}}" src="{{form.img}}" mode="aspectFill" /><text wx:else>＋ 上传菜品图（云函数鉴权）</text></view>
-    <view class="modal-actions"><button bindtap="closeForm">取消</button><button class="primary" loading="{{saving}}" bindtap="saveDish">保存</button></view>
-  </scroll-view></view>
+
+  <view class="dish-toolbar">
+    <view class="search-box dish-search">
+      <text class="search-icon">⌕</text>
+      <input value="{{keyword}}" placeholder="搜索菜品或分类" confirm-type="search" bindinput="onSearchInput" />
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">×</view>
+    </view>
+    <scroll-view class="dish-filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="dish-filter-list">
+        <view
+          wx:for="{{statusFilters}}"
+          wx:key="value"
+          class="dish-filter-chip {{statusFilter === item.value ? 'active' : ''}} {{item.value === 'low' && stats.low ? 'has-warning' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="selectStatus"
+        >{{item.label}}<text wx:if="{{item.value === 'low' && stats.low}}">{{stats.low}}</text></view>
+      </view>
+    </scroll-view>
+    <scroll-view wx:if="{{categories.length}}" class="dish-filter-scroll category-filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="dish-filter-list">
+        <view class="dish-filter-chip category-chip {{categoryFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="selectCategoryFilter">全部分类</view>
+        <view
+          wx:for="{{categories}}"
+          wx:key="_id"
+          class="dish-filter-chip category-chip {{categoryFilter === item._id ? 'active' : ''}}"
+          data-value="{{item._id}}"
+          bindtap="selectCategoryFilter"
+        >{{item.name}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view wx:if="{{loading}}" class="dish-skeleton-list">
+    <view class="dish-skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="shimmer dish-skeleton-image"></view>
+      <view class="dish-skeleton-main">
+        <view class="shimmer skeleton-line wide"></view>
+        <view class="shimmer skeleton-line"></view>
+        <view class="shimmer dish-skeleton-metrics"></view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{displayDishes.length}}" class="dish-manage-list">
+    <view class="admin-dish-card {{item.statusClass}}" wx:for="{{displayDishes}}" wx:key="_id">
+      <view class="admin-dish-main">
+        <view class="admin-dish-media">
+          <image wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill" />
+          <view wx:else class="admin-dish-placeholder">🍲</view>
+          <view class="dish-sort-badge">序 {{item.sort}}</view>
+          <view wx:if="{{!item.status}}" class="dish-off-mask">已下架</view>
+        </view>
+        <view class="admin-dish-info">
+          <view class="admin-dish-title">
+            <text>{{item.name}}</text>
+            <view class="dish-status {{item.statusClass}}"><view></view>{{item.statusText}}</view>
+          </view>
+          <view class="dish-category-line"><text>{{item.categoryName}}</text><text>{{item.specSummary}}</text></view>
+          <view class="dish-price-line"><text>¥</text><text>{{item.priceText}}</text><text>销量 {{item.sales || 0}}</text></view>
+          <view class="dish-stock-line {{item.stockClass}}">
+            <view class="stock-progress"><view style="width: {{item.stock > 100 ? 100 : item.stock}}%"></view></view>
+            <text>{{item.stockText}}</text>
+            <text>{{item.stock}} 份</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{item.desc}}" class="dish-description">{{item.desc}}</view>
+      <view class="dish-card-actions">
+        <view data-id="{{item._id}}" bindtap="openStockEdit">改库存</view>
+        <view data-id="{{item._id}}" bindtap="toggleDishStatus">{{item.status ? '下架' : '上架'}}</view>
+        <view class="edit-action" data-id="{{item._id}}" bindtap="editDish">编辑</view>
+        <view class="delete-action" data-id="{{item._id}}" bindtap="deleteDish">删除</view>
+      </view>
+      <view wx:if="{{actionDishId === item._id}}" class="dish-action-loading"><view></view></view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-card dish-empty">
+    <view class="empty-illustration"><text>🍲</text><view></view></view>
+    <view class="empty-title">{{stats.total ? '没有匹配的菜品' : '还没有菜品'}}</view>
+    <view class="empty-desc">{{stats.total ? '试试清除搜索或筛选条件' : '添加第一道菜，开始搭建门店菜单'}}</view>
+    <view wx:if="{{stats.total}}" class="dish-empty-action" bindtap="resetFilters">清除筛选</view>
+    <view wx:else class="dish-empty-action primary-empty-action" bindtap="addDish">新增第一道菜</view>
+  </view>
+</view>
+
+<view wx:if="{{formVisible}}" class="sheet-mask" bindtap="closeForm"></view>
+<scroll-view scroll-y class="dish-form-sheet {{formVisible ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="dish-form-head">
+    <view><text>{{editingId ? '编辑菜品' : '新增菜品'}}</text><text>完善菜品信息后保存至云端</text></view>
+    <view bindtap="closeForm">×</view>
+  </view>
+
+  <view class="dish-image-editor" bindtap="chooseImage">
+    <image wx:if="{{form.img}}" src="{{form.img}}" mode="aspectFill" />
+    <view wx:else class="dish-image-empty"><text>＋</text><text>上传菜品图片</text><text>建议使用 1:1 高清图片</text></view>
+    <view class="dish-image-change" wx:if="{{form.img && !uploading}}">更换图片</view>
+    <view class="dish-image-uploading" wx:if="{{uploading}}"><view></view><text>正在上传…</text></view>
+  </view>
+
+  <view class="dish-form-section">
+    <view class="dish-form-section-title"><text>基础信息</text><text>必填</text></view>
+    <view class="dish-form-field">
+      <view class="dish-form-label"><text>菜品名称</text><text>最多 50 字</text></view>
+      <input value="{{form.name}}" maxlength="50" placeholder="例如 招牌水煮鱼" data-field="name" bindinput="onField" />
+    </view>
+    <picker range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategory">
+      <view class="dish-picker-field"><view><text>菜品分类</text><text>决定顾客端的展示位置</text></view><text>{{categories[categoryIndex].name || '请选择'}} ›</text></view>
+    </picker>
+    <view class="dish-form-grid">
+      <view class="dish-form-field"><view class="dish-form-label"><text>售价</text><text>元</text></view><input type="digit" value="{{form.price}}" placeholder="0.00" data-field="price" bindinput="onField" /></view>
+      <view class="dish-form-field"><view class="dish-form-label"><text>库存</text><text>份</text></view><input type="number" value="{{form.stock}}" placeholder="100" data-field="stock" bindinput="onField" /></view>
+    </view>
+    <view class="dish-form-grid">
+      <view class="dish-form-field"><view class="dish-form-label"><text>菜单排序</text><text>越小越靠前</text></view><input type="number" value="{{form.sort}}" placeholder="100" data-field="sort" bindinput="onField" /></view>
+      <view class="dish-form-field dish-switch-field"><view><text>立即上架</text><text>{{form.status ? '顾客可见' : '暂不展示'}}</text></view><switch checked="{{form.status}}" bindchange="onStatus" color="#ee582e" /></view>
+    </view>
+  </view>
+
+  <view class="dish-form-section">
+    <view class="dish-form-section-title"><text>菜品介绍</text><text>选填</text></view>
+    <view class="dish-textarea-field"><textarea value="{{form.desc}}" maxlength="500" placeholder="填写食材、口感或推荐理由" data-field="desc" bindinput="onField"></textarea><text>{{form.desc.length || 0}}/500</text></view>
+  </view>
+
+  <view class="dish-form-section">
+    <view class="dish-form-section-title"><text>规格配置</text><text>选填</text></view>
+    <view class="spec-example"><text>格式示例</text><text>辣度:微辣,中辣;份量:标准,加量+6</text></view>
+    <view class="dish-textarea-field spec-textarea"><textarea value="{{form.specText}}" maxlength="1000" placeholder="不需要规格时可留空" data-field="specText" bindinput="onField"></textarea></view>
+  </view>
+
+  <view class="dish-save-bar">
+    <button bindtap="closeForm">取消</button>
+    <button class="primary" loading="{{saving}}" disabled="{{saving || uploading}}" bindtap="saveDish">{{saving ? '保存中…' : '保存菜品'}}</button>
+  </view>
+  <view class="safe-bottom"></view>
+</scroll-view>
+
+<view wx:if="{{stockEditing}}" class="sheet-mask" bindtap="closeStockEdit"></view>
+<view class="stock-sheet {{stockEditing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="stock-sheet-head"><view><text>调整库存</text><text>{{stockDish.name}}</text></view><view bindtap="closeStockEdit">×</view></view>
+  <view class="stock-editor">
+    <view class="stock-step" data-delta="-10" bindtap="adjustStock">−10</view>
+    <view class="stock-step" data-delta="-1" bindtap="adjustStock">−1</view>
+    <view class="stock-input"><input type="number" value="{{stockValue}}" bindinput="onStockInput" /><text>份</text></view>
+    <view class="stock-step plus" data-delta="1" bindtap="adjustStock">+1</view>
+    <view class="stock-step plus" data-delta="10" bindtap="adjustStock">+10</view>
+  </view>
+  <view class="stock-tips"><text>库存为 0 时顾客端将显示售罄</text><text>库存不足会在管理页显示预警</text></view>
+  <button class="primary stock-save-button" loading="{{stockSaving}}" disabled="{{stockSaving}}" bindtap="saveStock">保存库存</button>
+  <view class="safe-bottom"></view>
 </view>

@@ -74,4 +74,5 @@ Page({
   goDishes: function () { wx.navigateTo({ url: '/pages/add-dish/add-dish' }); },
   goData: function () { wx.navigateTo({ url: '/pages/data-manager/data-manager' }); },
   goAdmins: function () { wx.navigateTo({ url: '/pages/tag-manager/tag-manager' }); },
+  goUsers: function () { wx.navigateTo({ url: '/pages/user-manager/user-manager' }); },
 });
