@@ -1,5 +1,5 @@
-<view class="legacy-page">
-  <view class="legacy-title">页面已迁移</view>
-  <view class="legacy-text">数据管理入口已合并到我的页面。</view>
-  <button class="legacy-btn" bindtap="redirect">返回我的</button>
+<view class="page admin-page">
+  <view class="tabs"><view class="tab {{tab === 'category' ? 'active' : ''}}" data-tab="category" bindtap="switchTab">分类管理</view><view class="tab {{tab === 'table' ? 'active' : ''}}" data-tab="table" bindtap="switchTab">桌台管理</view></view>
+  <view wx:if="{{tab === 'category'}}"><view class="inline-form"><input placeholder="分类名称" value="{{categoryName}}" bindinput="onCategoryName" /><input type="number" placeholder="排序" value="{{categorySort}}" bindinput="onCategorySort" /><button class="primary small" bindtap="saveCategory">{{categoryId ? '更新' : '新增'}}</button></view><view class="manage-row" wx:for="{{categories}}" wx:key="_id"><text>{{item.name}}</text><text>排序 {{item.sort}}</text><button data-index="{{index}}" bindtap="editCategory">编辑</button><button class="danger" data-id="{{item._id}}" bindtap="deleteCategory">删除</button></view></view>
+  <view wx:else><view class="inline-form"><input placeholder="桌号，例如 A01" value="{{tableNo}}" bindinput="onTableNo" /><input placeholder="区域" value="{{tableArea}}" bindinput="onTableArea" /><button class="primary small" bindtap="saveTable">保存</button></view><view class="manage-row" wx:for="{{tables}}" wx:key="tableNo"><text>{{item.tableNo}} · {{item.area}}</text><text class="status">{{item.status}}</text><button wx:if="{{item.status !== 'disabled'}}" data-no="{{item.tableNo}}" data-area="{{item.area}}" bindtap="disableTable">停用</button><button class="danger" data-no="{{item.tableNo}}" bindtap="deleteTable">删除</button></view></view>
 </view>

@@ -1,118 +1,64 @@
-<view class="page-container">
-  <view class="search-bar">
-    <view class="search-box">
-      <text class="search-icon">⌕</text>
-      <input
-        class="search-input"
-        placeholder="搜索菜品、口味或标签"
-        value="{{searchKeyword}}"
-        bindinput="onSearchInput"
-        confirm-type="search"
-      />
-      <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="cancelSearch">×</text>
+<view class="page menu-page">
+  <view class="store-card">
+    <view class="store-topline"><view class="store-open-dot"></view><text>营业中 · 预计 15-25 分钟出餐</text></view>
+    <view class="store-content">
+      <view>
+        <view class="store-name">朱冰冉的私房菜</view>
+        <view class="store-sub">家常味道 · 新鲜现炒 · 安心点餐</view>
+      </view>
+      <view class="store-mark">朱</view>
+    </view>
+    <view class="scene-entry" bindtap="chooseType">
+      <view class="scene-entry-icon">{{contextType === 'dine_in' ? '🍽' : contextType === 'takeaway' ? '🥡' : '🛍'}}</view>
+      <view class="scene-entry-main"><text>{{contextText}}</text><text wx:if="{{tableNo && contextType === 'dine_in'}}">{{tableNo}}桌</text><text wx:else>点击切换用餐方式</text></view>
+      <text class="scene-entry-arrow">›</text>
     </view>
   </view>
 
-  <view wx:if="{{showSearch}}" class="search-results">
-    <view wx:if="{{searchResults.length === 0}}" class="empty-state">
-      <text class="empty-icon">⌕</text>
-      <text class="empty-title">没有找到相关菜品</text>
-      <text class="empty-text">换个关键词试试</text>
-    </view>
-
-    <view wx:else class="food-list">
-      <view class="food-card" wx:for="{{searchResults}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
-        <view class="food-icon c-{{item.categoryId}}">{{item.icon}}</view>
-        <view class="food-info">
-          <view class="food-name">{{item.name}}</view>
-          <view class="food-meta">
-            <text class="food-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
-            <text class="food-sales">评分 {{item.rating}}</text>
-          </view>
-          <view class="food-price">
-            <text class="price-symbol">¥</text>
-            <text class="price-value">{{item.price}}</text>
-            <text class="price-old" wx:if="{{item.originalPrice > item.price}}">¥{{item.originalPrice}}</text>
-          </view>
-        </view>
-        <view class="add-btn" catchtap="addToCart" data-id="{{item.id}}">+</view>
-      </view>
-    </view>
+  <view class="search-box">
+    <text class="search-icon">⌕</text>
+    <input placeholder="搜索菜品或食材说明" value="{{keyword}}" bindinput="onSearchInput" />
+    <text class="search-clear" wx:if="{{keyword}}" bindtap="clearSearch">×</text>
   </view>
 
-  <view wx:else>
-    <view class="hero-section">
-      <view class="hero-copy">
-        <text class="hero-title">今日推荐</text>
-        <text class="hero-subtitle">现点现做，适合家庭小聚和日常简餐</text>
-      </view>
-      <view class="hero-mark">🍽️</view>
-    </view>
+  <view class="notice error" wx:if="{{error}}">{{error}}</view>
+  <view class="menu-skeleton" wx:if="{{loading}}">
+    <view class="skeleton-category"></view>
+    <view class="skeleton-list"><view class="skeleton-card" wx:for="{{skeletons}}" wx:key="*this"><view class="skeleton-image shimmer"></view><view class="skeleton-lines"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view></view>
+  </view>
 
-    <view class="hot-section">
-      <view class="section-head">
-        <text class="section-title">热销推荐</text>
-        <text class="section-note">点击查看详情</text>
-      </view>
-      <scroll-view scroll-x class="hot-scroll" show-scrollbar="{{false}}">
-        <view class="hot-item" wx:for="{{hotFoods}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
-          <view class="hot-icon-box c-{{item.categoryId}}">{{item.icon}}</view>
-          <view class="hot-name">{{item.name}}</view>
-          <view class="hot-price">¥{{item.price}}</view>
+  <view class="menu-layout" wx:else>
+    <scroll-view scroll-y class="category-list">
+      <view class="category-item {{activeCategory === item._id ? 'active' : ''}}" wx:for="{{categories}}" wx:key="_id" data-id="{{item._id}}" bindtap="switchCategory"><text>{{item.name}}</text></view>
+    </scroll-view>
+    <scroll-view scroll-y class="dish-list">
+      <view class="menu-section-title"><view><text>精选菜单</text><text>{{visibleDishes.length}} 道菜品</text></view><view class="fresh-badge">现点现做</view></view>
+      <view class="empty menu-empty" wx:if="{{!visibleDishes.length}}"><text>🥢</text><view>没有找到相关菜品</view><view>换个关键词试试吧</view></view>
+      <view class="dish-card {{addingId === item._id ? 'adding' : ''}}" wx:for="{{visibleDishes}}" wx:key="_id" data-id="{{item._id}}" bindtap="goDetail">
+        <view class="dish-media">
+          <image class="dish-image" wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill" />
+          <view class="dish-image placeholder" wx:else><text>🍲</text></view>
+          <view class="soldout-mask" wx:if="{{item.stock <= 0}}">已售罄</view>
         </view>
-      </scroll-view>
-    </view>
-
-    <scroll-view scroll-x class="category-bar" show-scrollbar="{{false}}">
-      <view
-        class="category-item {{activeCategory === item.id ? 'active' : ''}}"
-        wx:for="{{categories}}"
-        wx:key="id"
-        bindtap="switchCategory"
-        data-id="{{item.id}}"
-      >
-        <text class="category-icon">{{item.icon}}</text>
-        <text class="category-name">{{item.name}}</text>
-      </view>
-    </scroll-view>
-
-    <scroll-view scroll-x class="tag-filter" wx:if="{{tags.length > 1}}" show-scrollbar="{{false}}">
-      <view
-        class="tag-chip {{activeTag === item.value ? 'active' : ''}}"
-        wx:for="{{tags}}"
-        wx:key="value"
-        bindtap="selectTag"
-        data-tag="{{item.value}}"
-      >
-        {{item.name}}
-      </view>
-    </scroll-view>
-
-    <view class="food-list">
-      <view wx:if="{{foodList.length === 0}}" class="empty-state">
-        <text class="empty-icon">🍽️</text>
-        <text class="empty-title">暂无菜品</text>
-        <text class="empty-text">切换分类或清除标签后再看看</text>
-      </view>
-
-      <view class="food-card" wx:for="{{foodList}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
-        <view class="food-icon c-{{item.categoryId}}">{{item.icon}}</view>
-        <view class="food-info">
-          <view class="food-name">{{item.name}}</view>
-          <view class="food-meta">
-            <text class="food-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
-            <text class="food-sales">已售 {{item.sales}}</text>
-          </view>
-          <view class="food-price">
-            <text class="price-symbol">¥</text>
-            <text class="price-value">{{item.price}}</text>
-            <text class="price-old" wx:if="{{item.originalPrice > item.price}}">¥{{item.originalPrice}}</text>
+        <view class="dish-main">
+          <view class="dish-name">{{item.name}}</view>
+          <view class="dish-desc">{{item.desc || '现点现做，新鲜出餐'}}</view>
+          <view class="dish-tags"><text>月售 {{item.sales}}</text><text wx:if="{{item.spec.length}}">可选规格</text><text wx:if="{{item.stock > 0 && item.stock < 10}}">仅剩{{item.stock}}份</text></view>
+          <view class="dish-bottom">
+            <view class="price"><text class="price-symbol">¥</text><text>{{item.price}}</text><text class="price-unit">起</text></view>
+            <view class="add-button {{item.stock <= 0 ? 'disabled' : ''}}" catchtap="addToCart" data-id="{{item._id}}"><text>{{item.stock > 0 ? '+' : '售罄'}}</text></view>
           </view>
         </view>
-        <view class="add-btn" catchtap="addToCart" data-id="{{item.id}}">+</view>
       </view>
+    </scroll-view>
+  </view>
 
-      <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore">加载更多</view>
-    </view>
+  <view class="cart-dock {{cartPulse ? 'pulse' : ''}}" wx:if="{{cartCount > 0}}" bindtap="goCart"><view class="cart-dock-icon">🛒<text>{{cartCount}}</text></view><view class="cart-dock-main"><text>已选 {{cartCount}} 件</text><text>去购物车确认口味和数量</text></view><view class="cart-dock-action">去结算 <text>›</text></view></view>
+
+  <view class="sheet-mask" wx:if="{{scenePanelVisible}}" bindtap="closeScenePanel"></view>
+  <view class="scene-sheet {{scenePanelVisible ? 'visible' : ''}}">
+    <view class="sheet-handle"></view><view class="sheet-title">选择用餐方式</view><view class="sheet-subtitle">不同方式会分别记录在订单中</view>
+    <view class="scene-option {{contextType === item.value ? 'active' : ''}}" wx:for="{{scenes}}" wx:key="value" data-type="{{item.value}}" bindtap="selectScene"><view class="scene-option-icon">{{item.icon}}</view><view class="scene-option-info"><text>{{item.label}}</text><text>{{item.desc}}</text></view><view class="scene-check">{{contextType === item.value ? '✓' : ''}}</view></view>
+    <view class="safe-bottom"></view>
   </view>
 </view>

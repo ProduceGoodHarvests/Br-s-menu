@@ -1,11 +1,8 @@
 var KEYS = {
-  CART: 'food_cart',
-  ORDERS: 'food_orders',
-  ROLE: 'app_role',
-  LOGIN: 'app_login',
-  CHECKOUT: 'food_checkout',
-  CUSTOM_DISHES: 'food_custom_dishes',
-  LEGACY_CUSTOM_DISHES: 'food_custom',
+  CART: 'restaurant_cart_v2',
+  CHECKOUT: 'restaurant_checkout_v2',
+  ORDER_CONTEXT: 'restaurant_order_context_v2',
+  MENU_CACHE: 'restaurant_menu_cache_v2',
 };
 
 function get(key, fallback) {
@@ -13,173 +10,89 @@ function get(key, fallback) {
   return value === '' || value === undefined || value === null ? fallback : value;
 }
 
-function set(key, value) {
-  wx.setStorageSync(key, value);
-}
-
-function remove(key) {
-  wx.removeStorageSync(key);
-}
+function set(key, value) { wx.setStorageSync(key, value); }
+function remove(key) { wx.removeStorageSync(key); }
 
 function getCart() {
   var cart = get(KEYS.CART, []);
   return Array.isArray(cart) ? cart : [];
 }
 
-function setCart(cart) {
-  set(KEYS.CART, Array.isArray(cart) ? cart : []);
+function setCart(cart) { set(KEYS.CART, Array.isArray(cart) ? cart : []); }
+function clearCart() { remove(KEYS.CART); }
+function getCheckout() { var value = get(KEYS.CHECKOUT, []); return Array.isArray(value) ? value : []; }
+function setCheckout(value) { set(KEYS.CHECKOUT, Array.isArray(value) ? value : []); }
+function clearCheckout() { remove(KEYS.CHECKOUT); }
+
+function getOrderContext() {
+  var value = get(KEYS.ORDER_CONTEXT, {});
+  return { type: value.type || 'dine_in', tableNo: value.tableNo || '' };
 }
 
-function clearCart() {
-  setCart([]);
+function setOrderContext(value) {
+  var current = getOrderContext();
+  set(KEYS.ORDER_CONTEXT, {
+    type: value && value.type ? value.type : current.type,
+    tableNo: value && value.tableNo !== undefined ? value.tableNo : current.tableNo,
+  });
 }
 
-function getOrders() {
-  var orders = get(KEYS.ORDERS, []);
-  return Array.isArray(orders) ? orders : [];
+function setMenuCache(menu) { set(KEYS.MENU_CACHE, menu || { categories: [], dishes: [] }); }
+function getMenuCache() { return get(KEYS.MENU_CACHE, { categories: [], dishes: [] }); }
+
+function cartKey(goodsId, selections) {
+  var keys = Object.keys(selections || {}).sort();
+  var parts = [];
+  for (var i = 0; i < keys.length; i++) parts.push(keys[i] + ':' + selections[keys[i]]);
+  return String(goodsId) + '|' + parts.join('|');
 }
 
-function setOrders(orders) {
-  set(KEYS.ORDERS, Array.isArray(orders) ? orders : []);
-}
-
-function addOrder(order) {
-  var orders = getOrders();
-  orders.unshift(order);
-  setOrders(orders);
-  return orders;
-}
-
-function updateOrderStatus(orderId, status) {
-  var orders = getOrders();
-
-  for (var i = 0; i < orders.length; i++) {
-    if (orders[i].id === orderId || orders[i]._id === orderId) {
-      orders[i].status = status;
+function addCartItem(dish, quantity, selections) {
+  var cart = getCart();
+  var key = cartKey(dish._id, selections);
+  var found = false;
+  for (var i = 0; i < cart.length; i++) {
+    if (cart[i].cartKey === key) {
+      cart[i].quantity = Math.min(99, Number(cart[i].quantity || 0) + Number(quantity || 1));
+      found = true;
       break;
     }
   }
-
-  setOrders(orders);
-  return orders;
-}
-
-function getRole() {
-  return get(KEYS.ROLE, 'customer');
-}
-
-function setRole(role) {
-  set(KEYS.ROLE, role === 'merchant' ? 'merchant' : 'customer');
-}
-
-function getLoginInfo() {
-  return get(KEYS.LOGIN, null);
-}
-
-function setLoginInfo(info) {
-  set(KEYS.LOGIN, info || {});
-}
-
-function clearLoginInfo() {
-  remove(KEYS.LOGIN);
-}
-
-function getCheckout() {
-  var items = get(KEYS.CHECKOUT, []);
-  return Array.isArray(items) ? items : [];
-}
-
-function setCheckout(items) {
-  set(KEYS.CHECKOUT, Array.isArray(items) ? items : []);
-}
-
-function clearCheckout() {
-  remove(KEYS.CHECKOUT);
-}
-
-function getCustomDishes() {
-  var dishes = get(KEYS.CUSTOM_DISHES, []);
-  if ((!Array.isArray(dishes) || dishes.length === 0) && get(KEYS.LEGACY_CUSTOM_DISHES, []).length) {
-    dishes = get(KEYS.LEGACY_CUSTOM_DISHES, []);
+  if (!found) {
+    cart.push({
+      cartKey: key,
+      goodsId: dish._id,
+      name: dish.name,
+      img: dish.img || '',
+      price: Number(dish.price || 0),
+      quantity: Number(quantity || 1),
+      specSelections: selections || {},
+    });
   }
-  return Array.isArray(dishes) ? dishes : [];
+  setCart(cart);
+  return cart;
 }
 
-function setCustomDishes(dishes) {
-  set(KEYS.CUSTOM_DISHES, Array.isArray(dishes) ? dishes : []);
-}
-
-function addCustomDish(dish) {
-  var dishes = getCustomDishes();
-  dishes.unshift(dish);
-  setCustomDishes(dishes);
-  return dishes;
-}
-
-function deleteCustomDish(dishId) {
-  var dishes = getCustomDishes();
-  var kept = [];
-
-  for (var i = 0; i < dishes.length; i++) {
-    if (String(dishes[i].i) !== String(dishId) && String(dishes[i]._id) !== String(dishId)) {
-      kept.push(dishes[i]);
-    }
+function toGoodsList(items) {
+  var list = [];
+  for (var i = 0; i < (items || []).length; i++) {
+    list.push({ goodsId: items[i].goodsId, quantity: Number(items[i].quantity || 0), specSelections: items[i].specSelections || {} });
   }
-
-  setCustomDishes(kept);
-  return kept;
-}
-
-function seedDemoOrders() {
-  var orders = getOrders();
-  if (orders.length > 0) return;
-
-  setOrders([
-    {
-      id: 'ORD20260608001',
-      table: 'A01 桌 大厅',
-      items: [
-        { name: '冷吃牛肉', price: 32, quantity: 1, subtotal: '32.00', specs: [{ name: '辣度', value: '中辣' }] },
-        { name: '番茄炒鸡蛋', price: 18, quantity: 1, subtotal: '18.00', specs: [] },
-      ],
-      totalPrice: '50.00',
-      remark: '少油',
-      status: 'completed',
-      createTime: '2026-06-08 12:30',
-    },
-    {
-      id: 'ORD20260609001',
-      table: 'B02 桌 靠窗',
-      items: [
-        { name: '水煮鱼片', price: 48, quantity: 1, subtotal: '48.00', specs: [{ name: '辣度', value: '微辣' }] },
-      ],
-      totalPrice: '48.00',
-      remark: '',
-      status: 'pending',
-      createTime: '2026-06-09 18:45',
-    },
-  ]);
+  return list;
 }
 
 module.exports = {
   getCart: getCart,
   setCart: setCart,
   clearCart: clearCart,
-  getOrders: getOrders,
-  setOrders: setOrders,
-  addOrder: addOrder,
-  updateOrderStatus: updateOrderStatus,
-  getRole: getRole,
-  setRole: setRole,
-  getLoginInfo: getLoginInfo,
-  setLoginInfo: setLoginInfo,
-  clearLoginInfo: clearLoginInfo,
   getCheckout: getCheckout,
   setCheckout: setCheckout,
   clearCheckout: clearCheckout,
-  getCustomDishes: getCustomDishes,
-  setCustomDishes: setCustomDishes,
-  addCustomDish: addCustomDish,
-  deleteCustomDish: deleteCustomDish,
-  seedDemoOrders: seedDemoOrders,
+  getOrderContext: getOrderContext,
+  setOrderContext: setOrderContext,
+  setMenuCache: setMenuCache,
+  getMenuCache: getMenuCache,
+  addCartItem: addCartItem,
+  toGoodsList: toGoodsList,
+  cartKey: cartKey,
 };

@@ -1,103 +1,95 @@
-var storage = require('./storage');
-
-var cloudReady = false;
 var initialized = false;
 
 function init() {
-  if (initialized) return cloudReady;
+  if (initialized) return true;
+  if (!wx.cloud) return false;
+  wx.cloud.init({ traceUser: true });
   initialized = true;
-
-  if (typeof wx === 'undefined' || !wx.cloud) {
-    cloudReady = false;
-    return cloudReady;
-  }
-
-  try {
-    wx.cloud.init({ traceUser: true });
-    cloudReady = true;
-  } catch (err) {
-    console.warn('云开发初始化失败', err);
-    cloudReady = false;
-  }
-
-  return cloudReady;
+  return true;
 }
 
-function call(name, data) {
-  return new Promise(function (resolve, reject) {
-    if (!init()) {
-      reject(new Error('云开发未启用'));
-      return;
+function call(action, data) {
+  if (!init()) return Promise.reject({ code: 'CLOUD_UNAVAILABLE', msg: '当前基础库不支持云开发' });
+  return wx.cloud.callFunction({
+    name: 'restaurantService',
+    data: Object.assign({}, data || {}, { action: action }),
+  }).then(function (response) {
+    var result = response.result || {};
+    if (result.ok === false) return Promise.reject(result);
+    return result;
+  }).catch(function (err) {
+    if (err && err.msg) return Promise.reject(err);
+    var rawMessage = (err && (err.errMsg || err.message)) || '网络请求失败';
+    if (/DATABASE_COLLECTION_NOT_EXIST|database collection does not exist|Db or Table not exist|-502005/i.test(rawMessage)) {
+      return Promise.reject({ code: 'SYSTEM_NOT_INITIALIZED', msg: '门店云数据库尚未初始化，请管理员先完成初始化' });
     }
-
-    wx.cloud.callFunction({
-      name: name,
-      data: data || {},
-    }).then(function (res) {
-      var result = res.result || {};
-      if (result.ok === false) {
-        reject(result);
-      } else {
-        resolve(result);
-      }
-    }).catch(reject);
+    return Promise.reject({ code: 'NETWORK_ERROR', msg: rawMessage });
   });
 }
 
-function submitOrder(order) {
-  return call('orderManager', { action: 'submit', order: order });
-}
+function getCurrentUser() { return call('auth.current'); }
+function getAppConfig() { return call('app.config'); }
+function getMenu() { return call('menu.list'); }
+function getDish(goodsId) { return call('menu.detail', { goodsId: goodsId }); }
+function getTables() { return call('table.list'); }
+function quoteOrder(goodsList) { return call('order.quote', { goodsList: goodsList }); }
+function createOrder(data) { return call('order.create', data); }
+function getOrders(data) { return call('order.list', data || {}); }
+function getOrder(orderId) { return call('order.detail', { orderId: orderId }); }
+function cancelOrder(orderId) { return call('order.cancel', { orderId: orderId }); }
+function getPayParams(orderId) { return call('order.pay', { orderId: orderId }); }
 
-function updateOrderStatus(orderId, status) {
-  return call('orderManager', { action: 'updateStatus', orderId: orderId, status: status });
-}
-
-function getOrders(filter, pageSize, page) {
-  return call('orderManager', {
-    action: 'list',
-    filter: filter || '',
-    pageSize: pageSize || 30,
-    page: page || 1,
-    role: storage.getRole(),
-  });
-}
-
-function getCategories() {
-  return call('menuManager', { action: 'categories' });
-}
-
-function getDishes(categoryId, page, keyword) {
-  return call('menuManager', {
-    action: 'list',
-    categoryId: categoryId || 0,
-    pageSize: 50,
-    page: page || 1,
-    keyword: keyword || '',
-  });
-}
-
-function addCustomDish(name, price, categoryId, tag) {
-  return call('menuManager', {
-    action: 'add',
-    name: name,
-    price: price,
-    categoryId: categoryId,
-    tag: tag || '',
-  });
-}
-
-function deleteDish(dishId) {
-  return call('menuManager', { action: 'delete', dishId: dishId });
-}
+function adminDashboard() { return call('admin.dashboard'); }
+function adminOrders(data) { return call('admin.order.list', data || {}); }
+function adminUpdateOrder(orderId, orderStatus) { return call('admin.order.update', { orderId: orderId, orderStatus: orderStatus }); }
+function adminDishes() { return call('admin.dish.list'); }
+function adminSaveDish(dishId, dish) { return call('admin.dish.save', { dishId: dishId || '', dish: dish }); }
+function adminDeleteDish(dishId) { return call('admin.dish.delete', { dishId: dishId }); }
+function adminCategories() { return call('admin.category.list'); }
+function adminSaveCategory(categoryId, category) { return call('admin.category.save', { categoryId: categoryId || '', category: category }); }
+function adminDeleteCategory(categoryId) { return call('admin.category.delete', { categoryId: categoryId }); }
+function adminTables() { return call('admin.table.list'); }
+function adminSaveTable(table) { return call('admin.table.save', { table: table }); }
+function adminDeleteTable(tableNo) { return call('admin.table.delete', { tableNo: tableNo }); }
+function adminList() { return call('admin.list'); }
+function adminSave(openid, role, status) { return call('admin.save', { openid: openid, role: role, status: status }); }
+function adminRemove(adminId) { return call('admin.remove', { adminId: adminId }); }
+function getPrintJobs() { return call('printer.jobs'); }
+function reprint(orderId) { return call('printer.reprint', { orderId: orderId }); }
+function uploadImage(base64, extension, kind) { return call('storage.upload', { base64: base64, extension: extension, kind: kind || 'dish' }); }
+function deleteImage(fileID) { return call('storage.delete', { fileID: fileID }); }
 
 module.exports = {
   init: init,
   call: call,
-  submitOrder: submitOrder,
-  updateOrderStatus: updateOrderStatus,
+  getCurrentUser: getCurrentUser,
+  getAppConfig: getAppConfig,
+  getMenu: getMenu,
+  getDish: getDish,
+  getTables: getTables,
+  quoteOrder: quoteOrder,
+  createOrder: createOrder,
   getOrders: getOrders,
-  getCategories: getCategories,
-  getDishes: getDishes,
-  addCustomDish: addCustomDish,
-  deleteDish: deleteDish,
+  getOrder: getOrder,
+  cancelOrder: cancelOrder,
+  getPayParams: getPayParams,
+  adminDashboard: adminDashboard,
+  adminOrders: adminOrders,
+  adminUpdateOrder: adminUpdateOrder,
+  adminDishes: adminDishes,
+  adminSaveDish: adminSaveDish,
+  adminDeleteDish: adminDeleteDish,
+  adminCategories: adminCategories,
+  adminSaveCategory: adminSaveCategory,
+  adminDeleteCategory: adminDeleteCategory,
+  adminTables: adminTables,
+  adminSaveTable: adminSaveTable,
+  adminDeleteTable: adminDeleteTable,
+  adminList: adminList,
+  adminSave: adminSave,
+  adminRemove: adminRemove,
+  getPrintJobs: getPrintJobs,
+  reprint: reprint,
+  uploadImage: uploadImage,
+  deleteImage: deleteImage,
 };

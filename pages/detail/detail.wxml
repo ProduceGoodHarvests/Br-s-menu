@@ -1,67 +1,20 @@
-<view class="detail-page" wx:if="{{food}}">
-  <view class="food-hero c-{{food.categoryId}}">
-    <text class="hero-emoji">{{food.icon}}</text>
-    <text class="hero-cat">{{food.categoryName}}</text>
+<view class="page detail-page" wx:if="{{!loading && dish}}">
+  <view class="detail-hero"><image class="hero-image" wx:if="{{dish.img}}" src="{{dish.img}}" mode="aspectFill" /><view class="hero-image placeholder" wx:else>🍲</view><view class="hero-gradient"></view><view class="hero-badge">现点现做</view></view>
+  <view class="detail-card">
+    <view class="detail-title-row"><view class="detail-title">{{dish.name}}</view><view class="detail-sales">月售 {{dish.sales}}</view></view>
+    <view class="detail-price"><text>¥</text>{{unitPrice}}<text>起</text></view>
+    <view class="detail-desc-title">菜品介绍</view><view class="detail-desc">{{dish.desc || '精选新鲜食材，接单后现炒现做。'}}</view>
+    <view class="ingredient-row"><view>✓ 新鲜食材</view><view>✓ 现点现做</view><view>✓ 安心打包</view></view>
   </view>
-
-  <view class="info-section">
-    <view class="title-row">
-      <text class="food-title">{{food.name}}</text>
-      <text class="food-tag" wx:if="{{food.tag}}">{{food.tag}}</text>
-    </view>
-    <view class="food-desc">{{food.desc}}</view>
-    <view class="food-stats">
-      <text>评分 {{food.rating}}</text>
-      <text>已售 {{food.sales}}</text>
+  <view class="spec-card" wx:for="{{dish.spec}}" wx:key="name" wx:for-item="group">
+    <view class="spec-title"><text>{{group.name}}</text><text>请选择</text></view>
+    <view class="option-list">
+      <view class="option {{selections[group.name] === item.name ? 'active' : ''}}" wx:for="{{group.options}}" wx:key="name" data-group="{{group.name}}" data-value="{{item.name}}" bindtap="selectOption">{{item.name}}{{item.priceDelta > 0 ? ' +¥' + item.priceDelta : ''}}</view>
     </view>
   </view>
-
-  <view class="price-section">
-    <view class="price-row">
-      <text class="symbol">¥</text>
-      <text class="current-price">{{totalPrice}}</text>
-      <text class="original-price" wx:if="{{food.originalPrice > food.price}}">¥{{food.originalPrice}}</text>
-    </view>
-    <text class="unit-price" wx:if="{{quantity > 1}}">单价 ¥{{unitPrice}}</text>
-  </view>
-
-  <block wx:if="{{food.specs && food.specs.length > 0}}">
-    <view class="spec-section" wx:for="{{food.specs}}" wx:key="name" wx:for-item="spec">
-      <view class="spec-title">{{spec.name}}</view>
-      <view class="spec-options">
-        <view
-          class="spec-option {{selectedSpecs[spec.name] === option ? 'active' : ''}}"
-          wx:for="{{spec.options}}"
-          wx:key="*this"
-          wx:for-item="option"
-          bindtap="selectSpec"
-          data-spec="{{spec.name}}"
-          data-value="{{option}}"
-        >
-          {{option}}
-        </view>
-      </view>
-    </view>
-  </block>
-
-  <view class="qty-section">
-    <text class="section-label">数量</text>
-    <view class="qty-control">
-      <view class="qty-btn {{quantity <= 1 ? 'disabled' : ''}}" bindtap="decreaseQty">−</view>
-      <text class="qty-value">{{quantity}}</text>
-      <view class="qty-btn" bindtap="increaseQty">+</view>
-    </view>
-  </view>
-
-  <view class="detail-section">
-    <view class="section-label">菜品说明</view>
-    <view class="detail-line">新鲜食材现点现做，出餐顺序以厨房实际排单为准。</view>
-    <view class="detail-line">如有忌口、过敏或其他要求，请在下单备注里说明。</view>
-  </view>
-
-  <view class="bottom-bar safe-bottom">
-    <view class="cart-entry" bindtap="goCart">🛒</view>
-    <view class="btn-add-cart" bindtap="addToCart">加入购物车</view>
-    <view class="btn-buy-now" bindtap="buyNow">立即购买</view>
+  <view class="bottom-bar">
+    <view class="quantity"><view data-delta="-1" bindtap="changeQuantity">−</view><text>{{quantity}}</text><view class="plus" data-delta="1" bindtap="changeQuantity">+</view></view>
+    <view class="detail-add-button {{dish.stock <= 0 ? 'disabled' : ''}}" bindtap="addToCart"><view><text>{{dish.stock > 0 ? '加入购物车' : '暂时售罄'}}</text><text wx:if="{{dish.stock > 0}}">已选 {{quantity}} 份</text></view><text wx:if="{{dish.stock > 0}}">¥{{unitPrice}}</text></view>
   </view>
 </view>
+<view class="detail-loading" wx:else><view class="detail-loading-hero shimmer"></view><view class="detail-loading-card"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view>

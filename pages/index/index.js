@@ -1,188 +1,147 @@
-var menu = require('../../utils/menu');
+var api = require('../../utils/cloud-api');
 var storage = require('../../utils/storage');
-var format = require('../../utils/format');
-
-var PAGE_SIZE = 30;
-
-function toViewList(list) {
-  var result = [];
-  for (var i = 0; i < list.length; i++) {
-    result.push(menu.normalizeDish(list[i]));
-  }
-  return result;
-}
-
-function defaultSpecs(food) {
-  var specs = [];
-  var raw = food.sp || food.specs || [];
-
-  for (var i = 0; i < raw.length; i++) {
-    specs.push({
-      name: raw[i].n || raw[i].name,
-      value: (raw[i].o || raw[i].options || [])[0],
-    });
-  }
-
-  return specs;
-}
+var menu = require('../../utils/menu');
 
 Page({
   data: {
-    searchKeyword: '',
+    loading: true,
+    error: '',
     categories: [],
-    activeCategory: 0,
-    tags: [],
-    activeTag: '',
-    hotFoods: [],
-    foodList: [],
-    searchResults: [],
-    showSearch: false,
-    hasMore: false,
+    activeCategory: 'all',
+    dishes: [],
+    visibleDishes: [],
+    keyword: '',
+    contextType: 'dine_in',
+    contextText: '堂食',
+    tableNo: '',
     cartCount: 0,
+    scenePanelVisible: false,
+    addingId: '',
+    cartPulse: false,
+    skeletons: [1, 2, 3, 4],
+    scenes: [
+      { value: 'dine_in', label: '堂食', icon: '🍽', desc: '选择桌台，店内用餐' },
+      { value: 'takeaway', label: '打包带走', icon: '🥡', desc: '到店取餐，打包带走' },
+      { value: 'pickup', label: '到店自提', icon: '🛍', desc: '提前下单，到店即取' },
+    ],
   },
 
-  onLoad: function () {
-    this.initData();
-  },
+  onLoad: function () { this.loadMenu(); },
 
   onShow: function () {
-    this.initData();
-    this.updateCartBadge();
-  },
-
-  initData: function () {
-    var all = menu.getAllDishes();
+    var context = storage.getOrderContext();
+    var cart = storage.getCart();
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) count += Number(cart[i].quantity || 0);
     this.setData({
-      categories: menu.getCategories(true),
-      hotFoods: toViewList(menu.getHotDishes()).slice(0, 8),
-      tags: menu.getTagOptions(all),
+      contextType: context.type,
+      contextText: this.typeText(context.type),
+      tableNo: context.tableNo,
+      cartCount: count,
     });
-    this.applyFilters();
   },
 
-  getFilteredSource: function () {
-    var list = menu.getDishesByCategory(this.data.activeCategory);
-    var tag = this.data.activeTag;
+  typeText: function (type) {
+    return { dine_in: '堂食', takeaway: '打包带走', pickup: '到店自提' }[type] || '堂食';
+  },
 
-    if (!tag) return list;
-
-    var filtered = [];
-    for (var i = 0; i < list.length; i++) {
-      if ((list[i].t || list[i].tag || '') === tag) {
-        filtered.push(list[i]);
+  loadMenu: function () {
+    var that = this;
+    this.setData({ loading: true, error: '' });
+    api.getMenu().then(function (result) {
+      storage.setMenuCache(result);
+      that.useMenu(result);
+    }).catch(function (err) {
+      var cached = storage.getMenuCache();
+      if (cached.dishes && cached.dishes.length) {
+        that.useMenu(cached);
+        that.setData({ error: '当前显示最近一次菜单，联网后可自动更新' });
+      } else {
+        that.setData({ loading: false, error: err.msg || '菜单加载失败，请下拉重试' });
       }
-    }
-
-    return filtered;
+    });
   },
 
-  applyFilters: function () {
-    var normalized = toViewList(this.getFilteredSource());
-    this._fullList = normalized;
+  useMenu: function (result) {
+    var categories = [{ _id: 'all', name: '全部' }].concat(result.categories || []);
+    var dishes = [];
+    for (var i = 0; i < (result.dishes || []).length; i++) dishes.push(menu.normalizeDish(result.dishes[i]));
+    this.setData({ categories: categories, dishes: dishes, loading: false });
+    this.applyFilter();
+  },
 
-    this.setData({
-      foodList: normalized.slice(0, PAGE_SIZE),
-      hasMore: normalized.length > PAGE_SIZE,
-    });
+  applyFilter: function () {
+    var active = this.data.activeCategory;
+    var keyword = String(this.data.keyword || '').trim().toLowerCase();
+    var visible = [];
+    for (var i = 0; i < this.data.dishes.length; i++) {
+      var dish = this.data.dishes[i];
+      var categoryMatch = active === 'all' || dish.cid === active;
+      var text = (dish.name + ' ' + dish.desc).toLowerCase();
+      if (categoryMatch && (!keyword || text.indexOf(keyword) >= 0)) visible.push(dish);
+    }
+    this.setData({ visibleDishes: visible });
   },
 
   switchCategory: function (e) {
-    var id = Number(e.currentTarget.dataset.id || 0);
-    this.setData({
-      activeCategory: id,
-      activeTag: '',
-      tags: menu.getTagOptions(menu.getDishesByCategory(id)),
-    });
-    this.applyFilters();
-  },
-
-  selectTag: function (e) {
-    this.setData({ activeTag: e.currentTarget.dataset.tag || '' });
-    this.applyFilters();
-  },
-
-  loadMore: function () {
-    if (!this.data.hasMore) return;
-
-    var current = this.data.foodList;
-    var more = this._fullList.slice(current.length, current.length + PAGE_SIZE);
-
-    this.setData({
-      foodList: current.concat(more),
-      hasMore: current.length + more.length < this._fullList.length,
-    });
+    this.setData({ activeCategory: e.currentTarget.dataset.id });
+    this.applyFilter();
   },
 
   onSearchInput: function (e) {
-    var keyword = e.detail.value || '';
-    var results = keyword.trim() ? toViewList(menu.searchDishes(keyword)).slice(0, 40) : [];
-
-    this.setData({
-      searchKeyword: keyword,
-      searchResults: results,
-      showSearch: !!keyword.trim(),
-    });
+    this.setData({ keyword: e.detail.value || '' });
+    this.applyFilter();
   },
 
-  cancelSearch: function () {
+  clearSearch: function () {
+    this.setData({ keyword: '' });
+    this.applyFilter();
+  },
+
+  chooseType: function () {
+    this.setData({ scenePanelVisible: true });
+  },
+
+  closeScenePanel: function () {
+    this.setData({ scenePanelVisible: false });
+  },
+
+  selectScene: function (e) {
+    var type = e.currentTarget.dataset.type;
+    storage.setOrderContext({ type: type });
     this.setData({
-      searchKeyword: '',
-      searchResults: [],
-      showSearch: false,
+      contextType: type,
+      contextText: this.typeText(type),
+      scenePanelVisible: false,
     });
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
   },
 
   goDetail: function (e) {
-    wx.navigateTo({
-      url: '/pages/detail/detail?id=' + e.currentTarget.dataset.id,
-    });
+    wx.navigateTo({ url: '/pages/detail/detail?id=' + encodeURIComponent(e.currentTarget.dataset.id) });
   },
 
   addToCart: function (e) {
-    var id = e.currentTarget.dataset.id;
-    var food = menu.getDishById(id);
-    if (!food) return;
-
-    var normalized = menu.normalizeDish(food);
-    var specs = defaultSpecs(food);
-    var unitPrice = format.calcUnitPrice(normalized.price, specs);
-    var specKey = format.buildSpecKey(specs);
+    var dish = menu.findDish(this.data.dishes, e.currentTarget.dataset.id);
+    if (!dish) return;
+    if (dish.stock <= 0) return wx.showToast({ title: '暂时售罄', icon: 'none' });
+    if (dish.spec.length) return this.goDetail(e);
+    storage.addCartItem(dish, 1, {});
+    getApp().updateCartCount();
     var cart = storage.getCart();
-    var index = -1;
-
-    for (var i = 0; i < cart.length; i++) {
-      if (String(cart[i].id) === String(normalized.id) && (cart[i].specKey || '') === specKey) {
-        index = i;
-        break;
-      }
-    }
-
-    if (index > -1) {
-      cart[index].quantity += 1;
-    } else {
-      cart.push({
-        id: normalized.id,
-        name: normalized.name,
-        icon: normalized.icon,
-        price: unitPrice,
-        specs: specs,
-        specKey: specKey,
-        quantity: 1,
-      });
-    }
-
-    storage.setCart(cart);
-    this.updateCartBadge();
-
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) count += Number(cart[i].quantity || 0);
+    this.setData({ cartCount: count, addingId: dish._id, cartPulse: true });
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
-    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 800 });
+    var that = this;
+    setTimeout(function () { that.setData({ addingId: '', cartPulse: false }); }, 420);
   },
 
-  updateCartBadge: function () {
-    var app = getApp();
-    if (app && app.updateCartCount) {
-      app.updateCartCount();
-      this.setData({ cartCount: app.globalData.cartCount });
-    }
+  goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
+
+  onPullDownRefresh: function () {
+    var that = this;
+    this.loadMenu();
+    setTimeout(function () { wx.stopPullDownRefresh(); }, 500);
   },
 });

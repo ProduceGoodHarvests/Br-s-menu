@@ -1,57 +1,18 @@
-<view class="cart-page">
-  <view wx:if="{{isEmpty}}" class="empty-state">
-    <text class="empty-icon">🛒</text>
-    <text class="empty-title">购物车是空的</text>
-    <text class="empty-text">先去挑几道喜欢的菜</text>
-    <view class="empty-btn" bindtap="goOrder">去点餐</view>
+<view class="page cart-page">
+  <view class="cart-header" wx:if="{{items.length}}"><view><text>我的餐篮</text><text>共 {{itemCount}} 件美味</text></view><view class="clear-action" bindtap="clearCart">清空</view></view>
+  <view class="empty-card cart-empty" wx:if="{{!items.length}}"><view class="empty-illustration"><text>🛒</text><view></view></view><view class="empty-title">餐篮里还没有菜品</view><view class="empty-desc">去挑几道喜欢的菜，现点现做更好吃</view><view class="empty-primary" bindtap="goMenu">去点餐 <text>›</text></view></view>
+  <view class="cart-card" wx:for="{{items}}" wx:key="cartKey">
+    <view class="cart-media"><image class="cart-image" wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill" /><view class="cart-image placeholder" wx:else>🍲</view></view>
+    <view class="cart-info">
+      <view class="cart-name-row"><view class="cart-name">{{item.name}}</view><view class="remove-item" data-index="{{index}}" bindtap="removeItem">×</view></view>
+      <view class="cart-spec" wx:if="{{item.specText}}">{{item.specText}}</view><view class="cart-spec default" wx:else>默认口味</view>
+      <view class="cart-row"><view class="price"><text class="price-symbol">¥</text><text>{{item.serverPrice || item.price}}</text></view><view class="stepper"><view class="step-button" data-index="{{index}}" data-delta="-1" bindtap="changeQty">−</view><text>{{item.quantity}}</text><view class="step-button plus" data-index="{{index}}" data-delta="1" bindtap="changeQty">+</view></view></view>
+    </view>
   </view>
-
-  <view wx:else class="cart-content">
-    <view class="cart-list">
-      <view class="cart-item" wx:for="{{cartItems}}" wx:key="specKey">
-        <view class="check-wrap" bindtap="toggleCheck" data-index="{{index}}">
-          <view class="check-box {{item.checked ? 'checked' : ''}}">
-            <text wx:if="{{item.checked}}">✓</text>
-          </view>
-        </view>
-
-        <view class="item-image">{{item.icon || '🍽️'}}</view>
-
-        <view class="item-info">
-          <view class="item-name">{{item.name}}</view>
-          <view class="item-specs" wx:if="{{item.specs && item.specs.length > 0}}">
-            <text wx:for="{{item.specs}}" wx:key="name" wx:for-item="spec">
-              {{spec.name}}：{{spec.value}} 
-            </text>
-          </view>
-          <view class="item-bottom">
-            <view class="item-price">¥{{item.priceText}}</view>
-            <view class="item-qty-control">
-              <view class="qty-btn" catchtap="changeQty" data-index="{{index}}" data-action="minus">−</view>
-              <text class="qty-value">{{item.quantity}}</text>
-              <view class="qty-btn" catchtap="changeQty" data-index="{{index}}" data-action="plus">+</view>
-            </view>
-          </view>
-        </view>
-
-        <view class="item-delete" catchtap="deleteItem" data-index="{{index}}">×</view>
-      </view>
-    </view>
-
-    <view class="bottom-bar safe-bottom">
-      <view class="bottom-left" bindtap="toggleAll">
-        <view class="check-box {{allChecked ? 'checked' : ''}}">
-          <text wx:if="{{allChecked}}">✓</text>
-        </view>
-        <text class="check-all-text">全选</text>
-      </view>
-      <view class="bottom-right">
-        <view class="total-info">
-          <text class="total-label">合计</text>
-          <text class="total-price">¥{{totalPrice}}</text>
-        </view>
-        <view class="checkout-btn" bindtap="checkout">结算 {{checkedCount}}</view>
-      </view>
-    </view>
+  <view class="cart-tip" wx:if="{{items.length}}"><text>💡</text><view><text>温馨提示</text><text>口味备注和用餐方式可在下一步填写</text></view></view>
+  <view class="notice error" wx:if="{{error}}"><text>!</text>{{error}}</view>
+  <view class="cart-footer" wx:if="{{items.length}}">
+    <view class="cart-total"><text>合计</text><view><text>¥</text>{{quote ? quote.payPrice : '--'}}</view><text>价格以服务端结算为准</text></view>
+    <view class="checkout-button {{!quote || quoting ? 'disabled' : ''}}" bindtap="checkout"><text>{{quoting ? '核价中' : '去结算'}}</text><text wx:if="{{!quoting}}">{{itemCount}}件 ›</text><view class="button-spinner" wx:if="{{quoting}}"></view></view>
   </view>
 </view>

@@ -1,60 +1,21 @@
-<view class="checkout-page">
-  <view class="section">
-    <view class="section-title">选择桌号</view>
-    <view class="table-list">
-      <view
-        class="table-item {{tableIndex === index ? 'active' : ''}}"
-        wx:for="{{tables}}"
-        wx:key="id"
-        wx:for-index="index"
-        bindtap="selectTable"
-        data-index="{{index}}"
-      >
-        <text class="table-name">{{item.name}}</text>
-        <text class="table-area">{{item.area}}</text>
-      </view>
+<view class="page checkout-page">
+  <view class="checkout-loading" wx:if="{{loading}}"><view class="checkout-loading-icon">⏳</view><view>正在为你确认库存和价格</view><text>很快就好...</text></view>
+  <block wx:else>
+    <view class="card">
+      <view class="card-title-row"><view><text>用餐方式</text><text>请选择本次订单场景</text></view><view class="required-dot">必选</view></view>
+      <view class="type-tabs"><view class="type-tab {{type === item.value ? 'active' : ''}}" wx:for="{{types}}" wx:key="value" data-type="{{item.value}}" bindtap="selectType"><text>{{item.value === 'dine_in' ? '🍽' : item.value === 'takeaway' ? '🥡' : '🛍'}}</text><text>{{item.label}}</text><view>{{type === item.value ? '✓' : ''}}</view></view></view>
+      <block wx:if="{{type === 'dine_in'}}">
+        <picker range="{{tables}}" range-key="tableNo" bindchange="selectTable"><view class="table-selector"><view class="table-selector-icon">▦</view><view><text>当前桌台</text><text>{{tableNo ? tableNo + ' 桌' : '请选择桌台'}}</text></view><text>更换 ›</text></view></picker>
+        <view class="manual-table"><text>手动修改桌号</text><input value="{{tableNo}}" maxlength="30" placeholder="例如 A01" bindinput="onTableInput" /></view>
+      </block>
     </view>
-  </view>
-
-  <view class="section">
-    <view class="section-title">菜品清单</view>
-    <view class="item-list">
-      <view class="item" wx:for="{{items}}" wx:key="specKey">
-        <view class="item-left">
-          <view class="item-name">{{item.name}}</view>
-          <view class="item-specs" wx:if="{{item.specs && item.specs.length > 0}}">
-            <text wx:for="{{item.specs}}" wx:key="name" wx:for-item="spec">
-              {{spec.name}}：{{spec.value}} 
-            </text>
-          </view>
-        </view>
-        <view class="item-right">
-          <text class="item-qty">x{{item.quantity}}</text>
-          <text class="item-price">¥{{item.subtotal}}</text>
-        </view>
-      </view>
+    <view class="card">
+      <view class="card-title-row"><view><text>菜品明细</text><text>共 {{quote.goodsList.length}} 道菜</text></view></view>
+      <view class="checkout-line" wx:for="{{quote.goodsList}}" wx:key="goodsId"><view class="checkout-line-image"><image wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill"/><text wx:else>🍲</text></view><view class="checkout-line-main"><text>{{item.name}}</text><view><text class="line-spec" wx:for="{{item.specs}}" wx:key="name">{{item.value}} </text></view><text>¥{{item.price}} × {{item.quantity}}</text></view><text class="checkout-subtotal">¥{{item.subtotal}}</text></view>
+      <view class="total-line"><text>商品合计</text><text>¥{{quote.payPrice}}</text></view>
     </view>
-  </view>
-
-  <view class="section">
-    <view class="section-title">订单备注</view>
-    <textarea
-      class="remark-input"
-      placeholder="口味、忌口、打包等要求"
-      value="{{remark}}"
-      bindinput="onRemarkInput"
-      maxlength="100"
-    />
-  </view>
-
-  <view class="total-section">
-    <text class="total-label">合计金额</text>
-    <text class="total-price">¥{{totalPrice}}</text>
-  </view>
-
-  <view class="submit-area safe-bottom">
-    <button class="submit-btn" bindtap="submitOrder" disabled="{{submitting}}">
-      {{submitting ? '提交中...' : '提交订单'}}
-    </button>
-  </view>
+    <view class="card remark-card"><view class="card-title-row"><view><text>口味备注</text><text>选填，请尽量简洁说明</text></view><text>{{remark.length}}/200</text></view><textarea maxlength="200" placeholder="例如：少油、微辣、不要香菜" value="{{remark}}" bindinput="onRemarkInput" /></view>
+    <view class="checkout-safe-tip">🔒 价格与库存已由云端实时校验</view>
+    <view class="checkout-footer"><view class="checkout-total"><text>应付</text><view><text>¥</text>{{quote.payPrice}}</view></view><view class="pay-button {{submitting ? 'disabled' : ''}}" bindtap="submitOrder"><view class="button-spinner light" wx:if="{{submitting}}"></view><text>{{submitting ? '正在创建订单' : '提交订单并支付'}}</text><text wx:if="{{!submitting}}">›</text></view></view>
+  </block>
 </view>

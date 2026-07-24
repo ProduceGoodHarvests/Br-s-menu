@@ -1,177 +1,77 @@
-var storage = require('../../utils/storage');
-var menu = require('../../utils/menu');
 var api = require('../../utils/cloud-api');
 var format = require('../../utils/format');
 
+var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', expired: '已失效' };
+var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包', pickup: '自提' };
+
+function normalize(order) {
+  order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
+  order.typeText = TYPE_TEXT[order.type] || order.type;
+  order.timeText = format.formatDateTime(order.createTime);
+  return order;
+}
+
 Page({
-  data: {
-    tab: 'orders',
-    orders: [],
-    dishes: [],
-    categories: [],
-    showAddForm: false,
-    dishName: '',
-    dishPrice: '',
-    dishCat: 1,
-    dishTag: '',
-  },
+  data: { loading: true, summary: {}, orders: [], typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
-    this.loadOrders();
-    this.loadDishes();
-    this.loadCategories();
-  },
-
-  switchTab: function (e) {
-    this.setData({ tab: e.currentTarget.dataset.tab });
-  },
-
-  loadOrders: function () {
+    this.checkAndLoad();
     var that = this;
+    this.timer = setInterval(function () { that.loadData(true); }, 8000);
+  },
+  onHide: function () { if (this.timer) clearInterval(this.timer); },
+  onUnload: function () { if (this.timer) clearInterval(this.timer); },
 
-    api.getOrders().then(function (res) {
-      that.setData({ orders: that.normalizeOrders(res.orders || []) });
-    }).catch(function () {
-      that.setData({ orders: that.normalizeOrders(storage.getOrders()) });
+  checkAndLoad: function () {
+    var that = this;
+    getApp().getSession().then(function (session) {
+      if (!session.isAdmin) throw { msg: '无管理员权限' };
+      that.loadData();
+    }).catch(function (err) {
+      wx.showModal({ title: '禁止访问', content: err.msg || '无管理员权限', showCancel: false, success: function () { wx.navigateBack(); } });
     });
   },
 
-  normalizeOrders: function (orders) {
-    var list = [];
-
-    for (var i = 0; i < orders.length; i++) {
-      list.push({
-        id: orders[i].id || orders[i]._id,
-        table: orders[i].table || '',
-        items: orders[i].items || [],
-        totalPrice: format.formatMoney(orders[i].totalPrice || 0),
-        status: orders[i].status || 'pending',
-        statusText:
-          orders[i].status === 'completed'
-            ? '已完成'
-            : orders[i].status === 'confirmed'
-            ? '制作中'
-            : '待接单',
-        createTime: format.formatDateTime(orders[i].createTime),
-      });
-    }
-
-    return list;
-  },
-
-  loadCategories: function () {
-    this.setData({ categories: menu.getCategories(false) });
-  },
-
-  loadDishes: function () {
-    this.setData({ dishes: menu.getManageDishes() });
-  },
-
-  toggleAddForm: function () {
-    this.setData({ showAddForm: !this.data.showAddForm });
-  },
-
-  onDishName: function (e) {
-    this.setData({ dishName: e.detail.value || '' });
-  },
-
-  onDishPrice: function (e) {
-    this.setData({ dishPrice: e.detail.value || '' });
-  },
-
-  onDishCat: function (e) {
-    this.setData({ dishCat: Number(e.currentTarget.dataset.id || 1) });
-  },
-
-  onDishTag: function (e) {
-    this.setData({ dishTag: e.detail.value || '' });
-  },
-
-  addDish: function () {
-    var name = this.data.dishName.trim();
-    var price = Number(this.data.dishPrice);
-
-    if (!name) {
-      wx.showToast({ title: '请输入菜名', icon: 'none' });
-      return;
-    }
-
-    if (!price || price <= 0) {
-      wx.showToast({ title: '请输入有效价格', icon: 'none' });
-      return;
-    }
-
-    var dish = menu.createCustomDish(name, price, this.data.dishCat, this.data.dishTag);
-    storage.addCustomDish(dish);
-
+  loadData: function (silent) {
     var that = this;
-    api.addCustomDish(name, price, this.data.dishCat, this.data.dishTag).catch(function () {});
-
-    this.setData({
-      showAddForm: false,
-      dishName: '',
-      dishPrice: '',
-      dishTag: '',
-    });
-
-    wx.showToast({ title: '已添加', icon: 'success' });
-    setTimeout(function () {
-      that.loadDishes();
-    }, 50);
-  },
-
-  updateOrderStatus: function (orderId, status, toastTitle) {
-    var that = this;
-
-    api.updateOrderStatus(orderId, status).catch(function () {
-      storage.updateOrderStatus(orderId, status);
-    }).finally(function () {
-      wx.showToast({ title: toastTitle, icon: 'success' });
-      that.loadOrders();
+    if (!silent) this.setData({ loading: true });
+    Promise.all([api.adminDashboard(), api.adminOrders({ pageSize: 50, type: this.data.typeFilter, orderStatus: this.data.statusFilter })]).then(function (results) {
+      var orders = [];
+      for (var i = 0; i < (results[1].orders || []).length; i++) orders.push(normalize(results[1].orders[i]));
+      that.setData({ summary: results[0].summary || {}, orders: orders, loading: false });
+    }).catch(function (err) {
+      if (!silent) wx.showToast({ title: err.msg || '后台加载失败', icon: 'none' });
+      that.setData({ loading: false });
     });
   },
 
-  confirmOrder: function (e) {
+  onTypeFilter: function (e) { this.setData({ typeFilter: this.data.types[Number(e.detail.value)].value }); this.loadData(); },
+  onStatusFilter: function (e) { this.setData({ statusFilter: this.data.statuses[Number(e.detail.value)].value }); this.loadData(); },
+
+  updateStatus: function (e) {
     var that = this;
+    var status = e.currentTarget.dataset.status;
     var orderId = e.currentTarget.dataset.id;
-
-    wx.showModal({
-      title: '确认接单',
-      content: '确认接单并开始制作吗？',
-      success: function (res) {
-        if (res.confirm) that.updateOrderStatus(orderId, 'confirmed', '已接单');
-      },
-    });
+    var labels = { accepted: '确认接单', cooking: '开始制作', ready: '确认出餐', completed: '完成订单', cancelled: '取消未支付订单' };
+    var execute = function () {
+      api.adminUpdateOrder(orderId, status).then(function () {
+        if (wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
+        wx.showToast({ title: '状态已更新', icon: 'success' });
+        that.loadData();
+      }).catch(function (err) { wx.showModal({ title: '更新失败', content: err.msg || '状态更新失败', showCancel: false }); });
+    };
+    if (status === 'completed' || status === 'cancelled') {
+      wx.showModal({ title: labels[status], content: status === 'completed' ? '确认顾客已经取餐或用餐完成吗？' : '取消后会释放库存和桌台，确定继续吗？', confirmColor: '#ee5b2b', success: function (res) { if (res.confirm) execute(); } });
+    } else {
+      execute();
+    }
   },
 
-  completeOrder: function (e) {
-    var that = this;
-    var orderId = e.currentTarget.dataset.id;
-
-    wx.showModal({
-      title: '完成出餐',
-      content: '确认这笔订单已经完成吗？',
-      success: function (res) {
-        if (res.confirm) that.updateOrderStatus(orderId, 'completed', '已完成');
-      },
-    });
+  reprint: function (e) {
+    api.reprint(e.currentTarget.dataset.id).then(function () { wx.showToast({ title: '已提交补打', icon: 'success' }); }).catch(function (err) { wx.showModal({ title: '打印失败', content: err.msg || '补打失败', showCancel: false }); });
   },
 
-  deleteDish: function (e) {
-    var that = this;
-    var dishId = e.currentTarget.dataset.id;
-
-    wx.showModal({
-      title: '删除菜品',
-      content: '确认删除这道自定义菜品吗？',
-      success: function (res) {
-        if (!res.confirm) return;
-
-        storage.deleteCustomDish(dishId);
-        api.deleteDish(dishId).catch(function () {});
-        that.loadDishes();
-        wx.showToast({ title: '已删除', icon: 'success' });
-      },
-    });
-  },
+  goDishes: function () { wx.navigateTo({ url: '/pages/add-dish/add-dish' }); },
+  goData: function () { wx.navigateTo({ url: '/pages/data-manager/data-manager' }); },
+  goAdmins: function () { wx.navigateTo({ url: '/pages/tag-manager/tag-manager' }); },
 });

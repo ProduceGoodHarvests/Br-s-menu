@@ -1,5 +1,5 @@
-<view class="legacy-page">
-  <view class="legacy-title">页面已迁移</view>
-  <view class="legacy-text">标签和菜品管理已合并到商家后台。</view>
-  <button class="legacy-btn" bindtap="redirect">打开商家后台</button>
+<view class="page admin-page">
+  <view class="tabs"><view class="tab {{tab === 'print' ? 'active' : ''}}" data-tab="print" bindtap="switchTab">后厨打印</view><view class="tab {{tab === 'admin' ? 'active' : ''}}" data-tab="admin" bindtap="switchTab">权限管理</view></view>
+  <view wx:if="{{tab === 'print'}}"><view class="notice">新支付订单会自动创建打印任务；打印机配置由云端 system_config.printer 管理。</view><view class="manage-row" wx:for="{{jobs}}" wx:key="_id"><view><view>{{item.orderNo}}</view><view class="muted">{{item.status}} · 尝试 {{item.attempts || 0}} 次</view><view class="danger-text" wx:if="{{item.lastError}}">{{item.lastError}}</view></view><button data-order="{{item.orderId}}" bindtap="reprint">补打</button></view></view>
+  <view wx:else><view class="notice">仅超级管理员可以新增或删除管理员。OpenID 可从开发者工具云函数日志或 auth.current 获取。</view><view class="inline-form"><input placeholder="管理员 OpenID" value="{{openid}}" bindinput="onOpenid" /><picker range="{{roles}}" range-key="label" bindchange="onRole"><view class="filter">{{role}} ›</view></picker><button class="primary small" bindtap="addAdmin">保存</button></view><view class="manage-row" wx:for="{{admins}}" wx:key="_id"><view>{{item.openid}}<view class="muted">{{item.role}} · {{item.status ? '启用' : '停用'}}</view></view><button class="danger" data-id="{{item._id}}" bindtap="removeAdmin">删除</button></view></view>
 </view>

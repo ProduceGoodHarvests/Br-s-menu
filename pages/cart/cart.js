@@ -1,173 +1,95 @@
+var api = require('../../utils/cloud-api');
 var storage = require('../../utils/storage');
-var format = require('../../utils/format');
-
-function toCartItem(item) {
-  return {
-    id: item.id,
-    name: item.name,
-    icon: item.icon,
-    price: Number(item.price || 0),
-    priceText: format.formatMoney(item.price || 0),
-    specs: item.specs || [],
-    specKey: item.specKey || '',
-    quantity: Number(item.quantity || 1),
-    checked: item.checked !== false,
-  };
-}
 
 Page({
-  data: {
-    cartItems: [],
-    totalPrice: '0.00',
-    allChecked: true,
-    isEmpty: true,
-    checkedCount: 0,
-  },
+  data: { items: [], quote: null, quoting: false, error: '', itemCount: 0 },
 
-  onShow: function () {
-    this.loadCart();
-  },
+  onShow: function () { this.loadCart(); },
 
   loadCart: function () {
-    var cart = storage.getCart();
-    var items = [];
-
-    for (var i = 0; i < cart.length; i++) {
-      items.push(toCartItem(cart[i]));
+    var items = storage.getCart();
+    for (var i = 0; i < items.length; i++) {
+      var keys = Object.keys(items[i].specSelections || {});
+      var specs = [];
+      for (var j = 0; j < keys.length; j++) specs.push(keys[j] + ':' + items[i].specSelections[keys[j]]);
+      items[i].specText = specs.join(' / ');
     }
-
-    this.setData({
-      cartItems: items,
-      isEmpty: items.length === 0,
-    });
-    this.refreshSummary();
+    this.setData({ items: items, itemCount: this.countItems(items) });
+    this.refreshQuote();
   },
 
-  refreshSummary: function () {
-    var items = this.data.cartItems;
-    var total = 0;
-    var checkedCount = 0;
-    var allChecked = items.length > 0;
+  countItems: function (items) {
+    var count = 0;
+    for (var i = 0; i < items.length; i++) count += Number(items[i].quantity || 0);
+    return count;
+  },
 
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].checked) {
-        checkedCount += items[i].quantity;
-        total += items[i].price * items[i].quantity;
-      } else {
-        allChecked = false;
+  refreshQuote: function () {
+    var that = this;
+    if (!this.data.items.length) return this.setData({ quote: null, quoting: false, error: '' });
+    this.setData({ quoting: true, error: '' });
+    api.quoteOrder(storage.toGoodsList(this.data.items)).then(function (result) {
+      var items = that.data.items;
+      for (var i = 0; i < items.length; i++) {
+        if (result.goodsList[i]) {
+          items[i].serverPrice = result.goodsList[i].price;
+          items[i].serverSubtotal = result.goodsList[i].subtotal;
+        }
       }
-    }
-
-    this.setData({
-      totalPrice: format.formatMoney(total),
-      checkedCount: checkedCount,
-      allChecked: allChecked,
-      isEmpty: items.length === 0,
+      that.setData({ quote: result, items: items, quoting: false });
+    }).catch(function (err) {
+      that.setData({ quote: null, quoting: false, error: err.msg || '购物车校验失败' });
     });
-  },
-
-  toggleCheck: function (e) {
-    var index = Number(e.currentTarget.dataset.index);
-    var items = this.data.cartItems;
-    if (!items[index]) return;
-
-    items[index].checked = !items[index].checked;
-    this.setData({ cartItems: items });
-    this.refreshSummary();
-  },
-
-  toggleAll: function () {
-    if (this.data.isEmpty) return;
-
-    var next = !this.data.allChecked;
-    var items = this.data.cartItems;
-
-    for (var i = 0; i < items.length; i++) {
-      items[i].checked = next;
-    }
-
-    this.setData({ cartItems: items });
-    this.refreshSummary();
   },
 
   changeQty: function (e) {
     var index = Number(e.currentTarget.dataset.index);
-    var action = e.currentTarget.dataset.action;
-    var items = this.data.cartItems;
-
+    var delta = Number(e.currentTarget.dataset.delta);
+    var items = this.data.items;
     if (!items[index]) return;
-
-    if (action === 'minus') {
-      if (items[index].quantity <= 1) return;
-      items[index].quantity -= 1;
-    } else {
-      items[index].quantity += 1;
-    }
-
-    this.setData({ cartItems: items });
-    this.saveCart();
-    this.refreshSummary();
+    items[index].quantity += delta;
+    if (items[index].quantity <= 0) items.splice(index, 1);
+    storage.setCart(items);
+    getApp().updateCartCount();
+    this.setData({ items: items, itemCount: this.countItems(items) });
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+    this.scheduleQuote();
   },
 
-  deleteItem: function (e) {
+  scheduleQuote: function () {
     var that = this;
-    var index = Number(e.currentTarget.dataset.index);
-
-    wx.showModal({
-      title: '删除菜品',
-      content: '确定从购物车移除这道菜吗？',
-      success: function (res) {
-        if (!res.confirm) return;
-
-        var items = that.data.cartItems;
-        items.splice(index, 1);
-        that.setData({ cartItems: items });
-        that.saveCart();
-        that.refreshSummary();
-      },
-    });
+    if (this.quoteTimer) clearTimeout(this.quoteTimer);
+    this.quoteTimer = setTimeout(function () { that.refreshQuote(); }, 180);
   },
 
-  saveCart: function () {
-    var items = this.data.cartItems;
-    var cart = [];
+  removeItem: function (e) {
+    var index = Number(e.currentTarget.dataset.index);
+    var items = this.data.items;
+    if (!items[index]) return;
+    items.splice(index, 1);
+    storage.setCart(items);
+    getApp().updateCartCount();
+    this.setData({ items: items, itemCount: this.countItems(items) });
+    this.refreshQuote();
+  },
 
-    for (var i = 0; i < items.length; i++) {
-      cart.push({
-        id: items[i].id,
-        name: items[i].name,
-        icon: items[i].icon,
-        price: items[i].price,
-        specs: items[i].specs,
-        specKey: items[i].specKey,
-        quantity: items[i].quantity,
-      });
-    }
-
-    storage.setCart(cart);
-
-    var app = getApp();
-    if (app && app.updateCartCount) app.updateCartCount();
+  clearCart: function () {
+    var that = this;
+    wx.showModal({ title: '清空购物车', content: '确定移除全部菜品吗？', success: function (res) {
+      if (!res.confirm) return;
+      storage.clearCart();
+      getApp().updateCartCount();
+      that.loadCart();
+    } });
   },
 
   checkout: function () {
-    var selected = [];
-    var items = this.data.cartItems;
-
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].checked) selected.push(items[i]);
-    }
-
-    if (selected.length === 0) {
-      wx.showToast({ title: '请选择要结算的菜品', icon: 'none' });
-      return;
-    }
-
-    storage.setCheckout(selected);
+    if (!this.data.quote || this.data.quoting) return wx.showToast({ title: this.data.error || '请等待价格校验', icon: 'none' });
+    storage.setCheckout(this.data.items);
     wx.navigateTo({ url: '/pages/checkout/checkout' });
   },
 
-  goOrder: function () {
-    wx.switchTab({ url: '/pages/index/index' });
-  },
+  goMenu: function () { wx.switchTab({ url: '/pages/index/index' }); },
+
+  onUnload: function () { if (this.quoteTimer) clearTimeout(this.quoteTimer); },
 });

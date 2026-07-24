@@ -1,167 +1,92 @@
-var storage = require('../../utils/storage');
 var api = require('../../utils/cloud-api');
+var storage = require('../../utils/storage');
 var format = require('../../utils/format');
 
-var STATUS_TEXT = {
-  pending: '待接单',
-  confirmed: '制作中',
-  completed: '已完成',
-};
+var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', expired: '已失效' };
+var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包带走', pickup: '到店自提' };
 
-function normalizeOrder(order) {
-  return {
-    id: order._id || order.id,
-    table: order.table || '',
-    items: order.items || [],
-    totalPrice: order.totalPrice || '0.00',
-    remark: order.remark || '',
-    status: order.status || 'pending',
-    statusText: STATUS_TEXT[order.status] || order.status || '待接单',
-    createTime: format.formatDateTime(order.createTime),
-  };
+function normalize(order) {
+  order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
+  order.typeText = TYPE_TEXT[order.type] || order.type;
+  order.timeText = format.formatDateTime(order.createTime);
+  order.canPay = order.orderStatus === 'pending_payment' && order.payStatus === 'unpaid';
+  order.canCancel = order.canPay;
+  order.canReorder = ['paid', 'accepted', 'cooking', 'ready', 'completed'].indexOf(order.orderStatus) >= 0;
+  order.statusClass = order.orderStatus === 'completed' ? 'completed' :
+    order.orderStatus === 'cancelled' || order.orderStatus === 'expired' ? 'muted-status' :
+    order.orderStatus === 'pending_payment' ? 'payment' : 'active-status';
+  order.progress = { paid: 1, accepted: 2, cooking: 3, ready: 4, completed: 5 }[order.orderStatus] || 0;
+  order.sceneIcon = { dine_in: '🍽', takeaway: '🥡', pickup: '🛍' }[order.type] || '🍽';
+  return order;
 }
 
 Page({
-  data: {
-    orders: [],
-    tabs: [
-      { label: '全部', value: 'all' },
-      { label: '待处理', value: 'active' },
-      { label: '已完成', value: 'completed' },
-    ],
-    activeTab: 'all',
-    isEmpty: true,
-    isMerchant: false,
-  },
+  data: { orders: [], visibleOrders: [], loading: true, activeTab: 'all', skeletons: [1, 2], tabs: [{ value: 'all', label: '全部' }, { value: 'active', label: '进行中' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
-    var app = getApp();
-    this.setData({ isMerchant: app && app.getRole && app.getRole() === 'merchant' });
     this.loadOrders();
-  },
-
-  loadOrders: function () {
     var that = this;
+    this.timer = setInterval(function () { that.loadOrders(true); }, 8000);
+  },
+  onHide: function () { if (this.timer) clearInterval(this.timer); },
+  onUnload: function () { if (this.timer) clearInterval(this.timer); },
 
-    api.getOrders().then(function (res) {
-      that.setAllOrders(res.orders || []);
-    }).catch(function () {
-      that.setAllOrders(storage.getOrders());
+  loadOrders: function (silent) {
+    var that = this;
+    if (!silent) this.setData({ loading: true });
+    api.getOrders({ pageSize: 50 }).then(function (result) {
+      var list = [];
+      for (var i = 0; i < (result.orders || []).length; i++) list.push(normalize(result.orders[i]));
+      that.allOrders = list;
+      that.applyFilter();
+      that.setData({ loading: false });
+    }).catch(function (err) {
+      if (!silent) wx.showToast({ title: err.msg || '订单加载失败', icon: 'none' });
+      that.setData({ loading: false });
     });
   },
 
-  setAllOrders: function (orders) {
-    var list = [];
-
-    for (var i = 0; i < orders.length; i++) {
-      list.push(normalizeOrder(orders[i]));
-    }
-
-    this._allOrders = list;
-    this.applyFilter();
-  },
-
-  onTabTap: function (e) {
-    this.setData({ activeTab: e.currentTarget.dataset.value });
-    this.applyFilter();
-  },
-
+  switchTab: function (e) { this.setData({ activeTab: e.currentTarget.dataset.value }); this.applyFilter(); },
   applyFilter: function () {
-    var all = this._allOrders || [];
     var tab = this.data.activeTab;
-    var filtered = [];
-
-    for (var i = 0; i < all.length; i++) {
-      if (tab === 'all') {
-        filtered.push(all[i]);
-      } else if (tab === 'active' && all[i].status !== 'completed') {
-        filtered.push(all[i]);
-      } else if (tab === 'completed' && all[i].status === 'completed') {
-        filtered.push(all[i]);
-      }
-    }
-
-    this.setData({
-      orders: filtered,
-      isEmpty: filtered.length === 0,
+    var list = (this.allOrders || []).filter(function (order) {
+      if (tab === 'all') return true;
+      if (tab === 'completed') return order.orderStatus === 'completed';
+      return ['pending_payment', 'paid', 'accepted', 'cooking', 'ready'].indexOf(order.orderStatus) >= 0;
     });
+    this.setData({ visibleOrders: list, orders: this.allOrders || [] });
   },
 
-  updateStatus: function (orderId, status, toastTitle) {
+  cancelOrder: function (e) {
     var that = this;
-
-    api.updateOrderStatus(orderId, status).catch(function () {
-      storage.updateOrderStatus(orderId, status);
-    }).finally(function () {
-      wx.showToast({ title: toastTitle, icon: 'success' });
-      that.loadOrders();
-    });
+    wx.showModal({ title: '取消订单', content: '取消后会立即释放库存，确定继续吗？', success: function (res) {
+      if (!res.confirm) return;
+      api.cancelOrder(e.currentTarget.dataset.id).then(function () { wx.showToast({ title: '已取消', icon: 'success' }); that.loadOrders(); }).catch(function (err) { wx.showToast({ title: err.msg || '取消失败', icon: 'none' }); });
+    } });
   },
 
-  confirmOrder: function (e) {
+  payOrder: function (e) {
     var that = this;
-    var orderId = e.currentTarget.dataset.id;
-
-    wx.showModal({
-      title: '确认接单',
-      content: '确认接单并开始制作吗？',
-      success: function (res) {
-        if (res.confirm) {
-          that.updateStatus(orderId, 'confirmed', '已接单');
-        }
-      },
-    });
+    api.getPayParams(e.currentTarget.dataset.id).then(function (result) {
+      wx.requestPayment(Object.assign({}, result.payment, { success: function () { wx.showToast({ title: '支付成功', icon: 'success' }); setTimeout(function () { that.loadOrders(); }, 800); }, fail: function () { wx.showToast({ title: '支付未完成', icon: 'none' }); } }));
+    }).catch(function (err) { wx.showModal({ title: '无法支付', content: err.msg || '请稍后重试', showCancel: false }); });
   },
 
-  completeOrder: function (e) {
-    var that = this;
-    var orderId = e.currentTarget.dataset.id;
-
-    wx.showModal({
-      title: '完成订单',
-      content: '确认这笔订单已经完成吗？',
-      success: function (res) {
-        if (res.confirm) {
-          that.updateStatus(orderId, 'completed', '已完成');
-        }
-      },
-    });
-  },
-
-  showDetail: function (e) {
-    var order = this.data.orders[Number(e.currentTarget.dataset.index)];
+  reorder: function (e) {
+    var order = null;
+    for (var i = 0; i < this.data.orders.length; i++) if (this.data.orders[i]._id === e.currentTarget.dataset.id) order = this.data.orders[i];
     if (!order) return;
-
-    var lines = [];
-    for (var i = 0; i < order.items.length; i++) {
-      var item = order.items[i];
-      lines.push(item.name + ' x' + item.quantity + '  ¥' + (item.subtotal || format.formatMoney(item.price * item.quantity)));
+    var cart = storage.getCart();
+    for (var j = 0; j < (order.goodsList || []).length; j++) {
+      var line = order.goodsList[j];
+      var selections = {};
+      for (var k = 0; k < (line.specs || []).length; k++) selections[line.specs[k].name] = line.specs[k].value;
+      storage.addCartItem({ _id: line.goodsId, name: line.name, img: line.img, price: line.price }, line.quantity, selections);
     }
-
-    var content =
-      '桌号：' +
-      order.table +
-      '\n时间：' +
-      order.createTime +
-      '\n状态：' +
-      order.statusText +
-      '\n\n' +
-      lines.join('\n') +
-      '\n\n合计：¥' +
-      order.totalPrice;
-
-    if (order.remark) content += '\n备注：' + order.remark;
-
-    wx.showModal({
-      title: '订单 ' + order.id,
-      content: content,
-      showCancel: false,
-      confirmText: '关闭',
-    });
+    getApp().updateCartCount();
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
+    wx.switchTab({ url: '/pages/cart/cart' });
   },
 
-  onPullDownRefresh: function () {
-    this.loadOrders();
-    wx.stopPullDownRefresh();
-  },
+  onPullDownRefresh: function () { this.loadOrders(); wx.stopPullDownRefresh(); },
 });
