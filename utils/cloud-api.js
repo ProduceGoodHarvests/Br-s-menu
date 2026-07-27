@@ -50,6 +50,7 @@ function createRecharge(amount) { return call('wallet.recharge.create', { amount
 function getRechargeStatus(rechargeId) { return call('wallet.recharge.status', { rechargeId: rechargeId }); }
 
 function adminDashboard() { return call('admin.dashboard'); }
+function adminUpdateStoreStatus(isOpen, pauseReason) { return call('admin.store.status.update', { isOpen: isOpen === true, pauseReason: pauseReason || '' }); }
 function adminOrders(data) { return call('admin.order.list', data || {}); }
 function adminUpdateOrder(orderId, orderStatus) { return call('admin.order.update', { orderId: orderId, orderStatus: orderStatus }); }
 function adminDishes() { return call('admin.dish.list'); }
@@ -91,6 +92,7 @@ module.exports = {
   createRecharge: createRecharge,
   getRechargeStatus: getRechargeStatus,
   adminDashboard: adminDashboard,
+  adminUpdateStoreStatus: adminUpdateStoreStatus,
   adminOrders: adminOrders,
   adminUpdateOrder: adminUpdateOrder,
   adminDishes: adminDishes,

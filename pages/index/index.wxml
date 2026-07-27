@@ -1,6 +1,6 @@
 <view class="page menu-page">
   <view class="store-card">
-    <view class="store-topline"><view class="store-open-dot"></view><text>营业中 · 预计 15-25 分钟出餐</text></view>
+    <view class="store-topline"><view class="store-open-dot {{store.isOpen ? '' : 'closed'}}"></view><text>{{store.isOpen ? '营业中 · 预计 15-25 分钟出餐' : '暂停营业 · 暂不接收新订单'}}</text></view>
     <view class="store-content">
       <view>
         <view class="store-name">朱冰冉的私房菜</view>
@@ -14,6 +14,7 @@
       <text class="scene-entry-arrow">›</text>
     </view>
   </view>
+  <view class="store-closed-notice" wx:if="{{!store.isOpen}}"><text>暂停营业</text><view>{{store.pauseReason || '商家临时休息，恢复营业后可继续点餐'}}</view></view>
 
   <view class="search-box">
     <text class="search-icon">⌕</text>
@@ -27,7 +28,7 @@
     <view class="skeleton-list"><view class="skeleton-card" wx:for="{{skeletons}}" wx:key="*this"><view class="skeleton-image shimmer"></view><view class="skeleton-lines"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view></view>
   </view>
 
-  <view class="menu-layout" wx:else>
+  <view class="menu-layout {{store.isOpen ? '' : 'store-paused-menu'}}" wx:else>
     <scroll-view scroll-y class="category-list">
       <view class="category-item {{activeCategory === item._id ? 'active' : ''}}" wx:for="{{categories}}" wx:key="_id" data-id="{{item._id}}" bindtap="switchCategory"><text>{{item.name}}</text></view>
     </scroll-view>
@@ -46,7 +47,7 @@
           <view class="dish-tags"><text>月售 {{item.sales}}</text><text wx:if="{{item.spec.length}}">可选规格</text><text wx:if="{{item.stock > 0 && item.stock < 10}}">仅剩{{item.stock}}份</text></view>
           <view class="dish-bottom">
             <view class="price"><text class="price-symbol">¥</text><text>{{item.price}}</text><text class="price-unit">起</text></view>
-            <view class="add-button {{item.stock <= 0 ? 'disabled' : ''}}" catchtap="addToCart" data-id="{{item._id}}"><text>{{item.stock > 0 ? '+' : '售罄'}}</text></view>
+            <view class="add-button {{item.stock <= 0 || !store.isOpen ? 'disabled' : ''}}" catchtap="addToCart" data-id="{{item._id}}"><text>{{!store.isOpen ? '暂停' : (item.stock > 0 ? '+' : '售罄')}}</text></view>
           </view>
         </view>
       </view>

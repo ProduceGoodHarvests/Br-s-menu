@@ -28,9 +28,10 @@ function normalize(order) {
 }
 
 Page({
-  data: { orders: [], visibleOrders: [], loading: true, activeTab: 'all', skeletons: [1, 2], tabs: [{ value: 'all', label: '全部' }, { value: 'active', label: '进行中' }, { value: 'completed', label: '已完成' }] },
+  data: { orders: [], visibleOrders: [], loading: true, error: '', activeTab: 'all', skeletons: [1, 2], tabs: [{ value: 'all', label: '全部' }, { value: 'active', label: '进行中' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
+    if (this.timer) clearInterval(this.timer);
     this.loadOrders();
     var that = this;
     this.timer = setInterval(function () { that.loadOrders(true); }, 8000);
@@ -40,17 +41,25 @@ Page({
 
   loadOrders: function (silent) {
     var that = this;
-    if (!silent) this.setData({ loading: true });
-    api.getOrders({ pageSize: 50 }).then(function (result) {
+    if (!silent) this.setData({ loading: true, error: '' });
+    return api.getOrders({ pageSize: 50 }).then(function (result) {
       var list = [];
       for (var i = 0; i < (result.orders || []).length; i++) list.push(normalize(result.orders[i]));
       that.allOrders = list;
       that.applyFilter();
-      that.setData({ loading: false });
+      that.setData({ loading: false, error: '' });
     }).catch(function (err) {
       if (!silent) wx.showToast({ title: err.msg || '订单加载失败', icon: 'none' });
-      that.setData({ loading: false });
+      that.setData({ loading: false, error: silent ? that.data.error : (err.msg || '订单加载失败，请稍后重试') });
     });
+  },
+
+  retryLoadOrders: function () { this.loadOrders(); },
+
+  goOrderDetail: function (e) {
+    var orderId = e.currentTarget.dataset.id;
+    if (!orderId) return;
+    wx.navigateTo({ url: '/pages/order-detail/order-detail?id=' + encodeURIComponent(orderId) });
   },
 
   switchTab: function (e) { this.setData({ activeTab: e.currentTarget.dataset.value }); this.applyFilter(); },
@@ -87,8 +96,9 @@ Page({
     }
     getApp().updateCartCount();
     if (wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
+    wx.showToast({ title: '已加入餐篮', icon: 'success' });
     wx.switchTab({ url: '/pages/cart/cart' });
   },
 
-  onPullDownRefresh: function () { this.loadOrders(); wx.stopPullDownRefresh(); },
+  onPullDownRefresh: function () { this.loadOrders().finally(function () { wx.stopPullDownRefresh(); }); },
 });

@@ -26,9 +26,16 @@ Page({
 
   refreshQuote: function () {
     var that = this;
-    if (!this.data.items.length) return this.setData({ quote: null, quoting: false, error: '' });
+    if (!this.data.items.length) {
+      this.quoteRequestId = (this.quoteRequestId || 0) + 1;
+      return this.setData({ quote: null, quoting: false, error: '' });
+    }
+    var requestId = (this.quoteRequestId || 0) + 1;
+    this.quoteRequestId = requestId;
+    var goodsList = storage.toGoodsList(this.data.items);
     this.setData({ quoting: true, error: '' });
-    api.quoteOrder(storage.toGoodsList(this.data.items)).then(function (result) {
+    api.quoteOrder(goodsList).then(function (result) {
+      if (requestId !== that.quoteRequestId) return;
       var items = that.data.items;
       for (var i = 0; i < items.length; i++) {
         if (result.goodsList[i]) {
@@ -38,6 +45,7 @@ Page({
       }
       that.setData({ quote: result, items: items, quoting: false });
     }).catch(function (err) {
+      if (requestId !== that.quoteRequestId) return;
       that.setData({ quote: null, quoting: false, error: err.msg || '购物车校验失败' });
     });
   },
@@ -91,5 +99,8 @@ Page({
 
   goMenu: function () { wx.switchTab({ url: '/pages/index/index' }); },
 
-  onUnload: function () { if (this.quoteTimer) clearTimeout(this.quoteTimer); },
+  onUnload: function () {
+    if (this.quoteTimer) clearTimeout(this.quoteTimer);
+    this.quoteRequestId = (this.quoteRequestId || 0) + 1;
+  },
 });

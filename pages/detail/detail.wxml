@@ -14,7 +14,8 @@
   </view>
   <view class="bottom-bar">
     <view class="quantity"><view data-delta="-1" bindtap="changeQuantity">−</view><text>{{quantity}}</text><view class="plus" data-delta="1" bindtap="changeQuantity">+</view></view>
-    <view class="detail-add-button {{dish.stock <= 0 ? 'disabled' : ''}}" bindtap="addToCart"><view><text>{{dish.stock > 0 ? '加入购物车' : '暂时售罄'}}</text><text wx:if="{{dish.stock > 0}}">已选 {{quantity}} 份</text></view><text wx:if="{{dish.stock > 0}}">¥{{unitPrice}}</text></view>
+    <view class="detail-add-button {{dish.stock <= 0 ? 'disabled' : ''}}" wx:if="{{!addedToCart}}" bindtap="addToCart"><view><text>{{dish.stock > 0 ? '加入购物车' : '暂时售罄'}}</text><text wx:if="{{dish.stock > 0}}">已选 {{quantity}} 份</text></view><text wx:if="{{dish.stock > 0}}">{{pricing ? '…' : '¥' + unitPrice}}</text></view>
+    <view class="detail-add-button added" wx:else bindtap="goCart"><view><text>已加入，去餐篮</text><text>可继续修改规格或数量</text></view><text>¥{{unitPrice}}</text></view>
   </view>
 </view>
 <view class="detail-loading" wx:else><view class="detail-loading-hero shimmer"></view><view class="detail-loading-card"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view>

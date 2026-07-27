@@ -1,5 +1,46 @@
-.admin-payment-summary { margin-top: 15rpx; padding: 12rpx 15rpx; border-radius: 15rpx; background: #f8f6f3; }
-.admin-payment-summary > view { display: flex; align-items: center; justify-content: space-between; min-height: 42rpx; color: #8e8882; font-size: 19rpx; }
-.admin-payment-summary > view:last-child { margin-top: 3rpx; padding-top: 7rpx; border-top: 1rpx dashed #e5e0da; color: #4b4641; font-weight: 700; }
-.admin-payment-summary .coin-value { color: #ad760e; font-weight: 700; }
-.admin-payment-summary .pay-value { color: #e2572f; font-size: 22rpx; font-weight: 800; }
+.order-processing-head { display: flex; align-items: center; justify-content: space-between; margin: 31rpx 0 15rpx; }
+.order-processing-head > view:first-child text { display: block; }
+.order-processing-head > view:first-child text:first-child { color: #302c28; font-size: 32rpx; font-weight: 900; }
+.order-processing-head > view:first-child text:last-child { margin-top: 5rpx; color: #9d9690; font-size: 19rpx; }
+.order-processing-head > view:last-child { min-width: 104rpx; padding: 10rpx 14rpx; border-radius: 18rpx; color: #bd4d2a; background: #fff0ea; text-align: center; }
+.order-processing-head > view:last-child text { display: block; }
+.order-processing-head > view:last-child text:first-child { font-size: 29rpx; font-weight: 900; line-height: 1; }
+.order-processing-head > view:last-child text:last-child { margin-top: 4rpx; font-size: 17rpx; }
+.order-filter-panel { margin-bottom: 17rpx; padding: 16rpx; border: 1rpx solid #f0e7df; border-radius: 21rpx; background: linear-gradient(145deg, #fffefd, #fff9f5); box-shadow: 0 8rpx 22rpx rgba(72,48,30,.03); }
+.filter-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13rpx; }
+.filter-panel-title text:first-child { color: #4c4640; font-size: 21rpx; font-weight: 800; }
+.filter-panel-title text:last-child { color: #aa9f96; font-size: 18rpx; }
+.filter-row { gap: 11rpx; margin-bottom: 0; }
+.filter { height: 67rpx; display: flex; align-items: center; padding: 0 14rpx; border: 1rpx solid #ece5de; border-radius: 16rpx; color: #8c837a; background: #fff; font-size: 19rpx; }
+.filter text:nth-child(1) { flex: 1; margin-left: 8rpx; color: #423c36; font-size: 21rpx; font-weight: 700; }
+.filter text:last-child { color: #c4bbb3; font-size: 30rpx; font-weight: 300; }
+.order-processing-loading { min-height: 160rpx; padding-top: 54rpx; border-radius: 22rpx; background: #fff; }
+.admin-order { position: relative; overflow: hidden; margin-bottom: 18rpx; padding: 20rpx; border: 1rpx solid #eee9e3; border-radius: 24rpx; background: #fff; box-shadow: 0 10rpx 28rpx rgba(56,42,31,.055); }
+.admin-order::before { position: absolute; top: 0; left: 0; width: 8rpx; height: 100%; border-radius: 24rpx 0 0 24rpx; background: #e5ddd5; content: ''; }
+.admin-order.order-card-paid::before { background: #4387d9; }
+.admin-order.order-card-accepted::before { background: #9372d6; }
+.admin-order.order-card-cooking::before { background: #ec8a32; }
+.admin-order.order-card-ready::before { background: #40ae84; }
+.admin-order.order-card-completed::before { background: #a7a09a; }
+.admin-order-top { display: flex; align-items: flex-start; justify-content: space-between; padding-left: 5rpx; }
+.admin-order-scene { display: flex; align-items: center; min-width: 0; }
+.scene-icon { width: 58rpx; height: 58rpx; flex: 0 0 58rpx; border-radius: 18rpx; color: #fff; background: #e7754e; font-size: 23rpx; font-weight: 900; line-height: 58rpx; text-align: center; }
+.scene-icon.paid { background: #4b8ada; }.scene-icon.accepted { background: #9171d5; }.scene-icon.cooking { background: #ea8a32; }.scene-icon.ready { background: #42ab84; }.scene-icon.completed, .scene-icon.cancelled { background: #aaa19a; }
+.admin-order-scene > view:last-child { min-width: 0; margin-left: 12rpx; }
+.admin-order-scene > view:last-child text { display: block; }
+.admin-order-scene > view:last-child text:first-child { overflow: hidden; color: #37312c; font-size: 25rpx; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.admin-order-scene > view:last-child text:last-child { margin-top: 5rpx; color: #aaa19a; font-size: 18rpx; }
+.admin-status-pill { display: flex; align-items: center; flex: 0 0 auto; margin-left: 13rpx; padding: 8rpx 11rpx; border-radius: 15rpx; font-size: 18rpx; font-weight: 800; }
+.admin-status-pill > view { width: 9rpx; height: 9rpx; margin-right: 6rpx; border-radius: 50%; background: currentColor; }
+.admin-status-pill.pending { color: #ad7163; background: #fff0eb; }.admin-status-pill.paid { color: #3677c9; background: #ebf4ff; }.admin-status-pill.accepted { color: #7854c1; background: #f1ecff; }.admin-status-pill.cooking { color: #ba6818; background: #fff2df; }.admin-status-pill.ready { color: #238264; background: #e6f8f0; }.admin-status-pill.completed, .admin-status-pill.cancelled { color: #85807a; background: #f1efed; }
+.admin-order-id { display: flex; align-items: center; justify-content: space-between; margin-top: 17rpx; padding: 11rpx 4rpx 12rpx; border-bottom: 1rpx dashed #e9e4df; color: #a69d96; font-size: 18rpx; }
+.admin-order-id text:last-child { padding: 4rpx 9rpx; border-radius: 9rpx; color: #876f54; background: #faf3e8; font-size: 17rpx; }
+.admin-order-goods { margin-top: 13rpx; padding: 6rpx 14rpx; border-radius: 17rpx; background: #faf9f7; }
+.admin-goods-row { display: grid; grid-template-columns: minmax(0, 1fr) 58rpx 98rpx; gap: 8rpx; align-items: center; min-height: 55rpx; border-bottom: 1rpx solid #eeeae6; color: #817973; font-size: 20rpx; }
+.admin-goods-row:last-child { border-bottom: 0; }
+.admin-goods-row > view { min-width: 0; }.admin-goods-row > view text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.admin-goods-row > view text:first-child { color: #4a433d; font-weight: 700; }.admin-goods-row > view text:last-child { margin-top: 3rpx; color: #a79f98; font-size: 17rpx; }.admin-goods-row > text:nth-child(2), .admin-goods-row > text:last-child { text-align: right; }.admin-goods-row > text:last-child { color: #5e5145; font-weight: 800; }
+.admin-order-remark { display: flex; align-items: flex-start; margin-top: 13rpx; padding: 11rpx 13rpx; border-radius: 14rpx; color: #89634b; background: #fff5e9; font-size: 19rpx; line-height: 1.5; }.admin-order-remark text:first-child { flex: 0 0 auto; margin-right: 9rpx; color: #c27738; font-weight: 800; }.admin-order-remark text:last-child { min-width: 0; }
+.admin-payment-summary { margin-top: 13rpx; padding: 11rpx 14rpx; border: 1rpx solid #eee9e3; border-radius: 16rpx; background: #fff; }
+.admin-payment-summary > view { display: flex; align-items: center; justify-content: space-between; min-height: 39rpx; color: #908781; font-size: 19rpx; }.admin-payment-summary > view:last-child { margin-top: 3rpx; padding-top: 7rpx; border-top: 1rpx dashed #e8e2dc; color: #514a44; font-weight: 700; }.admin-payment-summary .coin-value { color: #ad760e; font-weight: 800; }.admin-payment-summary .pay-value { color: #e2572f; font-size: 22rpx; font-weight: 900; }
+.admin-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10rpx; margin-top: 16rpx; }.admin-actions button { min-width: 104rpx; height: 64rpx; margin: 0; padding: 0 17rpx; border: 0; border-radius: 17rpx; font-size: 21rpx; font-weight: 800; line-height: 64rpx; }.admin-actions button::after { border: 0; }.admin-actions .print-action { min-width: 84rpx; color: #79716a; background: #f2f0ed; }.admin-actions .cancel-action { flex: 1; color: #d25b4c; background: #fff0ed; }.admin-actions .primary-flow { min-width: 138rpx; color: #fff; background: linear-gradient(135deg, #f36b39, #e84c29); box-shadow: 0 8rpx 16rpx rgba(219,75,40,.2); }.admin-actions .primary-flow.complete { background: linear-gradient(135deg, #42ad86, #278e69); box-shadow: 0 8rpx 16rpx rgba(39,142,105,.19); }
+.admin-order-empty { display: flex; min-height: 210rpx; flex-direction: column; align-items: center; justify-content: center; border: 1rpx dashed #dfd8d1; border-radius: 23rpx; color: #7d756e; background: #fff; }.admin-order-empty text:first-child { font-size: 25rpx; font-weight: 800; }.admin-order-empty text:last-child { margin-top: 8rpx; color: #aaa19a; font-size: 19rpx; }

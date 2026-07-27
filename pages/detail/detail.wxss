@@ -1,1 +1,2 @@
 /* 页面样式统一由 app.wxss 管理 */
+.detail-add-button.added { background: linear-gradient(135deg, #45ad88, #278b67); box-shadow: 0 11rpx 24rpx rgba(39,142,105,.22); }

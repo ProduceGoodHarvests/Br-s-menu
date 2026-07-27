@@ -18,6 +18,7 @@ Page({
     scenePanelVisible: false,
     addingId: '',
     cartPulse: false,
+    store: { isOpen: true, pauseReason: '' },
     skeletons: [1, 2, 3, 4],
     scenes: [
       { value: 'dine_in', label: '堂食', icon: '🍽', desc: '选择桌台，店内用餐' },
@@ -39,6 +40,10 @@ Page({
       tableNo: context.tableNo,
       cartCount: count,
     });
+    var that = this;
+    api.getAppConfig().then(function (result) {
+      if (result.store) that.setData({ store: result.store });
+    }).catch(function () {});
   },
 
   typeText: function (type) {
@@ -66,7 +71,7 @@ Page({
     var categories = [{ _id: 'all', name: '全部' }].concat(result.categories || []);
     var dishes = [];
     for (var i = 0; i < (result.dishes || []).length; i++) dishes.push(menu.normalizeDish(result.dishes[i]));
-    this.setData({ categories: categories, dishes: dishes, loading: false });
+    this.setData({ categories: categories, dishes: dishes, store: result.store || this.data.store, loading: false });
     this.applyFilter();
   },
 
@@ -118,10 +123,12 @@ Page({
   },
 
   goDetail: function (e) {
+    if (!this.isStoreOpen()) return this.showStoreClosed();
     wx.navigateTo({ url: '/pages/detail/detail?id=' + encodeURIComponent(e.currentTarget.dataset.id) });
   },
 
   addToCart: function (e) {
+    if (!this.isStoreOpen()) return this.showStoreClosed();
     var dish = menu.findDish(this.data.dishes, e.currentTarget.dataset.id);
     if (!dish) return;
     if (dish.stock <= 0) return wx.showToast({ title: '暂时售罄', icon: 'none' });
@@ -138,6 +145,11 @@ Page({
   },
 
   goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
+
+  isStoreOpen: function () { return !this.data.store || this.data.store.isOpen !== false; },
+  showStoreClosed: function () {
+    wx.showToast({ title: (this.data.store && this.data.store.pauseReason) || '门店暂停营业，请稍后再来', icon: 'none' });
+  },
 
   onPullDownRefresh: function () {
     var that = this;

@@ -3,7 +3,7 @@ var storage = require('../../utils/storage');
 
 Page({
   data: {
-    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', submitting: false, loading: true, subscribeTemplateIds: [],
+    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', submitting: false, loading: true, error: '', store: { isOpen: true, pauseReason: '' }, subscribeTemplateIds: [],
     types: [{ value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包带走' }, { value: 'pickup', label: '到店自提' }],
   },
 
@@ -14,21 +14,27 @@ Page({
     this.setData({ items: items, type: context.type, tableNo: context.tableNo });
     this.loadData();
     var that = this;
-    api.getAppConfig().then(function (result) { that.setData({ subscribeTemplateIds: result.subscribeTemplateIds || [] }); }).catch(function () {});
+    api.getAppConfig().then(function (result) { that.setData({ subscribeTemplateIds: result.subscribeTemplateIds || [], store: result.store || that.data.store }); }).catch(function () {});
   },
 
   loadData: function () {
     var that = this;
+    var requestId = (this.loadRequestId || 0) + 1;
+    this.loadRequestId = requestId;
+    this.setData({ loading: true, error: '' });
     Promise.all([api.quoteOrder(storage.toGoodsList(this.data.items)), api.getTables()]).then(function (results) {
+      if (requestId !== that.loadRequestId) return;
       var tables = results[1].tables || [];
       var tableNo = that.data.tableNo;
       if (!tableNo && tables[0]) tableNo = tables[0].tableNo;
-      that.setData({ quote: results[0], tables: tables, tableNo: tableNo, loading: false });
+      that.setData({ quote: results[0], tables: tables, tableNo: tableNo, store: results[0].store || that.data.store, loading: false });
     }).catch(function (err) {
-      that.setData({ loading: false });
-      wx.showModal({ title: '结算失败', content: err.msg || '订单校验失败', showCancel: false });
+      if (requestId !== that.loadRequestId) return;
+      that.setData({ loading: false, quote: null, error: err.msg || '订单校验失败，请检查网络后重试' });
     });
   },
+
+  retryLoadData: function () { this.loadData(); },
 
   selectType: function (e) {
     var type = e.currentTarget.dataset.type;
@@ -56,6 +62,7 @@ Page({
 
   submitOrder: function () {
     if (this.data.submitting || !this.data.quote) return;
+    if (this.data.store && this.data.store.isOpen === false) return wx.showToast({ title: this.data.store.pauseReason || '门店暂停营业，请稍后再来', icon: 'none' });
     if (!this.data.quote.canPayWithCoins) return this.goRecharge();
     if (this.data.type === 'dine_in' && !this.data.tableNo) return wx.showToast({ title: '请选择或输入桌号', icon: 'none' });
     var that = this;
@@ -83,6 +90,10 @@ Page({
       getApp().updateCartCount();
       return that.startPayment(order);
     }).catch(function (err) {
+      if (err && err.code === 'STORE_CLOSED') {
+        wx.showModal({ title: '门店暂停营业', content: err.msg || '商家暂不接收新订单，请稍后再来', confirmText: '返回点餐', success: function (res) { if (res.confirm) wx.navigateBack(); } });
+        return;
+      }
       if (err && err.code === 'INSUFFICIENT_COINS') {
         wx.showModal({
           title: '金币余额不足',
@@ -156,4 +167,6 @@ Page({
       });
     });
   },
+
+  onUnload: function () { this.loadRequestId = (this.loadRequestId || 0) + 1; },
 });

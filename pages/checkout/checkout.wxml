@@ -1,6 +1,13 @@
 <view class="page checkout-page">
   <view class="checkout-loading" wx:if="{{loading}}"><view class="checkout-loading-icon">⏳</view><view>正在为你确认库存和价格</view><text>很快就好...</text></view>
+  <view class="checkout-failed" wx:elif="{{error}}">
+    <view class="checkout-failed-icon">!</view>
+    <view class="checkout-failed-title">暂时无法确认订单</view>
+    <view class="checkout-failed-desc">{{error}}</view>
+    <view class="checkout-retry" bindtap="retryLoadData">重新确认</view>
+  </view>
   <block wx:else>
+    <view class="checkout-store-closed" wx:if="{{!store.isOpen}}"><text>暂停营业</text><view>{{store.pauseReason || '商家暂时不接收新订单，请稍后再来'}}</view></view>
     <view class="card">
       <view class="card-title-row"><view><text>用餐方式</text><text>请选择本次订单场景</text></view><view class="required-dot">必选</view></view>
       <view class="type-tabs"><view class="type-tab {{type === item.value ? 'active' : ''}}" wx:for="{{types}}" wx:key="value" data-type="{{item.value}}" bindtap="selectType"><text>{{item.value === 'dine_in' ? '🍽' : item.value === 'takeaway' ? '🥡' : '🛍'}}</text><text>{{item.label}}</text><view>{{type === item.value ? '✓' : ''}}</view></view></view>
@@ -31,7 +38,7 @@
     <view class="checkout-safe-tip">🔒 价格与库存已由云端实时校验</view>
     <view class="checkout-footer">
       <view class="checkout-total"><text>金币支付</text><view class="coin-total">{{quote.coinRequired}}<text>金币</text></view></view>
-      <view class="pay-button {{submitting ? 'disabled' : ''}} {{!quote.canPayWithCoins ? 'recharge-needed' : ''}}" bindtap="submitOrder"><view class="button-spinner light" wx:if="{{submitting}}"></view><text>{{submitting ? '正在创建订单' : (quote.canPayWithCoins ? '确认金币支付' : '余额不足，去充值')}}</text><text wx:if="{{!submitting}}">›</text></view>
+      <view class="pay-button {{submitting || !store.isOpen ? 'disabled' : ''}} {{!quote.canPayWithCoins ? 'recharge-needed' : ''}}" bindtap="submitOrder"><view class="button-spinner light" wx:if="{{submitting}}"></view><text>{{submitting ? '正在创建订单' : (!store.isOpen ? '门店暂停营业' : (quote.canPayWithCoins ? '确认金币支付' : '余额不足，去充值'))}}</text><text wx:if="{{!submitting}}">›</text></view>
     </view>
   </block>
 </view>

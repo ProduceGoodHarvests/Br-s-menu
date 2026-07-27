@@ -3,25 +3,31 @@ var format = require('../../utils/format');
 
 var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', expired: '已失效' };
 var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包', pickup: '自提' };
+var STATUS_CLASS = { pending_payment: 'pending', paid: 'paid', accepted: 'accepted', cooking: 'cooking', ready: 'ready', completed: 'completed', cancelled: 'cancelled', expired: 'cancelled' };
+var TYPE_ICON = { dine_in: '堂', takeaway: '包', pickup: '取' };
 
 function normalize(order) {
   var coinUsed = Number(order.coinUsed || 0);
   var payPrice = Number(order.payPrice || 0);
   order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
+  order.statusClass = STATUS_CLASS[order.orderStatus] || 'pending';
   order.typeText = TYPE_TEXT[order.type] || order.type;
+  order.typeIcon = TYPE_ICON[order.type] || '单';
   order.timeText = format.formatDateTime(order.createTime);
   order.coinUsedText = coinUsed.toFixed(2);
   order.payPriceText = payPrice.toFixed(2);
   order.totalPriceText = Number(order.totalPrice || 0).toFixed(2);
   order.hasCoinPayment = coinUsed > 0;
   order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
+  order.goodsCount = (order.goodsList || []).reduce(function (total, goods) { return total + Number(goods.quantity || 0); }, 0);
   return order;
 }
 
 Page({
-  data: { loading: true, summary: {}, orders: [], typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'completed', label: '已完成' }] },
+  data: { loading: true, summary: {}, orders: [], store: { isOpen: true, pauseReason: '' }, storeUpdating: false, typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
+    if (this.timer) clearInterval(this.timer);
     this.checkAndLoad();
     var that = this;
     this.timer = setInterval(function () { that.loadData(true); }, 8000);
@@ -42,10 +48,10 @@ Page({
   loadData: function (silent) {
     var that = this;
     if (!silent) this.setData({ loading: true });
-    Promise.all([api.adminDashboard(), api.adminOrders({ pageSize: 50, type: this.data.typeFilter, orderStatus: this.data.statusFilter })]).then(function (results) {
+    Promise.all([api.adminDashboard(), api.adminOrders({ pageSize: 50, type: this.data.typeFilter, orderStatus: this.data.statusFilter }), api.getAppConfig()]).then(function (results) {
       var orders = [];
       for (var i = 0; i < (results[1].orders || []).length; i++) orders.push(normalize(results[1].orders[i]));
-      that.setData({ summary: results[0].summary || {}, orders: orders, loading: false });
+      that.setData({ summary: results[0].summary || {}, orders: orders, store: results[2].store || { isOpen: true, pauseReason: '' }, loading: false });
     }).catch(function (err) {
       if (!silent) wx.showToast({ title: err.msg || '后台加载失败', icon: 'none' });
       that.setData({ loading: false });
@@ -54,6 +60,29 @@ Page({
 
   onTypeFilter: function (e) { this.setData({ typeFilter: this.data.types[Number(e.detail.value)].value }); this.loadData(); },
   onStatusFilter: function (e) { this.setData({ statusFilter: this.data.statuses[Number(e.detail.value)].value }); this.loadData(); },
+
+  toggleStoreStatus: function () {
+    var that = this;
+    if (this.data.storeUpdating) return;
+    var isOpen = !(this.data.store && this.data.store.isOpen);
+    wx.showModal({
+      title: isOpen ? '恢复营业' : '暂停营业',
+      content: isOpen ? '恢复后，用户可以立即正常点餐和下单。' : '暂停后将不再接收新订单；已创建的订单仍可正常处理。',
+      confirmText: isOpen ? '恢复营业' : '确认暂停',
+      confirmColor: isOpen ? '#ee5b2b' : '#59635f',
+      success: function (res) {
+        if (!res.confirm) return;
+        that.setData({ storeUpdating: true });
+        api.adminUpdateStoreStatus(isOpen, isOpen ? '' : '商家临时休息，请稍后再来').then(function (result) {
+          that.setData({ store: result.store || { isOpen: isOpen, pauseReason: '' }, storeUpdating: false });
+          wx.showToast({ title: isOpen ? '已恢复营业' : '已暂停营业', icon: 'success' });
+        }).catch(function (err) {
+          that.setData({ storeUpdating: false });
+          wx.showModal({ title: '更新失败', content: err.msg || '营业状态更新失败，请稍后重试', showCancel: false });
+        });
+      }
+    });
+  },
 
   updateStatus: function (e) {
     var that = this;

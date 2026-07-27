@@ -20,6 +20,12 @@
 .checkout-total .coin-total { display: inline-flex; align-items: baseline; color: #b77b09; }
 .checkout-total .coin-total text { margin-left: 4rpx; color: #997129; }
 .pay-button.recharge-needed { background: linear-gradient(135deg, #e6ad39, #cc8a16); box-shadow: 0 11rpx 24rpx rgba(192,126,17,.2); }
+.checkout-failed { min-height: 640rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60rpx 46rpx; text-align: center; }
+.checkout-failed-icon { width: 96rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; border-radius: 34rpx; color: #d06647; background: #fff0eb; font-size: 50rpx; font-weight: 800; }
+.checkout-failed-title { margin-top: 28rpx; color: #39332e; font-size: 32rpx; font-weight: 800; }
+.checkout-failed-desc { margin-top: 13rpx; color: #98908a; font-size: 23rpx; line-height: 1.65; }
+.checkout-retry { min-width: 226rpx; height: 76rpx; margin-top: 33rpx; border-radius: 22rpx; color: #fff; background: linear-gradient(135deg, #ff7740, #ee4d27); box-shadow: 0 10rpx 22rpx rgba(235,76,37,.22); font-size: 26rpx; font-weight: 800; line-height: 76rpx; }
+.checkout-retry:active { transform: scale(.97); opacity: .92; }
 
 @media (max-width: 340px) {
   .coin-pay-copy text:last-child { font-size: 17rpx; }
