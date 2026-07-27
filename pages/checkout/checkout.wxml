@@ -17,23 +17,21 @@
     <view class="card coin-pay-card">
       <view class="coin-pay-head">
         <view class="coin-pay-icon">金</view>
-        <view class="coin-pay-copy"><text>虚拟金币抵扣</text><text>可用 {{quote.coinBalance}} 金币 · {{quote.coinRateText}}</text></view>
-        <switch checked="{{useCoins}}" disabled="{{!quote.canUseCoins || quoteUpdating}}" color="#eea42f" bindchange="onCoinSwitch" />
+        <view class="coin-pay-copy"><text>虚拟金币支付</text><text>本订单仅支持虚拟金币 · {{quote.coinRateText}}</text></view>
+        <view class="coin-pay-status {{quote.canPayWithCoins ? 'ready' : 'short'}}">{{quote.canPayWithCoins ? '余额充足' : '余额不足'}}</view>
       </view>
-      <view class="coin-no-recharge"><text>i</text><text>虚拟金币仅由超级管理员发放，不支持用户充值</text></view>
-      <view class="coin-pay-updating" wx:if="{{quoteUpdating}}"><view class="button-spinner"></view><text>正在由云端计算抵扣金额</text></view>
-      <view class="coin-deduction-detail" wx:elif="{{useCoins && quote.coinDeduction > 0}}">
-        <view><text>金币抵扣</text><text>-{{quote.coinDeduction}} 金币</text></view>
-        <view><text>{{quote.paymentMethod === 'coins' ? '还需支付' : '微信支付'}}</text><text>{{quote.paymentMethod === 'coins' ? '无需微信支付' : '¥' + quote.wechatPayPrice}}</text></view>
+      <view class="coin-deduction-detail">
+        <view><text>当前余额</text><text>{{quote.coinBalance}} 金币</text></view>
+        <view><text>本单需支付</text><text>{{quote.coinRequired}} 金币</text></view>
       </view>
-      <view class="coin-empty-tip" wx:elif="{{!quote.canUseCoins}}">当前暂无可用金币，管理员发放后可用于下单抵扣</view>
+      <view class="coin-empty-tip" wx:if="{{!quote.canPayWithCoins}}">还差 {{quote.coinShortfall}} 金币，请到个人中心统一充值后再下单</view>
+      <view class="coin-recharge-link" wx:if="{{!quote.canPayWithCoins}}" bindtap="goRecharge">去个人中心充值 <text>›</text></view>
     </view>
     <view class="card remark-card"><view class="card-title-row"><view><text>口味备注</text><text>选填，请尽量简洁说明</text></view><text>{{remark.length}}/200</text></view><textarea maxlength="200" placeholder="例如：少油、微辣、不要香菜" value="{{remark}}" bindinput="onRemarkInput" /></view>
     <view class="checkout-safe-tip">🔒 价格与库存已由云端实时校验</view>
     <view class="checkout-footer">
-      <view class="checkout-total" wx:if="{{quote.paymentMethod === 'coins'}}"><text>金币支付</text><view class="coin-total">{{quote.coinDeduction}}<text>金币</text></view></view>
-      <view class="checkout-total" wx:else><text>微信应付</text><view><text>¥</text>{{quote.wechatPayPrice}}</view><text wx:if="{{quote.coinDeduction > 0}}">已抵扣 {{quote.coinDeduction}} 金币</text></view>
-      <view class="pay-button {{submitting || quoteUpdating ? 'disabled' : ''}}" bindtap="submitOrder"><view class="button-spinner light" wx:if="{{submitting}}"></view><text>{{submitting ? '正在创建订单' : (quote.paymentMethod === 'coins' ? '使用金币下单' : '提交订单并支付')}}</text><text wx:if="{{!submitting}}">›</text></view>
+      <view class="checkout-total"><text>金币支付</text><view class="coin-total">{{quote.coinRequired}}<text>金币</text></view></view>
+      <view class="pay-button {{submitting ? 'disabled' : ''}} {{!quote.canPayWithCoins ? 'recharge-needed' : ''}}" bindtap="submitOrder"><view class="button-spinner light" wx:if="{{submitting}}"></view><text>{{submitting ? '正在创建订单' : (quote.canPayWithCoins ? '确认金币支付' : '余额不足，去充值')}}</text><text wx:if="{{!submitting}}">›</text></view>
     </view>
   </block>
 </view>

@@ -169,7 +169,7 @@ Page({
 
   openCoinEdit: function (e) {
     if (!this.data.canGrantCoins) {
-      return wx.showToast({ title: '仅超级管理员可调整金币', icon: 'none' });
+      return wx.showToast({ title: '当前账号没有用户管理权限', icon: 'none' });
     }
     var index = Number(e.currentTarget.dataset.index);
     var member = this.data.members[index];
@@ -376,7 +376,10 @@ Page({
       level: Math.floor(Number(form.level || 1)),
       score: Math.floor(Number(form.score || 0)),
       status: form.status !== false,
-      remark: form.remark || ''
+      remark: form.remark || '',
+      // 兼容已部署的旧版云函数：编辑资料时把当前余额原样带回，避免缺失 balance 被判为 invalid。
+      // 金币实际变更仍只通过独立的金币调整接口完成。
+      balance: Math.round(Number(member.balance || 0) * 100) / 100
     };
     if (payload.level < 1 || payload.level > 99) {
       wx.showToast({ title: '等级需为1-99', icon: 'none' });

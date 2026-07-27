@@ -114,7 +114,7 @@
 
   <view class="coin-admin-note">
     <view>金</view>
-    <view><text>仅超级管理员可操作</text><text>虚拟金币可用于下单抵扣，用户端不提供充值入口；每次调整都会记录操作日志。</text></view>
+    <view><text>拥有用户管理权限的管理员可操作</text><text>用户可在个人中心自行充值；此处用于活动赠送、人工补偿或异常扣回，每次调整都会记录操作日志。</text></view>
   </view>
 
   <view class="coin-mode-tabs">

@@ -3,7 +3,7 @@ var storage = require('../../utils/storage');
 
 Page({
   data: {
-    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', useCoins: false, quoteUpdating: false, submitting: false, loading: true, subscribeTemplateIds: [],
+    items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', submitting: false, loading: true, subscribeTemplateIds: [],
     types: [{ value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包带走' }, { value: 'pickup', label: '到店自提' }],
   },
 
@@ -19,7 +19,7 @@ Page({
 
   loadData: function () {
     var that = this;
-    Promise.all([api.quoteOrder(storage.toGoodsList(this.data.items), this.data.useCoins), api.getTables()]).then(function (results) {
+    Promise.all([api.quoteOrder(storage.toGoodsList(this.data.items)), api.getTables()]).then(function (results) {
       var tables = results[1].tables || [];
       var tableNo = that.data.tableNo;
       if (!tableNo && tables[0]) tableNo = tables[0].tableNo;
@@ -54,21 +54,9 @@ Page({
 
   onRemarkInput: function (e) { this.setData({ remark: e.detail.value || '' }); },
 
-  onCoinSwitch: function (e) {
-    var that = this;
-    var useCoins = e.detail.value;
-    if (this.data.quoteUpdating) return;
-    this.setData({ useCoins: useCoins, quoteUpdating: true });
-    api.quoteOrder(storage.toGoodsList(this.data.items), useCoins).then(function (quote) {
-      that.setData({ quote: quote, useCoins: !!quote.useCoins, quoteUpdating: false });
-    }).catch(function (err) {
-      that.setData({ useCoins: !useCoins, quoteUpdating: false });
-      wx.showToast({ title: err.msg || '金币抵扣计算失败', icon: 'none' });
-    });
-  },
-
   submitOrder: function () {
-    if (this.data.submitting || this.data.quoteUpdating || !this.data.quote) return;
+    if (this.data.submitting || !this.data.quote) return;
+    if (!this.data.quote.canPayWithCoins) return this.goRecharge();
     if (this.data.type === 'dine_in' && !this.data.tableNo) return wx.showToast({ title: '请选择或输入桌号', icon: 'none' });
     var that = this;
     if (this.data.subscribeTemplateIds.length && wx.requestSubscribeMessage) {
@@ -80,13 +68,14 @@ Page({
 
   createOrder: function () {
     var that = this;
+    var clientRequestId = storage.getCheckoutRequestId();
     this.setData({ submitting: true });
     wx.showLoading({ title: '正在下单' });
     api.createOrder({
       type: this.data.type,
       tableNo: this.data.type === 'dine_in' ? this.data.tableNo : '',
       remark: this.data.remark,
-      useCoins: this.data.useCoins,
+      clientRequestId: clientRequestId,
       goodsList: storage.toGoodsList(this.data.items),
     }).then(function (order) {
       storage.clearCart();
@@ -94,11 +83,61 @@ Page({
       getApp().updateCartCount();
       return that.startPayment(order);
     }).catch(function (err) {
+      if (err && err.code === 'INSUFFICIENT_COINS') {
+        wx.showModal({
+          title: '金币余额不足',
+          content: err.msg || '请先到个人中心充值后再下单',
+          confirmText: '去充值',
+          success: function (res) { if (res.confirm) that.goRecharge(); }
+        });
+        return;
+      }
+      if (err && err.code === 'FUNCTION_TIMEOUT') {
+        return that.resolveTimedOutOrder(clientRequestId, 0);
+      }
       wx.showModal({ title: '下单失败', content: err.msg || '请稍后重试', showCancel: false });
     }).finally(function () {
       wx.hideLoading();
       that.setData({ submitting: false });
     });
+  },
+
+  resolveTimedOutOrder: function (clientRequestId, attempt) {
+    var that = this;
+    return api.resolveOrder(clientRequestId).then(function (result) {
+      if (result && result.found) {
+        storage.clearCart();
+        storage.clearCheckout();
+        getApp().updateCartCount();
+        return that.startPayment(result);
+      }
+      if (attempt >= 3) {
+        wx.showModal({
+          title: '订单仍在处理中',
+          content: '云端响应超时，但订单可能已经创建。请先到订单列表查看，不要重复提交。',
+          confirmText: '查看订单',
+          showCancel: false,
+          success: function () { wx.switchTab({ url: '/pages/orders/orders' }); }
+        });
+        return;
+      }
+      return new Promise(function (resolve) {
+        setTimeout(function () { resolve(that.resolveTimedOutOrder(clientRequestId, attempt + 1)); }, 700);
+      });
+    }).catch(function () {
+      if (attempt >= 3) {
+        wx.showModal({ title: '订单仍在处理中', content: '云端响应超时，请到订单列表确认是否已生成订单。', confirmText: '查看订单', showCancel: false, success: function () { wx.switchTab({ url: '/pages/orders/orders' }); } });
+        return;
+      }
+      return new Promise(function (resolve) {
+        setTimeout(function () { resolve(that.resolveTimedOutOrder(clientRequestId, attempt + 1)); }, 700);
+      });
+    });
+  },
+
+  goRecharge: function () {
+    storage.requestRechargeOpen();
+    wx.switchTab({ url: '/pages/mine/mine' });
   },
 
   startPayment: function (order) {
@@ -108,22 +147,13 @@ Page({
         setTimeout(function () { wx.switchTab({ url: '/pages/orders/orders' }); resolve(); }, 600);
       });
     }
-    return api.getPayParams(order.orderId).then(function (result) {
-      return new Promise(function (resolve) {
-        wx.requestPayment(Object.assign({}, result.payment, {
-          success: function () {
-            wx.showToast({ title: '支付成功', icon: 'success' });
-            setTimeout(function () { wx.switchTab({ url: '/pages/orders/orders' }); }, 500);
-            resolve();
-          },
-          fail: function () {
-            wx.showModal({ title: '订单已创建', content: '支付未完成，可在“订单”中继续支付。\n订单号：' + order.orderNo, showCancel: false, success: function () { wx.switchTab({ url: '/pages/orders/orders' }); } });
-            resolve();
-          },
-        }));
+    return new Promise(function (resolve) {
+      wx.showModal({
+        title: '支付方式异常',
+        content: '当前订单仅支持虚拟金币支付，请返回后重试。\n订单号：' + order.orderNo,
+        showCancel: false,
+        success: function () { wx.switchTab({ url: '/pages/orders/orders' }); resolve(); }
       });
-    }).catch(function (err) {
-      wx.showModal({ title: '订单已创建', content: (err.msg || '暂时无法发起支付') + '\n可在订单列表继续支付。', showCancel: false, success: function () { wx.switchTab({ url: '/pages/orders/orders' }); } });
     });
   },
 });

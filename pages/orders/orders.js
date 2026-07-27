@@ -11,8 +11,8 @@ function normalize(order) {
   order.statusText = STATUS_TEXT[order.orderStatus] || order.orderStatus;
   order.typeText = TYPE_TEXT[order.type] || order.type;
   order.timeText = format.formatDateTime(order.createTime);
-  order.canPay = order.orderStatus === 'pending_payment' && order.payStatus === 'unpaid';
-  order.canCancel = order.canPay;
+  order.canPay = false;
+  order.canCancel = order.orderStatus === 'pending_payment' && order.payStatus === 'unpaid';
   order.canReorder = ['paid', 'accepted', 'cooking', 'ready', 'completed'].indexOf(order.orderStatus) >= 0;
   order.statusClass = order.orderStatus === 'completed' ? 'completed' :
     order.orderStatus === 'cancelled' || order.orderStatus === 'expired' ? 'muted-status' :
@@ -72,13 +72,6 @@ Page({
       if (!res.confirm) return;
       api.cancelOrder(e.currentTarget.dataset.id).then(function () { wx.showToast({ title: '已取消', icon: 'success' }); that.loadOrders(); }).catch(function (err) { wx.showToast({ title: err.msg || '取消失败', icon: 'none' }); });
     } });
-  },
-
-  payOrder: function (e) {
-    var that = this;
-    api.getPayParams(e.currentTarget.dataset.id).then(function (result) {
-      wx.requestPayment(Object.assign({}, result.payment, { success: function () { wx.showToast({ title: '支付成功', icon: 'success' }); setTimeout(function () { that.loadOrders(); }, 800); }, fail: function () { wx.showToast({ title: '支付未完成', icon: 'none' }); } }));
-    }).catch(function (err) { wx.showModal({ title: '无法支付', content: err.msg || '请稍后重试', showCancel: false }); });
   },
 
   reorder: function (e) {

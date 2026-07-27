@@ -18,8 +18,8 @@
       <text>i</text>
       <text>资料授权完全自愿，不影响免授权点餐</text>
     </view>
-    <view class="member-banner coin-banner">
-      <view><text>虚拟金币</text><text>可在下单时直接抵扣 · 不支持用户充值</text></view>
+    <view class="member-banner coin-banner" bindtap="openRecharge">
+      <view><text>虚拟金币</text><text>订单仅支持金币支付 · 点击这里充值</text></view>
       <view><text>{{member ? member.coinText : '0.00'}}</text><text>金币</text></view>
     </view>
   </view>
@@ -42,11 +42,29 @@
   <view class="menu-section">
     <view class="menu-item" bindtap="goOrders"><view class="menu-icon orange">📋</view><view class="menu-text"><text>我的订单</text><text>查看制作进度和历史订单</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="goCart"><view class="menu-icon green">🛒</view><view class="menu-text"><text>我的餐篮</text><text>{{cartCount ? '已有 ' + cartCount + ' 件菜品待结算' : '还没有添加菜品'}}</text></view><text class="menu-arrow">›</text></view>
-    <view class="menu-item"><view class="menu-icon coin-menu-icon">金</view><view class="menu-text"><text>虚拟金币</text><text>仅超级管理员发放，结算时可选择抵扣</text></view><text class="coin-menu-balance">{{member ? member.coinText : '0.00'}}</text></view>
+    <view class="menu-item" bindtap="openRecharge"><view class="menu-icon coin-menu-icon">金</view><view class="menu-text"><text>虚拟金币充值</text><text>充值后可用于订单全额支付，1金币抵1元</text></view><text class="coin-menu-balance">充值 ›</text></view>
     <view class="menu-item" bindtap="openProfileEditor"><view class="menu-icon profile-menu-icon">☺</view><view class="menu-text"><text>个人资料</text><text>{{member && member.nickname ? '修改头像和用户名称' : '完善头像和用户名称'}}</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="about"><view class="menu-icon blue">i</view><view class="menu-text"><text>关于门店</text><text>查看小程序与门店信息</text></view><text class="menu-arrow">›</text></view>
   </view>
   <view class="mine-footer">微信云开发提供安全服务支持</view>
+</view>
+
+<view wx:if="{{rechargeEditing}}" class="sheet-mask recharge-sheet-mask" bindtap="closeRecharge"></view>
+<view class="recharge-sheet {{rechargeEditing ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="profile-sheet-head">
+    <view><text>充值虚拟金币</text><text>充值入口统一放在个人中心，1元 = 1金币</text></view>
+    <view bindtap="closeRecharge">×</view>
+  </view>
+  <view class="recharge-balance"><text>当前余额</text><text>{{member ? member.coinText : '0.00'}} 金币</text></view>
+  <view class="recharge-label">选择充值金额</view>
+  <view class="recharge-presets">
+    <view wx:for="{{rechargePresets}}" wx:key="*this" class="recharge-preset {{rechargeAmount == item ? 'active' : ''}}" data-amount="{{item}}" bindtap="selectRechargeAmount">{{item}}元</view>
+  </view>
+  <view class="recharge-input"><input type="digit" maxlength="9" value="{{rechargeAmount}}" placeholder="输入金额" bindinput="onRechargeAmountInput" /><text>元</text></view>
+  <view class="recharge-note"><text>i</text><text>充值成功后将按实际支付金额等额到账；请勿重复点击支付按钮。</text></view>
+  <button class="primary profile-save-button recharge-submit" loading="{{rechargeSaving || rechargeChecking}}" disabled="{{rechargeSaving || rechargeChecking}}" bindtap="submitRecharge">{{rechargeChecking ? '正在确认到账…' : (rechargeSaving ? '正在发起支付…' : '立即充值 ' + rechargeAmount + ' 元')}}</button>
+  <view class="safe-bottom"></view>
 </view>
 
 <view wx:if="{{profileEditing}}" class="sheet-mask profile-sheet-mask" bindtap="closeProfileEditor"></view>

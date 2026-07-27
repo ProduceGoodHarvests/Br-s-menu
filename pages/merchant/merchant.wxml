@@ -14,7 +14,7 @@
     <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
     <view class="admin-payment-summary">
       <view><text>商品合计</text><text>¥{{item.totalPriceText}}</text></view>
-      <view wx:if="{{item.hasCoinPayment}}"><text>金币抵扣</text><text class="coin-value">-{{item.coinUsedText}} 金币</text></view>
+      <view wx:if="{{item.hasCoinPayment}}"><text>金币支付</text><text class="coin-value">{{item.coinUsedText}} 金币</text></view>
       <view><text>{{item.isCoinOnly ? '支付方式' : '微信实付'}}</text><text class="pay-value">{{item.isCoinOnly ? '虚拟金币支付' : '¥' + item.payPriceText}}</text></view>
     </view>
     <view class="admin-actions"><button data-id="{{item._id}}" bindtap="reprint">补打</button><button class="danger" wx:if="{{item.orderStatus === 'pending_payment'}}" data-id="{{item._id}}" data-coin="{{item.coinUsed}}" data-status="cancelled" bindtap="updateStatus">取消未支付单</button><button wx:if="{{item.orderStatus === 'paid'}}" data-id="{{item._id}}" data-status="accepted" bindtap="updateStatus">接单</button><button wx:if="{{item.orderStatus === 'paid' || item.orderStatus === 'accepted'}}" data-id="{{item._id}}" data-status="cooking" bindtap="updateStatus">制作</button><button wx:if="{{item.orderStatus === 'cooking' || item.orderStatus === 'accepted'}}" data-id="{{item._id}}" data-status="ready" bindtap="updateStatus">出餐</button><button class="primary small" wx:if="{{item.orderStatus === 'ready' || item.orderStatus === 'cooking'}}" data-id="{{item._id}}" data-status="completed" bindtap="updateStatus">完成</button></view>

@@ -53,6 +53,11 @@ Page({
     profileForm: { nickname: '', avatar: '' },
     avatarTempPath: '',
     avatarChanged: false,
+    rechargeEditing: false,
+    rechargeSaving: false,
+    rechargeAmount: '100',
+    rechargeChecking: false,
+    rechargePresets: [50, 100, 200, 500],
   },
 
   onShow: function () {
@@ -62,7 +67,9 @@ Page({
     for (var i = 0; i < cart.length; i++) count += Number(cart[i].quantity || 0);
     this.setData({ cartCount: count });
     getApp().refreshSession().then(function (session) {
-      that.setData({ loading: false, isAdmin: session.isAdmin, member: normalizeMember(session.member) });
+      that.setData({ loading: false, isAdmin: session.isAdmin, member: normalizeMember(session.member) }, function () {
+        if (storage.consumeRechargeOpen()) that.openRecharge();
+      });
     }).catch(function (err) {
       that.setData({ loading: false });
       wx.showToast({ title: err.msg || '身份加载失败', icon: 'none' });
@@ -85,6 +92,74 @@ Page({
   },
 
   stopTap: function () {},
+
+  openRecharge: function () {
+    if (this.data.rechargeSaving || this.data.rechargeChecking) return;
+    this.setData({ rechargeEditing: true, rechargeAmount: '100' });
+  },
+
+  closeRecharge: function () {
+    if (this.data.rechargeSaving || this.data.rechargeChecking) return;
+    this.setData({ rechargeEditing: false });
+  },
+
+  selectRechargeAmount: function (e) {
+    this.setData({ rechargeAmount: String(e.currentTarget.dataset.amount) });
+  },
+
+  onRechargeAmountInput: function (e) {
+    this.setData({ rechargeAmount: e.detail.value || '' });
+  },
+
+  submitRecharge: function () {
+    var that = this;
+    var amount = Math.round(Number(this.data.rechargeAmount) * 100) / 100;
+    if (this.data.rechargeSaving || this.data.rechargeChecking) return;
+    if (!Number.isFinite(amount) || amount < 1) return wx.showToast({ title: '请输入不少于1元的充值金额', icon: 'none' });
+    if (amount > 100000) return wx.showToast({ title: '单次充值不能超过100000元', icon: 'none' });
+    this.setData({ rechargeSaving: true });
+    api.createRecharge(amount).then(function (result) {
+      return new Promise(function (resolve, reject) {
+        wx.requestPayment(Object.assign({}, result.payment, {
+          success: function () { resolve(result); },
+          fail: reject,
+        }));
+      });
+    }).then(function (result) {
+      that.setData({ rechargeSaving: false, rechargeChecking: true });
+      wx.showLoading({ title: '正在确认到账' });
+      return that.checkRechargeStatus(result.rechargeId, 0);
+    }).then(function (status) {
+      wx.hideLoading();
+      that.setData({ rechargeChecking: false, rechargeEditing: false });
+      if (status && status.status === 'paid') {
+        that.setData({ member: normalizeMember(Object.assign({}, that.data.member || {}, { balance: status.balance })) });
+        var app = getApp();
+        app.refreshSession().then(function (session) {
+          that.setData({ member: normalizeMember(session.member) });
+        }).catch(function () {});
+        wx.showToast({ title: '充值成功 +' + Number(status.coinAmount || 0).toFixed(2) + '金币', icon: 'success' });
+        return;
+      }
+      if (status && status.status !== 'pending') throw { msg: '充值订单状态异常，请联系商家核查' };
+      wx.showToast({ title: '支付成功，金币到账可能需要几秒', icon: 'none' });
+    }).catch(function (err) {
+      wx.hideLoading();
+      that.setData({ rechargeSaving: false, rechargeChecking: false });
+      if (err && /cancel/i.test(err.errMsg || '')) return;
+      wx.showModal({ title: '充值未完成', content: (err && (err.msg || err.message)) || '请稍后重试', showCancel: false });
+    });
+  },
+
+  checkRechargeStatus: function (rechargeId, attempt) {
+    var that = this;
+    return api.getRechargeStatus(rechargeId).then(function (status) {
+      if (status.status === 'paid' || status.status === 'failed' || status.status === 'expired' || attempt >= 5) return status;
+      return new Promise(function (resolve, reject) {
+        setTimeout(function () { that.checkRechargeStatus(rechargeId, attempt + 1).then(resolve).catch(reject); }, 800);
+      });
+    });
+  },
 
   onChooseAvatar: function (e) {
     var avatarUrl = e.detail && e.detail.avatarUrl;

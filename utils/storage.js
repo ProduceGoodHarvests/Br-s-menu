@@ -1,8 +1,10 @@
 var KEYS = {
   CART: 'restaurant_cart_v2',
   CHECKOUT: 'restaurant_checkout_v2',
+  CHECKOUT_REQUEST: 'restaurant_checkout_request_v1',
   ORDER_CONTEXT: 'restaurant_order_context_v2',
   MENU_CACHE: 'restaurant_menu_cache_v2',
+  OPEN_RECHARGE: 'restaurant_open_recharge_v1',
 };
 
 function get(key, fallback) {
@@ -21,8 +23,27 @@ function getCart() {
 function setCart(cart) { set(KEYS.CART, Array.isArray(cart) ? cart : []); }
 function clearCart() { remove(KEYS.CART); }
 function getCheckout() { var value = get(KEYS.CHECKOUT, []); return Array.isArray(value) ? value : []; }
-function setCheckout(value) { set(KEYS.CHECKOUT, Array.isArray(value) ? value : []); }
-function clearCheckout() { remove(KEYS.CHECKOUT); }
+function newRequestId() {
+  return (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)).replace(/[^a-z0-9_-]/gi, '').slice(0, 32);
+}
+function setCheckout(value) {
+  var nextValue = Array.isArray(value) ? value : [];
+  var currentValue = getCheckout();
+  var currentRequestId = String(get(KEYS.CHECKOUT_REQUEST, '') || '');
+  set(KEYS.CHECKOUT, nextValue);
+  if (JSON.stringify(currentValue) !== JSON.stringify(nextValue) || !/^[A-Za-z0-9_-]{8,80}$/.test(currentRequestId)) {
+    set(KEYS.CHECKOUT_REQUEST, newRequestId());
+  }
+}
+function getCheckoutRequestId() {
+  var requestId = String(get(KEYS.CHECKOUT_REQUEST, '') || '');
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(requestId)) {
+    requestId = newRequestId();
+    set(KEYS.CHECKOUT_REQUEST, requestId);
+  }
+  return requestId;
+}
+function clearCheckout() { remove(KEYS.CHECKOUT); remove(KEYS.CHECKOUT_REQUEST); }
 
 function getOrderContext() {
   var value = get(KEYS.ORDER_CONTEXT, {});
@@ -39,6 +60,12 @@ function setOrderContext(value) {
 
 function setMenuCache(menu) { set(KEYS.MENU_CACHE, menu || { categories: [], dishes: [] }); }
 function getMenuCache() { return get(KEYS.MENU_CACHE, { categories: [], dishes: [] }); }
+function requestRechargeOpen() { set(KEYS.OPEN_RECHARGE, true); }
+function consumeRechargeOpen() {
+  var shouldOpen = get(KEYS.OPEN_RECHARGE, false) === true;
+  if (shouldOpen) remove(KEYS.OPEN_RECHARGE);
+  return shouldOpen;
+}
 
 function cartKey(goodsId, selections) {
   var keys = Object.keys(selections || {}).sort();
@@ -86,12 +113,15 @@ module.exports = {
   setCart: setCart,
   clearCart: clearCart,
   getCheckout: getCheckout,
+  getCheckoutRequestId: getCheckoutRequestId,
   setCheckout: setCheckout,
   clearCheckout: clearCheckout,
   getOrderContext: getOrderContext,
   setOrderContext: setOrderContext,
   setMenuCache: setMenuCache,
   getMenuCache: getMenuCache,
+  requestRechargeOpen: requestRechargeOpen,
+  consumeRechargeOpen: consumeRechargeOpen,
   addCartItem: addCartItem,
   toGoodsList: toGoodsList,
   cartKey: cartKey,

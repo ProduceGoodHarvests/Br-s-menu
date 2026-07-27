@@ -23,6 +23,12 @@ function call(action, data) {
     if (/DATABASE_COLLECTION_NOT_EXIST|database collection does not exist|Db or Table not exist|-502005/i.test(rawMessage)) {
       return Promise.reject({ code: 'SYSTEM_NOT_INITIALIZED', msg: '门店云数据库尚未初始化，请管理员先完成初始化' });
     }
+    if (/FUNCTIONS_TIME_LIMIT_EXCEEDED|Invoking task timed out|timed out after|调用超时|-504003/i.test(rawMessage)) {
+      return Promise.reject({ code: 'FUNCTION_TIMEOUT', msg: '下单处理时间较长，正在确认订单状态，请不要重复点击' });
+    }
+    if (/TransactionBusy|transaction is busy|DATABASE_TRANSACTION_ON_FAIL|-501001/i.test(rawMessage)) {
+      return Promise.reject({ code: 'TRANSACTION_BUSY', msg: '当前订单较多，请稍后重试' });
+    }
     return Promise.reject({ code: 'NETWORK_ERROR', msg: rawMessage });
   });
 }
@@ -33,12 +39,15 @@ function getAppConfig() { return call('app.config'); }
 function getMenu() { return call('menu.list'); }
 function getDish(goodsId) { return call('menu.detail', { goodsId: goodsId }); }
 function getTables() { return call('table.list'); }
-function quoteOrder(goodsList, useCoins) { return call('order.quote', { goodsList: goodsList, useCoins: useCoins === true }); }
+function quoteOrder(goodsList) { return call('order.quote', { goodsList: goodsList }); }
 function createOrder(data) { return call('order.create', data); }
+function resolveOrder(clientRequestId) { return call('order.resolve', { clientRequestId: clientRequestId }); }
 function getOrders(data) { return call('order.list', data || {}); }
 function getOrder(orderId) { return call('order.detail', { orderId: orderId }); }
 function cancelOrder(orderId) { return call('order.cancel', { orderId: orderId }); }
 function getPayParams(orderId) { return call('order.pay', { orderId: orderId }); }
+function createRecharge(amount) { return call('wallet.recharge.create', { amount: amount }); }
+function getRechargeStatus(rechargeId) { return call('wallet.recharge.status', { rechargeId: rechargeId }); }
 
 function adminDashboard() { return call('admin.dashboard'); }
 function adminOrders(data) { return call('admin.order.list', data || {}); }
@@ -74,10 +83,13 @@ module.exports = {
   getTables: getTables,
   quoteOrder: quoteOrder,
   createOrder: createOrder,
+  resolveOrder: resolveOrder,
   getOrders: getOrders,
   getOrder: getOrder,
   cancelOrder: cancelOrder,
   getPayParams: getPayParams,
+  createRecharge: createRecharge,
+  getRechargeStatus: getRechargeStatus,
   adminDashboard: adminDashboard,
   adminOrders: adminOrders,
   adminUpdateOrder: adminUpdateOrder,
