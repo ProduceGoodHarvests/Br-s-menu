@@ -43,6 +43,7 @@
     <view class="menu-item" bindtap="goOrders"><view class="menu-icon orange">📋</view><view class="menu-text"><text>我的订单</text><text>查看制作进度和历史订单</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="goCart"><view class="menu-icon green">🛒</view><view class="menu-text"><text>我的餐篮</text><text>{{cartCount ? '已有 ' + cartCount + ' 件菜品待结算' : '还没有添加菜品'}}</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="openRecharge"><view class="menu-icon coin-menu-icon">金</view><view class="menu-text"><text>虚拟金币充值</text><text>充值后可用于订单全额支付，1金币抵1元</text></view><text class="coin-menu-balance">充值 ›</text></view>
+    <view class="menu-item" bindtap="goWalletRecords"><view class="menu-icon record-menu-icon">▤</view><view class="menu-text"><text>消费记录</text><text>查看充值、订单消费、退款和金币调整</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="openProfileEditor"><view class="menu-icon profile-menu-icon">☺</view><view class="menu-text"><text>个人资料</text><text>{{member && member.nickname ? '修改头像和用户名称' : '完善头像和用户名称'}}</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="about"><view class="menu-icon blue">i</view><view class="menu-text"><text>关于门店</text><text>查看小程序与门店信息</text></view><text class="menu-arrow">›</text></view>
   </view>

@@ -6,6 +6,7 @@
     "pages/checkout/checkout",
     "pages/orders/orders",
     "pages/order-detail/order-detail",
+    "pages/wallet-records/wallet-records",
     "pages/mine/mine",
     "pages/merchant/merchant",
     "pages/add-dish/add-dish",

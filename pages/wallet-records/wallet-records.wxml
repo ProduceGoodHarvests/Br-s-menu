@@ -1,0 +1,15 @@
+<view class="page wallet-records-page">
+  <view class="wallet-hero"><view><text>消费记录</text><text>每一笔虚拟金币变动都清晰可查</text></view><view class="wallet-balance"><text>当前余额</text><text>{{balanceText}}</text><text>金币</text></view></view>
+  <view class="wallet-tabs"><view wx:for="{{tabs}}" wx:key="value" class="wallet-tab {{activeTab === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="switchTab">{{item.label}}</view></view>
+  <view class="record-loading" wx:if="{{loading}}"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="record-skeleton"><view class="record-skeleton-icon shimmer"></view><view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view></view>
+  <view class="record-error" wx:elif="{{error}}"><view>!</view><text>消费记录暂时无法加载</text><text>{{error}}</text><view bindtap="retryLoad">重新加载</view></view>
+  <view class="record-empty" wx:elif="{{!visibleRecords.length}}"><view>◌</view><text>暂时没有相关记录</text><text>充值、消费和退款都会显示在这里</text></view>
+  <view class="record-list" wx:else>
+    <view class="record-card {{item.canOpenOrder ? 'link' : ''}}" wx:for="{{visibleRecords}}" wx:key="id" data-id="{{item.orderId}}" bindtap="goOrderDetail">
+      <view class="record-icon {{item.typeClass}}">{{item.icon}}</view>
+      <view class="record-main"><view><text>{{item.title}}</text><text>{{item.statusText}}</text></view><text>{{item.detail}}</text><text>{{item.timeText}}</text></view>
+      <view class="record-amount {{item.amountClass}}"><text>{{item.amountText}}</text><text wx:if="{{item.canOpenOrder}}">订单详情 ›</text></view>
+    </view>
+  </view>
+  <view class="wallet-footnote">记录保留最近 200 笔；若有疑问，请联系商家核实。</view>
+</view>

@@ -233,6 +233,7 @@ Page({
 
   goOrders: function () { wx.switchTab({ url: '/pages/orders/orders' }); },
   goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
+  goWalletRecords: function () { wx.navigateTo({ url: '/pages/wallet-records/wallet-records' }); },
   goMerchant: function () { wx.navigateTo({ url: '/pages/merchant/merchant' }); },
   about: function () {
     wx.showModal({

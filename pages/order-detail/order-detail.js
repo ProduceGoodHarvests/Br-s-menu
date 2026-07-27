@@ -2,7 +2,7 @@ var api = require('../../utils/cloud-api');
 var storage = require('../../utils/storage');
 var format = require('../../utils/format');
 
-var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', expired: '已失效' };
+var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', rejected: '商家拒绝出餐', expired: '已失效' };
 var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包带走', pickup: '到店自提' };
 
 function normalize(order) {
@@ -18,12 +18,14 @@ function normalize(order) {
   order.coinUsedText = coinUsed.toFixed(2);
   order.hasCoinPayment = coinUsed > 0;
   order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
-  order.canReorder = ['paid', 'accepted', 'cooking', 'ready', 'completed'].indexOf(order.orderStatus) >= 0;
+  order.canReorder = ['paid', 'accepted', 'cooking', 'ready', 'completed', 'rejected'].indexOf(order.orderStatus) >= 0;
   order.progress = { paid: 1, accepted: 2, cooking: 3, ready: 4, completed: 5 }[order.orderStatus] || 0;
   order.statusClass = order.orderStatus === 'completed' ? 'completed' :
-    order.orderStatus === 'cancelled' || order.orderStatus === 'expired' ? 'cancelled' :
+    order.orderStatus === 'cancelled' || order.orderStatus === 'rejected' || order.orderStatus === 'expired' ? 'cancelled' :
     order.orderStatus === 'pending_payment' ? 'pending' : 'active';
   order.goodsCount = (order.goodsList || []).reduce(function (total, goods) { return total + Number(goods.quantity || 0); }, 0);
+  order.isRejected = order.orderStatus === 'rejected';
+  order.rejectReason = order.rejectReason || '商家暂时无法为该订单出餐，已扣金币已自动退回。';
   return order;
 }
 

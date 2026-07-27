@@ -1,9 +1,9 @@
 var api = require('../../utils/cloud-api');
 var format = require('../../utils/format');
 
-var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', expired: '已失效' };
+var STATUS_TEXT = { pending_payment: '待支付', paid: '已支付', accepted: '已接单', cooking: '制作中', ready: '待取餐', completed: '已完成', cancelled: '已取消', rejected: '拒绝出餐', expired: '已失效' };
 var TYPE_TEXT = { dine_in: '堂食', takeaway: '打包', pickup: '自提' };
-var STATUS_CLASS = { pending_payment: 'pending', paid: 'paid', accepted: 'accepted', cooking: 'cooking', ready: 'ready', completed: 'completed', cancelled: 'cancelled', expired: 'cancelled' };
+var STATUS_CLASS = { pending_payment: 'pending', paid: 'paid', accepted: 'accepted', cooking: 'cooking', ready: 'ready', completed: 'completed', cancelled: 'cancelled', rejected: 'cancelled', expired: 'cancelled' };
 var TYPE_ICON = { dine_in: '堂', takeaway: '包', pickup: '取' };
 
 function normalize(order) {
@@ -24,7 +24,7 @@ function normalize(order) {
 }
 
 Page({
-  data: { loading: true, summary: {}, orders: [], store: { isOpen: true, pauseReason: '' }, storeUpdating: false, typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'completed', label: '已完成' }] },
+  data: { loading: true, summary: {}, orders: [], store: { isOpen: true, pauseReason: '' }, storeUpdating: false, typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'rejected', label: '拒绝出餐' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
     if (this.timer) clearInterval(this.timer);
@@ -79,6 +79,28 @@ Page({
         }).catch(function (err) {
           that.setData({ storeUpdating: false });
           wx.showModal({ title: '更新失败', content: err.msg || '营业状态更新失败，请稍后重试', showCancel: false });
+        });
+      }
+    });
+  },
+
+  rejectOrder: function (e) {
+    var that = this;
+    var orderId = e.currentTarget.dataset.id;
+    if (!orderId) return;
+    wx.showModal({
+      title: '拒绝出餐',
+      content: '确认拒绝该订单出餐吗？订单会终止，菜品库存和已扣虚拟金币将自动退回用户。',
+      confirmText: '确认拒绝',
+      confirmColor: '#d84a3a',
+      success: function (res) {
+        if (!res.confirm) return;
+        api.adminRejectOrder(orderId, '商家拒绝出餐').then(function () {
+          if (wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
+          wx.showToast({ title: '已拒绝出餐', icon: 'success' });
+          that.loadData();
+        }).catch(function (err) {
+          wx.showModal({ title: '操作失败', content: err.msg || '拒绝出餐失败，请刷新后重试', showCancel: false });
         });
       }
     });

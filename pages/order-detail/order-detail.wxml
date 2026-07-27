@@ -3,7 +3,7 @@
   <view class="detail-error" wx:elif="{{error}}"><view class="detail-error-icon">!</view><view class="detail-error-title">订单详情暂时无法加载</view><view class="detail-error-desc">{{error}}</view><view class="detail-retry" bindtap="retryLoad">重新加载</view></view>
   <block wx:elif="{{order}}">
     <view class="status-card {{order.statusClass}}">
-      <view class="status-top"><view><text>{{order.statusText}}</text><text>{{order.orderStatus === 'ready' ? '餐品已准备好，请尽快取餐' : '订单状态会自动更新'}}</text></view><view class="status-icon">{{order.orderStatus === 'completed' ? '✓' : (order.orderStatus === 'cancelled' ? '×' : '◷')}}</view></view>
+      <view class="status-top"><view><text>{{order.statusText}}</text><text>{{order.orderStatus === 'ready' ? '餐品已准备好，请尽快取餐' : (order.isRejected ? '已扣虚拟金币将自动退回账户' : '订单状态会自动更新')}}</text></view><view class="status-icon">{{order.orderStatus === 'completed' ? '✓' : (order.orderStatus === 'cancelled' || order.isRejected ? '×' : '◷')}}</view></view>
       <view class="status-progress" wx:if="{{order.progress > 0 && order.orderStatus !== 'completed'}}"><view class="status-progress-fill" style="width: {{(order.progress - 1) * 25}}%"></view><view wx:for="{{[1,2,3,4,5]}}" wx:key="*this" class="status-step {{order.progress >= item ? 'active' : ''}}"><text>{{order.progress > item ? '✓' : item}}</text></view></view>
       <view class="status-progress-labels" wx:if="{{order.progress > 0 && order.orderStatus !== 'completed'}}"><text>已支付</text><text>已接单</text><text>制作中</text><text>待取餐</text><text>已完成</text></view>
     </view>
@@ -15,6 +15,7 @@
     <view class="detail-card"><view class="section-title">支付信息</view><view class="info-row" wx:if="{{order.hasCoinPayment}}"><text>虚拟金币支付</text><text class="coin-value">{{order.coinUsedText}} 金币</text></view><view class="info-row"><text>{{order.isCoinOnly ? '支付方式' : '微信实付'}}</text><text class="pay-value">{{order.isCoinOnly ? '虚拟金币支付' : '¥' + order.payPriceText}}</text></view></view>
 
     <view class="detail-card remark-card" wx:if="{{order.remark}}"><view class="section-title">口味备注</view><view class="remark-text">{{order.remark}}</view></view>
+    <view class="detail-card reject-reason-card" wx:if="{{order.isRejected}}"><view class="section-title">拒绝出餐说明</view><view class="reject-reason-text">{{order.rejectReason}}</view></view>
     <view class="detail-safe-tip">订单状态每 8 秒自动更新，也可下拉页面手动刷新</view>
     <view class="detail-footer" wx:if="{{order.canReorder}}"><view class="detail-footer-copy"><text>想再吃一次？</text><text>相同菜品会加入餐篮，价格以结算时为准</text></view><view class="detail-reorder" bindtap="reorder">再来一单</view></view>
   </block>

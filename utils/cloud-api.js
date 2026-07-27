@@ -48,11 +48,13 @@ function cancelOrder(orderId) { return call('order.cancel', { orderId: orderId }
 function getPayParams(orderId) { return call('order.pay', { orderId: orderId }); }
 function createRecharge(amount) { return call('wallet.recharge.create', { amount: amount }); }
 function getRechargeStatus(rechargeId) { return call('wallet.recharge.status', { rechargeId: rechargeId }); }
+function getWalletRecords() { return call('wallet.records'); }
 
 function adminDashboard() { return call('admin.dashboard'); }
 function adminUpdateStoreStatus(isOpen, pauseReason) { return call('admin.store.status.update', { isOpen: isOpen === true, pauseReason: pauseReason || '' }); }
 function adminOrders(data) { return call('admin.order.list', data || {}); }
 function adminUpdateOrder(orderId, orderStatus) { return call('admin.order.update', { orderId: orderId, orderStatus: orderStatus }); }
+function adminRejectOrder(orderId, reason) { return call('admin.order.reject', { orderId: orderId, reason: reason || '' }); }
 function adminDishes() { return call('admin.dish.list'); }
 function adminSaveDish(dishId, dish) { return call('admin.dish.save', { dishId: dishId || '', dish: dish }); }
 function adminDeleteDish(dishId) { return call('admin.dish.delete', { dishId: dishId }); }
@@ -91,10 +93,12 @@ module.exports = {
   getPayParams: getPayParams,
   createRecharge: createRecharge,
   getRechargeStatus: getRechargeStatus,
+  getWalletRecords: getWalletRecords,
   adminDashboard: adminDashboard,
   adminUpdateStoreStatus: adminUpdateStoreStatus,
   adminOrders: adminOrders,
   adminUpdateOrder: adminUpdateOrder,
+  adminRejectOrder: adminRejectOrder,
   adminDishes: adminDishes,
   adminSaveDish: adminSaveDish,
   adminDeleteDish: adminDeleteDish,
