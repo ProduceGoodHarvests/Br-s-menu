@@ -25,11 +25,19 @@
   </view>
 
   <view class="stats-section" wx:if="{{member}}">
-    <view class="stat-item"><text class="stat-value">V{{member.level}}</text><text class="stat-label">当前等级</text></view>
+    <view class="stat-item"><text class="stat-value">V{{member.level}}</text><text class="stat-label">{{member.levelName || '当前等级'}}</text></view>
     <view class="stat-divider"></view>
-    <view class="stat-item"><text class="stat-value">{{member.score}}</text><text class="stat-label">可用积分</text></view>
+    <view class="stat-item"><text class="stat-value">{{member.score}}</text><text class="stat-label">累计积分</text></view>
     <view class="stat-divider"></view>
     <view class="stat-item" bindtap="goCart"><text class="stat-value">{{cartCount}}</text><text class="stat-label">餐篮菜品</text></view>
+  </view>
+
+  <view class="membership-card" wx:if="{{member}}">
+    <view class="membership-head"><view><text>会员权益</text><text>{{member.levelName}} · 当前消费享 {{member.discountText}}</text></view><view class="membership-discount">{{member.discountText}}</view></view>
+    <view class="membership-progress-copy" wx:if="{{member.nextLevel}}"><text>再积 {{member.scoreToNext}} 分升级 {{member.nextLevelName}}</text><text>{{member.score}} / {{member.nextLevelScore}}</text></view>
+    <view class="membership-progress" wx:if="{{member.nextLevel}}"><view style="{{member.progressStyle}}"></view></view>
+    <view class="membership-progress-copy max" wx:else><text>已达到最高等级，继续消费仍可累计积分</text><text>{{member.score}} 分</text></view>
+    <view class="membership-levels"><view wx:for="{{membershipLevels}}" wx:key="level" class="membership-level {{member.level === item.level ? 'active' : ''}}"><text>V{{item.level}}</text><text>{{item.minScore}}分 · {{item.discountText}}</text></view></view>
   </view>
 
   <view class="admin-entry" wx:if="{{isAdmin}}" bindtap="goMerchant">

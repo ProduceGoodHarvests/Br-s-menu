@@ -17,6 +17,9 @@ function normalize(order) {
   order.coinUsedText = coinUsed.toFixed(2);
   order.payPriceText = payPrice.toFixed(2);
   order.totalPriceText = Number(order.totalPrice || 0).toFixed(2);
+  order.originalTotalPriceText = Number(order.originalTotalPrice || order.totalPrice || 0).toFixed(2);
+  order.discountAmountText = Number(order.discountAmount || 0).toFixed(2);
+  order.memberDiscountText = order.memberDiscountText || '会员优惠';
   order.hasCoinPayment = coinUsed > 0;
   order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
   order.goodsCount = (order.goodsList || []).reduce(function (total, goods) { return total + Number(goods.quantity || 0); }, 0);

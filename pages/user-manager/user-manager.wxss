@@ -29,6 +29,9 @@
 .admin-pill.kitchen { color: #36777f; background: #eaf6f7; }
 .admin-pill.admin-off { color: #8c8680; background: #ebe8e4; }
 .member-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10rpx; margin-top: 18rpx; }
+.member-level-line { display: flex; align-items: center; justify-content: space-between; margin-top: 15rpx; padding: 11rpx 13rpx; border-radius: 14rpx; color: #76591e; background: linear-gradient(135deg, #fff9e9, #fff1c9); font-size: 20rpx; }
+.member-level-line text:first-child { font-weight: 800; }
+.member-level-line text:last-child { padding: 5rpx 9rpx; border-radius: 9rpx; color: #fff; background: #c88b19; font-size: 18rpx; font-weight: 900; }
 .member-metrics > view { min-width: 0; padding: 14rpx 10rpx; border-radius: 16rpx; background: #f8f6f3; }
 .member-metrics text { display: block; text-align: center; }
 .member-metrics text:first-child { color: #302d2a; font-size: 24rpx; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -39,7 +42,7 @@
 .member-actions .primary-action { background: #fff0e9; color: #ee552a; }
 .member-actions .admin-action { color: #66509a; background: #f1edfa; }
 .member-actions .admin-action.self-admin { color: #928b84; background: #efedea; }
-.coin-metric-value { color: #b77b09 !important; }
+.coin-metric-value { overflow: hidden; color: #b77b09 !important; text-overflow: ellipsis; white-space: nowrap; }
 .member-actions .coin-action { color: #986709; background: linear-gradient(135deg, #fff7df, #ffedb5); }
 .metric-skeleton { height: 70rpx; border-radius: 16rpx; }
 .loading-more, .list-end { padding: 28rpx 0 48rpx; text-align: center; color: #aaa49e; font-size: 22rpx; }
@@ -48,6 +51,8 @@
 .form-row { display: flex; align-items: center; justify-content: space-between; min-height: 88rpx; border-bottom: 1rpx solid #f0eeeb; }
 .form-row > text, .form-block > text { color: #3b3835; font-size: 25rpx; font-weight: 700; }
 .form-row input { width: 260rpx; height: 72rpx; padding: 0 18rpx; border-radius: 16rpx; background: #f7f5f2; text-align: right; font-size: 25rpx; }
+.auto-level-value { color: #a36c08; font-size: 24rpx; font-weight: 800; }
+.member-level-rule { margin-top: 12rpx; padding: 13rpx 15rpx; border-radius: 14rpx; color: #8b7040; background: #fff8e8; font-size: 19rpx; line-height: 1.5; }
 .switch-row > view text { display: block; }
 .switch-row > view text:first-child { color: #3b3835; font-size: 25rpx; font-weight: 700; }
 .switch-row > view text:last-child { margin-top: 4rpx; color: #9b958f; font-size: 20rpx; }
@@ -132,7 +137,7 @@
 .coin-amount-input > text { color: #9d7d40; font-size: 21rpx; }
 .coin-form-block textarea { width: 100%; height: 116rpx; padding: 16rpx 18rpx; border-radius: 18rpx; background: #f7f5f2; color: #37332f; font-size: 23rpx; line-height: 1.5; }
 .coin-preview { display: flex; align-items: center; justify-content: space-between; margin-top: 19rpx; padding: 15rpx 17rpx; border-radius: 16rpx; color: #8b8178; background: #f8f6f3; font-size: 20rpx; }
-.coin-preview text:last-child { color: #a9730a; font-weight: 800; }
+.coin-preview text:last-child { flex: 0 0 auto; margin-left: 12rpx; color: #a9730a; font-weight: 800; white-space: nowrap; }
 .coin-submit { height: 80rpx; display: flex; align-items: center; justify-content: center; margin-top: 18rpx; border-radius: 22rpx; color: #fff; background: linear-gradient(135deg, #efbd4f, #d89519); box-shadow: 0 10rpx 24rpx rgba(206,145,28,.2); font-size: 27rpx; font-weight: 800; }
 .coin-submit.deduct { background: linear-gradient(135deg, #e97666, #cf4a3b); box-shadow: 0 10rpx 24rpx rgba(207,74,59,.18); }
 .coin-submit.disabled { opacity: .55; }

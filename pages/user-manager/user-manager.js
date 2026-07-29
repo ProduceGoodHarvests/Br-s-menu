@@ -1,5 +1,6 @@
 var api = require('../../utils/cloud-api');
 var format = require('../../utils/format');
+var membership = require('../../utils/membership');
 
 var STATUS_TABS = [
   { value: 'all', label: '全部' },
@@ -32,6 +33,8 @@ function normalizeMember(item) {
   item.timeText = format.formatDateTime(item.createTime);
   item.balanceText = Number(item.balance || 0).toFixed(2);
   item.levelText = 'LV' + Number(item.level || 1);
+  item.levelName = item.levelName || membership.getMembership(item.score).name;
+  item.discountText = item.discountText || membership.getMembership(item.score).discountText;
   item.displayName = item.nickname || item.openidShort;
   item.adminRoleText = item.admin ? (ROLE_LABELS[item.admin.role] || item.admin.role) : '';
   item.adminStatusText = item.admin && item.admin.status === false ? '已停用' : '';
@@ -68,9 +71,10 @@ Page({
     coinReason: '',
     editing: false,
     currentMember: null,
-    form: {
-      level: 1,
-      score: 0,
+      form: {
+        level: 1,
+        levelText: 'LV1 普通会员',
+        score: 0,
       status: true,
       remark: ''
     }
@@ -332,6 +336,7 @@ Page({
       currentMember: member,
       form: {
         level: Number(member.level || 1),
+        levelText: 'LV' + Number(member.level || 1) + ' ' + (member.levelName || membership.getMembership(member.score).name),
         score: Number(member.score || 0),
         status: member.status !== false,
         remark: member.remark || ''
@@ -346,8 +351,12 @@ Page({
 
   stopTap: function () {},
 
-  onLevelInput: function (e) { this.setData({ 'form.level': e.detail.value }); },
-  onScoreInput: function (e) { this.setData({ 'form.score': e.detail.value }); },
+  onLevelInput: function () {},
+  onScoreInput: function (e) {
+    var score = Math.max(0, Math.floor(Number(e.detail.value || 0)));
+    var level = membership.getMembership(score);
+    this.setData({ 'form.score': e.detail.value, 'form.level': level.level, 'form.levelText': 'LV' + level.level + ' ' + level.name });
+  },
   onRemarkInput: function (e) { this.setData({ 'form.remark': e.detail.value }); },
 
   onStatusSwitch: function (e) {

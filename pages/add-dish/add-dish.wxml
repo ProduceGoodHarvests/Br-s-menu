@@ -109,7 +109,7 @@
 
   <view class="dish-image-editor" bindtap="chooseImage">
     <image wx:if="{{form.img}}" src="{{form.img}}" mode="aspectFill" />
-    <view wx:else class="dish-image-empty"><text>＋</text><text>上传菜品图片</text><text>建议使用 1:1 高清图片</text></view>
+    <view wx:else class="dish-image-empty"><text>＋</text><text>上传菜品图片</text><text>相册图片会自动压缩后上传</text></view>
     <view class="dish-image-change" wx:if="{{form.img && !uploading}}">更换图片</view>
     <view class="dish-image-uploading" wx:if="{{uploading}}"><view></view><text>{{uploadingText}}</text></view>
   </view>
@@ -136,6 +136,12 @@
   <view class="dish-form-section">
     <view class="dish-form-section-title"><text>菜品介绍</text><text>选填</text></view>
     <view class="dish-textarea-field"><textarea value="{{form.desc}}" maxlength="500" placeholder="填写食材、口感或推荐理由" data-field="desc" bindinput="onField"></textarea><text>{{form.desc.length || 0}}/500</text></view>
+  </view>
+
+  <view class="dish-form-section">
+    <view class="dish-form-section-title"><text>注意事项</text><text>选填</text></view>
+    <view class="dish-form-help">填写后将在菜品详情页展示；留空时使用系统默认提示。</view>
+    <view class="dish-textarea-field notice-textarea"><textarea value="{{form.notice}}" maxlength="300" placeholder="例如：含花生制品，过敏者请谨慎选择" data-field="notice" bindinput="onField"></textarea><text>{{form.notice.length || 0}}/300</text></view>
   </view>
 
   <view class="dish-form-section">

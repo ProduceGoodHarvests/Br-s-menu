@@ -54,6 +54,7 @@
             <view class="status-pill {{item.status ? 'ok' : 'off'}}">{{item.statusText}}</view>
           </view>
         </view>
+        <view class="member-level-line"><text>{{item.levelText}} {{item.levelName}}</text><text>{{item.discountText}}</text></view>
         <view class="member-metrics">
           <view>
             <text>{{item.score}}</text>
@@ -204,12 +205,13 @@
 
   <view class="form-row">
     <text>会员等级</text>
-    <input type="number" value="{{form.level}}" bindinput="onLevelInput" />
+    <text class="auto-level-value">{{form.levelText}}</text>
   </view>
   <view class="form-row">
-    <text>积分</text>
+    <text>累计积分</text>
     <input type="number" value="{{form.score}}" bindinput="onScoreInput" />
   </view>
+  <view class="member-level-rule">等级根据积分自动计算：100分9折、500分8折、1000分7折</view>
   <view class="form-row switch-row">
     <view>
       <text>账号状态</text>

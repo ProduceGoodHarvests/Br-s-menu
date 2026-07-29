@@ -19,7 +19,8 @@
     <view class="card">
       <view class="card-title-row"><view><text>菜品明细</text><text>共 {{quote.goodsList.length}} 道菜</text></view></view>
       <view class="checkout-line" wx:for="{{quote.goodsList}}" wx:key="goodsId"><view class="checkout-line-image"><image wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill"/><text wx:else>🍲</text></view><view class="checkout-line-main"><text>{{item.name}}</text><view><text class="line-spec" wx:for="{{item.specs}}" wx:key="name">{{item.value}} </text></view><text>¥{{item.price}} × {{item.quantity}}</text></view><text class="checkout-subtotal">¥{{item.subtotal}}</text></view>
-      <view class="total-line"><text>商品合计</text><text>¥{{quote.totalPrice}}</text></view>
+      <block wx:if="{{quote.discountAmount > 0}}"><view class="total-line checkout-original-total"><text>商品原价</text><text>¥{{quote.originalTotalPrice || quote.totalPrice}}</text></view><view class="member-discount-line"><text>{{quote.memberLevelName}} {{quote.memberDiscountText}}</text><text>-¥{{quote.discountAmount}}</text></view></block>
+      <view class="total-line checkout-payable-total"><text>{{quote.discountAmount > 0 ? '会员实付' : '商品合计'}}</text><text>¥{{quote.totalPrice}}</text></view>
     </view>
     <view class="card coin-pay-card">
       <view class="coin-pay-head">

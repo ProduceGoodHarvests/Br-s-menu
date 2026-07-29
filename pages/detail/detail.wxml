@@ -3,7 +3,14 @@
   <view class="detail-card">
     <view class="detail-title-row"><view class="detail-title">{{dish.name}}</view><view class="detail-sales">月售 {{dish.sales}}</view></view>
     <view class="detail-price"><text>¥</text>{{unitPrice}}<text>起</text></view>
-    <view class="detail-desc-title">菜品介绍</view><view class="detail-desc">{{dish.desc || '精选新鲜食材，接单后现炒现做。'}}</view>
+    <view class="detail-description">
+      <view class="detail-desc-heading"><view class="detail-desc-icon">味</view><view class="detail-desc-heading-copy"><text>菜品介绍</text><text>食材与口感</text></view></view>
+      <view class="detail-desc">{{dish.desc || '精选新鲜食材，接单后现炒现做。'}}</view>
+    </view>
+    <view class="detail-notice">
+      <view class="detail-notice-icon">!</view>
+      <view class="detail-notice-copy"><text>注意事项</text><text>{{dish.notice || '图片仅供参考，菜品以实际出餐为准；如有忌口或食物过敏，请在下单前联系商家。'}}</text></view>
+    </view>
     <view class="ingredient-row"><view>✓ 新鲜食材</view><view>✓ 现点现做</view><view>✓ 安心打包</view></view>
   </view>
   <view class="spec-card" wx:for="{{dish.spec}}" wx:key="name" wx:for-item="group">

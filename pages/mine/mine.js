@@ -1,10 +1,9 @@
 var storage = require('../../utils/storage');
 var api = require('../../utils/cloud-api');
+var membership = require('../../utils/membership');
 
 function normalizeMember(member) {
-  if (!member) return null;
-  member.coinText = Number(member.balance || 0).toFixed(2);
-  return member;
+  return membership.enrichMember(member);
 }
 
 function compressAvatar(filePath) {
@@ -58,6 +57,7 @@ Page({
     rechargeAmount: '100',
     rechargeChecking: false,
     rechargePresets: [50, 100, 200, 500],
+    membershipLevels: membership.LEVELS,
   },
 
   onShow: function () {

@@ -7,10 +7,15 @@ var STATUS_FILTERS = [
   { value: 'low', label: '库存预警' }
 ];
 
+// 云函数调用会把图片转成 Base64 传输，体积会额外增大约三分之一。
+// 这里将原图控制在 280KB 内，为请求体和网络波动预留空间。
+var DISH_IMAGE_MAX_BYTES = 280 * 1024;
+var DISH_IMAGE_MAX_BASE64_CHARS = 390 * 1024;
+
 function emptyDish(cid, sort) {
   return {
     name: '', cid: cid || '', price: '', stock: 100, img: '', sales: 0,
-    status: true, desc: '', sort: sort || 100, specText: ''
+    status: true, desc: '', notice: '', sort: sort || 100, specText: ''
   };
 }
 
@@ -48,6 +53,7 @@ function dishPayload(dish) {
     sales: Number(dish.sales || 0),
     status: dish.status !== false,
     desc: dish.desc || '',
+    notice: dish.notice || '',
     sort: Number(dish.sort || 100)
   };
 }
@@ -58,6 +64,7 @@ function normalizeDish(item, categoryMap) {
   return Object.assign({}, item, {
     img: item.img || '',
     desc: item.desc || '',
+    notice: item.notice || '',
     spec: item.spec || [],
     sort: Number(item.sort || 100),
     stock: stock,
@@ -82,13 +89,13 @@ function getImageSize(filePath) {
   });
 }
 
-function compressImageOnce(filePath, quality) {
+function compressImageOnce(filePath, quality, width) {
   if (!wx.compressImage) return Promise.reject(new Error('当前微信版本不支持图片压缩'));
   return new Promise(function (resolve, reject) {
     wx.compressImage({
       src: filePath,
       quality: quality,
-      compressedWidth: 1200,
+      compressedWidth: width,
       success: function (res) { resolve(res.tempFilePath || filePath); },
       fail: reject
     });
@@ -96,12 +103,13 @@ function compressImageOnce(filePath, quality) {
 }
 
 function prepareDishImage(filePath, step) {
-  var qualities = [72, 55, 40, 28];
+  var qualities = [70, 55, 42, 30, 20];
+  var widths = [1080, 960, 820, 720, 640];
   var index = Number(step || 0);
   return getImageSize(filePath).then(function (size) {
-    if (size > 0 && size <= 560 * 1024) return filePath;
-    if (index >= qualities.length) throw new Error('图片处理后仍超过560KB，请选择尺寸更小的图片');
-    return compressImageOnce(filePath, qualities[index]).then(function (compressedPath) {
+    if (size > 0 && size <= DISH_IMAGE_MAX_BYTES) return filePath;
+    if (index >= qualities.length) throw new Error('图片处理后仍超过280KB，请选择尺寸更小的图片');
+    return compressImageOnce(filePath, qualities[index], widths[index]).then(function (compressedPath) {
       return prepareDishImage(compressedPath, index + 1);
     });
   });
@@ -272,7 +280,10 @@ Page({
         if (!filePath) return;
         that.setData({ uploading: true, uploadingText: '正在压缩图片…' });
         prepareDishImage(filePath).then(function (preparedPath) {
-          that.uploadImageFile(preparedPath);
+          return getImageSize(preparedPath).then(function (size) {
+            that.setData({ uploadingText: '图片已压缩至 ' + Math.ceil(size / 1024) + 'KB，正在上传…' });
+            return that.uploadImageFile(preparedPath);
+          });
         }).catch(function (err) {
           that.setData({ uploading: false });
           wx.showModal({ title: '图片处理失败', content: err.message || '请重新选择图片', showCancel: false });
@@ -288,6 +299,10 @@ Page({
       filePath: filePath,
       encoding: 'base64',
       success: function (read) {
+        if (!read.data || read.data.length > DISH_IMAGE_MAX_BASE64_CHARS) {
+          that.setData({ uploading: false, uploadingText: '正在处理图片…' });
+          return wx.showModal({ title: '图片仍然过大', content: '已自动压缩，但图片数据仍超过上传限制。请裁剪图片后再试。', showCancel: false });
+        }
         var cleanPath = String(filePath || '').split('?')[0];
         var extension = (cleanPath.split('.').pop() || 'jpg').toLowerCase();
         if (['jpg', 'jpeg', 'png', 'webp'].indexOf(extension) < 0) extension = 'jpg';
@@ -296,7 +311,9 @@ Page({
           wx.showToast({ title: '图片上传成功', icon: 'success' });
         }).catch(function (err) {
           that.setData({ uploading: false, uploadingText: '正在处理图片…' });
-          wx.showModal({ title: '上传失败', content: err.msg || '图片上传失败', showCancel: false });
+          var message = err.msg || '图片上传失败';
+          if (/data exceed max size|exceed max size/i.test(message)) message = '图片数据仍然过大，请裁剪图片后再试。';
+          wx.showModal({ title: '上传失败', content: message, showCancel: false });
         });
       },
       fail: function () {

@@ -21,6 +21,8 @@ function normalize(order) {
   order.sceneIcon = { dine_in: '🍽', takeaway: '🥡', pickup: '🛍' }[order.type] || '🍽';
   order.coinUsedText = coinUsed.toFixed(2);
   order.payPriceText = payPrice.toFixed(2);
+  order.discountAmountText = Number(order.discountAmount || 0).toFixed(2);
+  order.memberDiscountText = order.memberDiscountText || '会员优惠';
   order.hasCoinPayment = coinUsed > 0;
   order.isCoinOnly = order.paymentMethod === 'coins' || (coinUsed > 0 && payPrice <= 0);
   order.isMixedPayment = order.paymentMethod === 'mixed' || (coinUsed > 0 && payPrice > 0);

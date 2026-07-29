@@ -14,6 +14,9 @@ function normalize(order) {
   order.createTimeText = format.formatDateTime(order.createTime);
   order.updateTimeText = format.formatDateTime(order.updateTime);
   order.totalPriceText = Number(order.totalPrice || 0).toFixed(2);
+  order.originalTotalPriceText = Number(order.originalTotalPrice || order.totalPrice || 0).toFixed(2);
+  order.discountAmountText = Number(order.discountAmount || 0).toFixed(2);
+  order.memberDiscountText = order.memberDiscountText || '会员优惠';
   order.payPriceText = payPrice.toFixed(2);
   order.coinUsedText = coinUsed.toFixed(2);
   order.hasCoinPayment = coinUsed > 0;

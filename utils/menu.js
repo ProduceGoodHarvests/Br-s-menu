@@ -10,6 +10,7 @@ function normalizeDish(dish) {
     sales: Number(dish.sales || 0),
     img: dish.img || '',
     desc: dish.desc || '',
+    notice: dish.notice || '',
     spec: Array.isArray(dish.spec) ? dish.spec : [],
     status: dish.status === true,
     sort: Number(dish.sort || 100),

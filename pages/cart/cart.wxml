@@ -12,7 +12,7 @@
   <view class="cart-tip" wx:if="{{items.length}}"><text>💡</text><view><text>温馨提示</text><text>口味备注和用餐方式可在下一步填写</text></view></view>
   <view class="notice error" wx:if="{{error}}"><text>!</text>{{error}}</view>
   <view class="cart-footer" wx:if="{{items.length}}">
-    <view class="cart-total"><text>合计</text><view><text>¥</text>{{quote ? quote.payPrice : '--'}}</view><text>价格以服务端结算为准</text></view>
+    <view class="cart-total"><text>会员价</text><view><text>¥</text>{{quote ? quote.payPrice : '--'}}</view><text>{{quote && quote.discountAmount > 0 ? quote.memberLevelName + ' ' + quote.memberDiscountText + ' · 已省 ¥' + quote.discountAmount : '价格以服务端结算为准'}}</text></view>
     <view class="checkout-button {{!quote || quoting ? 'disabled' : ''}}" bindtap="checkout"><text>{{quoting ? '核价中' : '去结算'}}</text><text wx:if="{{!quoting}}">{{itemCount}}件 ›</text><view class="button-spinner" wx:if="{{quoting}}"></view></view>
   </view>
 </view>
