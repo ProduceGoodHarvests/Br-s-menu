@@ -4,6 +4,7 @@ var menu = require('../../utils/menu');
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
     loading: true,
     error: '',
     categories: [],
@@ -30,6 +31,7 @@ Page({
   onLoad: function () { this.loadMenu(); },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     var context = storage.getOrderContext();
     var cart = storage.getCart();
     var count = 0;

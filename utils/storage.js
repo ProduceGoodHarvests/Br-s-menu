@@ -5,6 +5,7 @@ var KEYS = {
   ORDER_CONTEXT: 'restaurant_order_context_v2',
   MENU_CACHE: 'restaurant_menu_cache_v2',
   OPEN_RECHARGE: 'restaurant_open_recharge_v1',
+  THEME: 'restaurant_theme_v1',
 };
 
 function get(key, fallback) {
@@ -67,6 +68,15 @@ function consumeRechargeOpen() {
   return shouldOpen;
 }
 
+function getTheme() {
+  var theme = get(KEYS.THEME, 'light');
+  return ['light', 'dark', 'ocean', 'forest', 'rose'].indexOf(theme) >= 0 ? theme : 'light';
+}
+
+function setTheme(theme) {
+  set(KEYS.THEME, ['light', 'dark', 'ocean', 'forest', 'rose'].indexOf(theme) >= 0 ? theme : 'light');
+}
+
 function cartKey(goodsId, selections) {
   var keys = Object.keys(selections || {}).sort();
   var parts = [];
@@ -122,6 +132,8 @@ module.exports = {
   getMenuCache: getMenuCache,
   requestRechargeOpen: requestRechargeOpen,
   consumeRechargeOpen: consumeRechargeOpen,
+  getTheme: getTheme,
+  setTheme: setTheme,
   addCartItem: addCartItem,
   toGoodsList: toGoodsList,
   cartKey: cartKey,

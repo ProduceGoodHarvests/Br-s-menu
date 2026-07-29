@@ -1,4 +1,4 @@
-<view class="page admin-page dish-manager-page">
+<view class="page admin-page dish-manager-page {{themeClass}}">
   <view class="dish-hero">
     <view class="dish-hero-decoration one"></view>
     <view class="dish-hero-decoration two"></view>
@@ -99,8 +99,8 @@
   </view>
 </view>
 
-<view wx:if="{{formVisible}}" class="sheet-mask" bindtap="closeForm"></view>
-<scroll-view scroll-y class="dish-form-sheet {{formVisible ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{formVisible}}" class="sheet-mask {{themeClass}}" bindtap="closeForm"></view>
+<scroll-view scroll-y class="dish-form-sheet {{themeClass}} {{formVisible ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="dish-form-head">
     <view><text>{{editingId ? '编辑菜品' : '新增菜品'}}</text><text>完善菜品信息后保存至云端</text></view>
@@ -129,7 +129,7 @@
     </view>
     <view class="dish-form-grid">
       <view class="dish-form-field"><view class="dish-form-label"><text>菜单排序</text><text>越小越靠前</text></view><input type="number" value="{{form.sort}}" placeholder="100" data-field="sort" bindinput="onField" /></view>
-      <view class="dish-form-field dish-switch-field"><view><text>立即上架</text><text>{{form.status ? '顾客可见' : '暂不展示'}}</text></view><switch checked="{{form.status}}" bindchange="onStatus" color="#ee582e" /></view>
+      <view class="dish-form-field dish-switch-field"><view><text>立即上架</text><text>{{form.status ? '顾客可见' : '暂不展示'}}</text></view><switch checked="{{form.status}}" bindchange="onStatus" color="{{themeAccent}}" /></view>
     </view>
   </view>
 
@@ -157,8 +157,8 @@
   <view class="safe-bottom"></view>
 </scroll-view>
 
-<view wx:if="{{stockEditing}}" class="sheet-mask" bindtap="closeStockEdit"></view>
-<view class="stock-sheet {{stockEditing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{stockEditing}}" class="sheet-mask {{themeClass}}" bindtap="closeStockEdit"></view>
+<view class="stock-sheet {{themeClass}} {{stockEditing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="stock-sheet-head"><view><text>调整库存</text><text>{{stockDish.name}}</text></view><view bindtap="closeStockEdit">×</view></view>
   <view class="stock-editor">

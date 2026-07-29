@@ -30,6 +30,8 @@ function normalizeTable(item) {
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
+    themeAccent: getApp().getThemeAccent(),
     tab: 'category',
     categories: [],
     displayCategories: [],
@@ -77,6 +79,7 @@ Page({
   },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     this.loadAll();
   },
 

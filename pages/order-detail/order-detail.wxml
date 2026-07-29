@@ -1,4 +1,4 @@
-<view class="page order-detail-page">
+<view class="page order-detail-page {{themeClass}}">
   <view class="detail-loading" wx:if="{{loading}}"><view class="detail-loading-card" wx:for="{{[1, 2]}}" wx:key="*this"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view>
   <view class="detail-error" wx:elif="{{error}}"><view class="detail-error-icon">!</view><view class="detail-error-title">订单详情暂时无法加载</view><view class="detail-error-desc">{{error}}</view><view class="detail-retry" bindtap="retryLoad">重新加载</view></view>
   <block wx:elif="{{order}}">

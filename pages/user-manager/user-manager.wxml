@@ -1,4 +1,4 @@
-<view class="page user-page">
+<view class="page user-page {{themeClass}}">
   <view class="user-hero">
     <view>
       <text>用户管理</text>
@@ -102,8 +102,8 @@
   </view>
 </view>
 
-<view wx:if="{{coinEditing}}" class="sheet-mask" bindtap="closeCoinEdit"></view>
-<view class="coin-sheet {{coinEditing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{coinEditing}}" class="sheet-mask {{themeClass}}" bindtap="closeCoinEdit"></view>
+<view class="coin-sheet {{themeClass}} {{coinEditing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="coin-sheet-head">
     <view>
@@ -146,8 +146,8 @@
   <view class="safe-bottom"></view>
 </view>
 
-<view wx:if="{{adminEditing}}" class="sheet-mask" bindtap="closeAdminEdit"></view>
-<view class="admin-role-sheet {{adminEditing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{adminEditing}}" class="sheet-mask {{themeClass}}" bindtap="closeAdminEdit"></view>
+<view class="admin-role-sheet {{themeClass}} {{adminEditing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="admin-sheet-head">
     <view>
@@ -180,7 +180,7 @@
 
   <view class="admin-status-row">
     <view><text>管理员账号状态</text><text>{{adminStatus ? '允许进入商家管理后台' : '暂时禁止进入管理后台'}}</text></view>
-    <switch checked="{{adminStatus}}" disabled="{{adminMember.isCurrentUser && adminMember.admin}}" color="#f05228" bindchange="onAdminStatusSwitch" />
+    <switch checked="{{adminStatus}}" disabled="{{adminMember.isCurrentUser && adminMember.admin}}" color="{{themeAccent}}" bindchange="onAdminStatusSwitch" />
   </view>
 
   <view class="admin-sheet-actions">
@@ -197,8 +197,8 @@
   <view class="safe-bottom"></view>
 </view>
 
-<view wx:if="{{editing}}" class="sheet-mask" bindtap="closeEdit"></view>
-<view class="member-sheet {{editing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{editing}}" class="sheet-mask {{themeClass}}" bindtap="closeEdit"></view>
+<view class="member-sheet {{themeClass}} {{editing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="sheet-title">编辑用户</view>
   <view class="sheet-subtitle">{{currentMember.openidShort}}</view>
@@ -217,7 +217,7 @@
       <text>账号状态</text>
       <text>{{form.status ? '允许下单' : '禁止下单'}}</text>
     </view>
-    <switch checked="{{form.status}}" color="#f05228" bindchange="onStatusSwitch" />
+    <switch checked="{{form.status}}" color="{{themeAccent}}" bindchange="onStatusSwitch" />
   </view>
   <view class="form-block">
     <text>备注</text>

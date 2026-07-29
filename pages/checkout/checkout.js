@@ -3,8 +3,13 @@ var storage = require('../../utils/storage');
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
     items: [], quote: null, tables: [], type: 'dine_in', tableNo: '', remark: '', submitting: false, loading: true, error: '', store: { isOpen: true, pauseReason: '' }, subscribeTemplateIds: [],
     types: [{ value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包带走' }, { value: 'pickup', label: '到店自提' }],
+  },
+
+  onShow: function () {
+    getApp().syncPageTheme(this);
   },
 
   onLoad: function () {

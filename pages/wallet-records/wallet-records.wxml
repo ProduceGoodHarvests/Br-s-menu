@@ -1,4 +1,4 @@
-<view class="page wallet-records-page">
+<view class="page wallet-records-page {{themeClass}}">
   <view class="wallet-hero"><view><text>消费记录</text><text>每一笔虚拟金币变动都清晰可查</text></view><view class="wallet-balance"><text>当前余额</text><text>{{balanceText}}</text><text>金币</text></view></view>
   <view class="wallet-tabs"><view wx:for="{{tabs}}" wx:key="value" class="wallet-tab {{activeTab === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="switchTab">{{item.label}}</view></view>
   <view class="record-loading" wx:if="{{loading}}"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="record-skeleton"><view class="record-skeleton-icon shimmer"></view><view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view></view>

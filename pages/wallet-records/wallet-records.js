@@ -25,6 +25,7 @@ function normalize(record) {
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
     loading: true,
     error: '',
     balanceText: '0.00',
@@ -35,7 +36,7 @@ Page({
   },
 
   onLoad: function () { this.loadRecords(); },
-  onShow: function () { if (!this.data.loading) this.loadRecords(true); },
+  onShow: function () { getApp().syncPageTheme(this); if (!this.data.loading) this.loadRecords(true); },
 
   loadRecords: function (silent) {
     var that = this;

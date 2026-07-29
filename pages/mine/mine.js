@@ -58,10 +58,24 @@ Page({
     rechargeChecking: false,
     rechargePresets: [50, 100, 200, 500],
     membershipLevels: membership.LEVELS,
+    theme: getApp().getTheme(),
+    themeClass: getApp().getThemeClass(),
+    themePickerVisible: false,
+    themeName: getApp().getThemeName(),
+    themeOptions: [
+      { value: 'light', name: '浅色模式', desc: '明亮清爽，适合日常使用', icon: '☀' },
+      { value: 'dark', name: '夜间模式', desc: '柔和护眼，适合低光环境', icon: '◐' },
+      { value: 'ocean', name: '海洋蓝', desc: '清透冷静，阅读更专注', icon: '◌' },
+      { value: 'forest', name: '森林绿', desc: '自然舒缓，视觉更放松', icon: '♣' },
+      { value: 'rose', name: '暖霞粉', desc: '柔和温暖，氛围更轻盈', icon: '✦' },
+    ],
   },
 
   onShow: function () {
     var that = this;
+    var app = getApp();
+    app.syncPageTheme(this);
+    this.setData({ theme: app.getTheme(), themeName: app.getThemeName() });
     var cart = storage.getCart();
     var count = 0;
     for (var i = 0; i < cart.length; i++) count += Number(cart[i].quantity || 0);
@@ -235,6 +249,20 @@ Page({
   goCart: function () { wx.switchTab({ url: '/pages/cart/cart' }); },
   goWalletRecords: function () { wx.navigateTo({ url: '/pages/wallet-records/wallet-records' }); },
   goMerchant: function () { wx.navigateTo({ url: '/pages/merchant/merchant' }); },
+  openThemePicker: function () { this.setData({ themePickerVisible: true }); },
+  closeThemePicker: function () { this.setData({ themePickerVisible: false }); },
+  chooseTheme: function (e) {
+    var theme = e.currentTarget.dataset.theme;
+    var app = getApp();
+    app.setTheme(theme);
+    this.setData({
+      themePickerVisible: false,
+      theme: app.getTheme(),
+      themeClass: app.getThemeClass(),
+      themeName: app.getThemeName(),
+    });
+    wx.showToast({ title: '已切换' + app.getThemeName(), icon: 'none' });
+  },
   about: function () {
     wx.showModal({
       title: '朱冰冉的私房菜',

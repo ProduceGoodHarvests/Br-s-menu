@@ -451,3 +451,415 @@ button:active, .primary:active, .empty-primary:active, .action-button:active, .c
 .inline-form input { flex: 1; min-width: 0; background: #f5f3f0; border-radius: 10rpx; padding: 12rpx; }
 .manage-row { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; background: #fff; padding: 18rpx; border-radius: 16rpx; margin-bottom: 12rpx; }
 .manage-row > view:first-child, .manage-row > text:first-child { flex: 1; min-width: 0; word-break: break-all; }
+
+/* 主题：由个人中心的主题偏好控制。浅色模式沿用原有视觉，夜间模式统一降低页面亮度。 */
+.theme-dark { background: #12151b !important; color: #edf0f5; }
+.theme-dark.page, .theme-dark.menu-page, .theme-dark.detail-page, .theme-dark.cart-page, .theme-dark.checkout-page, .theme-dark.orders-page, .theme-dark.order-detail-page, .theme-dark.admin-page, .theme-dark.user-page, .theme-dark.wallet-records-page { background: #12151b !important; }
+.theme-dark .card, .theme-dark .tabs, .theme-dark .empty-card, .theme-dark .search-box, .theme-dark .menu-layout, .theme-dark .menu-skeleton, .theme-dark .detail-card, .theme-dark .spec-card, .theme-dark .cart-card, .theme-dark .checkout-card, .theme-dark .order-card, .theme-dark .order-loading-card, .theme-dark .summary-card, .theme-dark .manage-card, .theme-dark .manage-row, .theme-dark .inline-form, .theme-dark .stats-section, .theme-dark .menu-section, .theme-dark .member-banner, .theme-dark .membership-card, .theme-dark .admin-entry, .theme-dark .dish-form-sheet, .theme-dark .data-sheet, .theme-dark .scene-sheet, .theme-dark .profile-sheet, .theme-dark .recharge-sheet, .theme-dark .bottom-bar, .theme-dark .cart-footer, .theme-dark .checkout-footer, .theme-dark.dish-form-sheet, .theme-dark.data-sheet, .theme-dark.scene-sheet, .theme-dark.profile-sheet, .theme-dark.recharge-sheet { background: #1c212a !important; border-color: #303846 !important; box-shadow: 0 10rpx 26rpx rgba(0,0,0,.22); }
+.theme-dark .category-list, .theme-dark .skeleton-category, .theme-dark .dish-tags text, .theme-dark .option, .theme-dark .clear-action, .theme-dark .quantity > view, .theme-dark .step-button, .theme-dark .field.column textarea, .theme-dark .upload, .theme-dark .inline-form input, .theme-dark .profile-name-input, .theme-dark .profile-avatar-picker { background: #272e39 !important; border-color: #394352 !important; }
+.theme-dark .category-item.active, .theme-dark .menu-section-title { background: #1c212a !important; }
+.theme-dark .dish-card, .theme-dark .field, .theme-dark .order-goods-row, .theme-dark .wallet-record, .theme-dark .menu-item { border-color: #303846 !important; }
+.theme-dark .tab, .theme-dark .category-item, .theme-dark .dish-desc, .theme-dark .muted, .theme-dark .empty-desc, .theme-dark .price-unit, .theme-dark .detail-sales, .theme-dark .cart-spec, .theme-dark .field, .theme-dark .menu-text text:last-child, .theme-dark .order-meta, .theme-dark .form-hint { color: #aeb7c5 !important; }
+.theme-dark .card-title, .theme-dark .section-head, .theme-dark .empty-title, .theme-dark .dish-name, .theme-dark .cart-name, .theme-dark .detail-name, .theme-dark .order-title, .theme-dark .menu-text text:first-child, .theme-dark .field-label, .theme-dark .manage-row, .theme-dark input, .theme-dark textarea { color: #eef1f6 !important; }
+.theme-dark button:not(.primary):not(.recharge-submit) { color: #edf0f5; background: #272e39; }
+.theme-dark button:not(.primary):not(.recharge-submit)::after { border-color: #3b4655; }
+.theme-dark .sheet-mask, .sheet-mask.theme-dark { background: rgba(0,0,0,.68); }
+.theme-dark .notice, .theme-dark .cart-tip, .theme-dark .detail-notice { background: #302b20; border-color: #5a4c2b; color: #e4c982; }
+.theme-dark .theme-option-preview.light { box-shadow: inset 0 0 0 1rpx rgba(255,255,255,.08); }
+
+/* 夜间模式的文字统一使用高对比度颜色，避免局部组件沿用浅色文字。 */
+.theme-dark text, .theme-dark view, .theme-dark button, .theme-dark input, .theme-dark textarea { color: #eef1f6 !important; }
+.theme-dark .muted, .theme-dark .tab, .theme-dark .category-item, .theme-dark .dish-desc, .theme-dark .empty-desc, .theme-dark .price-unit, .theme-dark .detail-sales, .theme-dark .cart-spec, .theme-dark .field, .theme-dark .menu-text text:last-child, .theme-dark .order-meta, .theme-dark .form-hint { color: #aeb7c5 !important; }
+.theme-dark .price, .theme-dark .tab.active, .theme-dark .category-item.active, .theme-dark .theme-name, .theme-dark .coin-menu-balance { color: #ffab83 !important; }
+.theme-dark .primary, .theme-dark .primary text, .theme-dark .store-card text, .theme-dark .member-banner text { color: #fff !important; }
+.theme-dark .fresh-badge { background: #263a2d !important; color: #a8e2b2 !important; }
+.theme-dark .fresh-badge text { color: #a8e2b2 !important; }
+.theme-dark .placeholder, .theme-dark .dish-image.placeholder { background: linear-gradient(145deg, #343d49, #252c36) !important; }
+.theme-dark .cart-dock-action { background: #303946 !important; color: #f3f6fb !important; }
+.theme-dark .cart-dock-action text { color: #f3f6fb !important; }
+.theme-dark .cart-dock-icon text { background: #303946 !important; border-color: #1b1f27 !important; color: #ffab83 !important; }
+.theme-dark .scene-option { border-color: #394352 !important; background: #252c36 !important; }
+.theme-dark .scene-option.active { border-color: #ff8960 !important; background: #332a26 !important; }
+.theme-dark .scene-option-icon, .theme-dark .scene-option:not(.active) .scene-check { background: #303946 !important; border-color: #465263 !important; }
+.theme-dark .scene-check { background: #f06b42 !important; }
+.theme-dark .hero-badge { background: rgba(35,41,51,.94) !important; color: #eef1f6 !important; }
+
+/* 三套浅色配色：保留现有清晰排版，只替换页面底色、卡片边框和品牌强调色。 */
+.theme-ocean, .theme-ocean.page, .theme-ocean.menu-page, .theme-ocean.detail-page, .theme-ocean.cart-page, .theme-ocean.checkout-page, .theme-ocean.orders-page, .theme-ocean.order-detail-page, .theme-ocean.admin-page, .theme-ocean.user-page, .theme-ocean.wallet-records-page { background: #edf6fc !important; }
+.theme-forest, .theme-forest.page, .theme-forest.menu-page, .theme-forest.detail-page, .theme-forest.cart-page, .theme-forest.checkout-page, .theme-forest.orders-page, .theme-forest.order-detail-page, .theme-forest.admin-page, .theme-forest.user-page, .theme-forest.wallet-records-page { background: #eef7f1 !important; }
+.theme-rose, .theme-rose.page, .theme-rose.menu-page, .theme-rose.detail-page, .theme-rose.cart-page, .theme-rose.checkout-page, .theme-rose.orders-page, .theme-rose.order-detail-page, .theme-rose.admin-page, .theme-rose.user-page, .theme-rose.wallet-records-page { background: #fdf1f3 !important; }
+.theme-ocean .card, .theme-ocean .tabs, .theme-ocean .menu-layout, .theme-ocean .search-box, .theme-ocean .detail-card, .theme-ocean .spec-card, .theme-ocean .cart-card, .theme-ocean .order-card, .theme-ocean .summary-card, .theme-ocean .manage-card, .theme-ocean .menu-section, .theme-ocean .stats-section, .theme-ocean .membership-card, .theme-ocean .admin-entry { border-color: #d3e5f3 !important; }
+.theme-forest .card, .theme-forest .tabs, .theme-forest .menu-layout, .theme-forest .search-box, .theme-forest .detail-card, .theme-forest .spec-card, .theme-forest .cart-card, .theme-forest .order-card, .theme-forest .summary-card, .theme-forest .manage-card, .theme-forest .menu-section, .theme-forest .stats-section, .theme-forest .membership-card, .theme-forest .admin-entry { border-color: #d4e8da !important; }
+.theme-rose .card, .theme-rose .tabs, .theme-rose .menu-layout, .theme-rose .search-box, .theme-rose .detail-card, .theme-rose .spec-card, .theme-rose .cart-card, .theme-rose .order-card, .theme-rose .summary-card, .theme-rose .manage-card, .theme-rose .menu-section, .theme-rose .stats-section, .theme-rose .membership-card, .theme-rose .admin-entry { border-color: #f0d9df !important; }
+.theme-ocean .price, .theme-ocean .tab.active, .theme-ocean .category-item.active, .theme-ocean .theme-name { color: #277fc7 !important; }
+.theme-forest .price, .theme-forest .tab.active, .theme-forest .category-item.active, .theme-forest .theme-name { color: #368664 !important; }
+.theme-rose .price, .theme-rose .tab.active, .theme-rose .category-item.active, .theme-rose .theme-name { color: #c9647a !important; }
+
+/* 完整主题色覆盖：主横幅、主操作、分类选中态和提示标签不再保留默认橙色。 */
+.theme-ocean .store-card { background: linear-gradient(145deg, #3d9bda, #176db7 72%) !important; box-shadow: 0 18rpx 38rpx rgba(28,113,181,.22); }
+.theme-ocean .scene-entry { background: rgba(10,68,124,.18) !important; }
+.theme-ocean .scene-entry:active { background: rgba(10,68,124,.3) !important; }
+.theme-ocean .primary, .theme-ocean .add-button, .theme-ocean .checkout-button, .theme-ocean .detail-add-button, .theme-ocean .empty-primary, .theme-ocean .cart-dock-icon, .theme-ocean .scene-check { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; box-shadow: 0 9rpx 20rpx rgba(27,107,181,.24); }
+.theme-ocean .category-item.active::before { background: linear-gradient(#48a6e1, #1971ba) !important; }
+.theme-ocean .category-item.active::after { background: #2584ca !important; }
+.theme-ocean .fresh-badge { background: #e7f4fc !important; color: #277fc7 !important; }
+.theme-ocean .fresh-badge text { color: #277fc7 !important; }
+.theme-ocean .tab.active, .theme-ocean .option.active { border-color: #3d94d6 !important; background: #edf7fd !important; color: #277fc7 !important; }
+
+.theme-forest .store-card { background: linear-gradient(145deg, #59a67e, #277552 72%) !important; box-shadow: 0 18rpx 38rpx rgba(38,113,78,.22); }
+.theme-forest .scene-entry { background: rgba(17,77,48,.19) !important; }
+.theme-forest .scene-entry:active { background: rgba(17,77,48,.31) !important; }
+.theme-forest .primary, .theme-forest .add-button, .theme-forest .checkout-button, .theme-forest .detail-add-button, .theme-forest .empty-primary, .theme-forest .cart-dock-icon, .theme-forest .scene-check { background: linear-gradient(135deg, #57a57c, #287752) !important; box-shadow: 0 9rpx 20rpx rgba(38,112,76,.24); }
+.theme-forest .category-item.active::before { background: linear-gradient(#61af86, #2c7956) !important; }
+.theme-forest .category-item.active::after { background: #368664 !important; }
+.theme-forest .fresh-badge { background: #e8f6eb !important; color: #368664 !important; }
+.theme-forest .fresh-badge text { color: #368664 !important; }
+.theme-forest .tab.active, .theme-forest .option.active { border-color: #4b9b72 !important; background: #edf8f0 !important; color: #368664 !important; }
+
+.theme-rose .store-card { background: linear-gradient(145deg, #dc8298, #b94e69 72%) !important; box-shadow: 0 18rpx 38rpx rgba(181,65,95,.22); }
+.theme-rose .scene-entry { background: rgba(103,23,43,.19) !important; }
+.theme-rose .scene-entry:active { background: rgba(103,23,43,.31) !important; }
+.theme-rose .primary, .theme-rose .add-button, .theme-rose .checkout-button, .theme-rose .detail-add-button, .theme-rose .empty-primary, .theme-rose .cart-dock-icon, .theme-rose .scene-check { background: linear-gradient(135deg, #de829a, #bc506b) !important; box-shadow: 0 9rpx 20rpx rgba(185,71,100,.23); }
+.theme-rose .category-item.active::before { background: linear-gradient(#e18ca2, #bd516b) !important; }
+.theme-rose .category-item.active::after { background: #c9647a !important; }
+.theme-rose .fresh-badge { background: #fff0f3 !important; color: #c9647a !important; }
+.theme-rose .fresh-badge text { color: #c9647a !important; }
+.theme-rose .tab.active, .theme-rose .option.active { border-color: #d97a91 !important; background: #fff2f5 !important; color: #c9647a !important; }
+
+/* 个人中心也使用主题主色，避免头图和会员区域仍保留默认橙黄配色。 */
+.theme-dark .mine-hero { background: linear-gradient(145deg, #303846, #171b22) !important; }
+.theme-dark .profile-privacy-tip, .theme-dark .coin-banner { background: rgba(0,0,0,.22) !important; }
+.theme-dark .membership-card { border-color: #3c4655 !important; background: linear-gradient(145deg, #232a34, #1b2028) !important; }
+.theme-dark .membership-discount { background: linear-gradient(135deg, #4c5b70, #313c4d) !important; }
+.theme-dark .membership-progress { background: #303a48 !important; }
+.theme-dark .membership-progress view { background: linear-gradient(90deg, #7894b7, #506b8e) !important; }
+.theme-dark .admin-entry { background: linear-gradient(135deg, #303946, #202732) !important; }
+
+.theme-ocean .mine-hero { background: linear-gradient(145deg, #3d9bda, #176db7) !important; }
+.theme-ocean .profile-privacy-tip, .theme-ocean .coin-banner { background: rgba(10,68,124,.2) !important; }
+.theme-ocean .membership-card { border-color: #cbe4f4 !important; background: linear-gradient(145deg, #fbfeff, #e8f5fd) !important; box-shadow: 0 10rpx 28rpx rgba(39,127,199,.1); }
+.theme-ocean .membership-discount { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; }
+.theme-ocean .membership-progress { background: #d8ebf8 !important; }
+.theme-ocean .membership-progress view { background: linear-gradient(90deg, #62b2e6, #247bc2) !important; }
+.theme-ocean .membership-level.active { border-color: #4b9ed8 !important; background: #e7f4fc !important; }
+.theme-ocean .admin-entry { background: linear-gradient(135deg, #315e7f, #23465f) !important; }
+.theme-ocean .membership-head > view:first-child text:first-child, .theme-ocean .membership-level.active text:first-child, .theme-ocean .membership-progress-copy text:last-child { color: #277fc7 !important; }
+.theme-ocean .membership-head > view:first-child text:last-child, .theme-ocean .membership-progress-copy { color: #5f7f98 !important; }
+
+.theme-forest .mine-hero { background: linear-gradient(145deg, #59a67e, #277552) !important; }
+.theme-forest .profile-privacy-tip, .theme-forest .coin-banner { background: rgba(17,77,48,.2) !important; }
+.theme-forest .membership-card { border-color: #cce5d3 !important; background: linear-gradient(145deg, #fcfffd, #e8f5eb) !important; box-shadow: 0 10rpx 28rpx rgba(54,134,100,.1); }
+.theme-forest .membership-discount { background: linear-gradient(135deg, #57a57c, #287752) !important; }
+.theme-forest .membership-progress { background: #d8ecde !important; }
+.theme-forest .membership-progress view { background: linear-gradient(90deg, #67b58a, #33815d) !important; }
+.theme-forest .membership-level.active { border-color: #57a57c !important; background: #e6f4e9 !important; }
+.theme-forest .admin-entry { background: linear-gradient(135deg, #416c53, #294b38) !important; }
+.theme-forest .membership-head > view:first-child text:first-child, .theme-forest .membership-level.active text:first-child, .theme-forest .membership-progress-copy text:last-child { color: #368664 !important; }
+.theme-forest .membership-head > view:first-child text:last-child, .theme-forest .membership-progress-copy { color: #62816e !important; }
+
+.theme-rose .mine-hero { background: linear-gradient(145deg, #dc8298, #b94e69) !important; }
+.theme-rose .profile-privacy-tip, .theme-rose .coin-banner { background: rgba(103,23,43,.2) !important; }
+.theme-rose .membership-card { border-color: #f0d6dd !important; background: linear-gradient(145deg, #fffdfd, #fff0f3) !important; box-shadow: 0 10rpx 28rpx rgba(201,100,122,.1); }
+.theme-rose .membership-discount { background: linear-gradient(135deg, #de829a, #bc506b) !important; }
+.theme-rose .membership-progress { background: #f5dce3 !important; }
+.theme-rose .membership-progress view { background: linear-gradient(90deg, #e99aaa, #c9647a) !important; }
+.theme-rose .membership-level.active { border-color: #dd859b !important; background: #fff0f3 !important; }
+.theme-rose .admin-entry { background: linear-gradient(135deg, #80505d, #56323b) !important; }
+.theme-rose .membership-head > view:first-child text:first-child, .theme-rose .membership-level.active text:first-child, .theme-rose .membership-progress-copy text:last-child { color: #c9647a !important; }
+.theme-rose .membership-head > view:first-child text:last-child, .theme-rose .membership-progress-copy { color: #976b76 !important; }
+
+/* 菜品标签（销量、规格、库存提醒）也统一跟随主题，不再残留默认橙红色。 */
+.theme-dark .dish-tags text, .theme-dark .dish-tags text:last-child { background: #2b3440 !important; color: #b9c7d9 !important; }
+.theme-ocean .dish-tags text, .theme-ocean .dish-tags text:last-child { background: #e8f4fc !important; color: #277fc7 !important; }
+.theme-forest .dish-tags text, .theme-forest .dish-tags text:last-child { background: #e8f5eb !important; color: #368664 !important; }
+.theme-rose .dish-tags text, .theme-rose .dish-tags text:last-child { background: #fff0f3 !important; color: #c9647a !important; }
+
+/* 全局主题收口：详情、购物车、结算、订单与管理页的品牌色统一跟随主题。 */
+.theme-dark .detail-price, .theme-dark .cart-total > view, .theme-dark .checkout-total > view, .theme-dark .total-line text:last-child, .theme-dark .order-amount > text:nth-child(2), .theme-dark .order-amount > text:last-child, .theme-dark .order-detail-entry, .theme-dark .required-dot, .theme-dark .table-selector-icon, .theme-dark .table-selector > text, .theme-dark .dish-price-line text:first-child, .theme-dark .dish-price-line text:nth-child(2), .theme-dark .dish-card-actions .edit-action, .theme-dark .dish-picker-field > text, .theme-dark .category-order, .theme-dark .empty-icon, .theme-dark .wallet-tab.active { color: #ffab83 !important; }
+.theme-dark .detail-desc-icon, .theme-dark .pay-button, .theme-dark .action-button.primary-action, .theme-dark .business-toggle.resume, .theme-dark .save-button, .theme-dark .save-admin-button, .theme-dark .primary-empty-action, .theme-dark .add-table-button, .theme-dark .manager-hero, .theme-dark .category-overview, .theme-dark .dish-hero, .theme-dark .user-hero, .theme-dark .wallet-hero, .theme-dark .type-tab > view, .theme-dark .order-tabs .tab > view, .theme-dark .progress-line view, .theme-dark .progress-node.active > text:first-child, .theme-dark .payment-alert > view:first-child, .theme-dark .admin-role-option.active .role-check, .theme-dark .profile-avatar-preview view { background: linear-gradient(135deg, #ff9d75, #dd6642) !important; border-color: #ff9d75 !important; }
+.theme-dark .detail-description, .theme-dark .required-dot, .theme-dark .type-tab.active, .theme-dark .checkout-line-image, .theme-dark .orders-hero > view:last-child, .theme-dark .payment-alert, .theme-dark .member-actions .primary-action, .theme-dark .filter-chip.active, .theme-dark .dish-filter-chip.active, .theme-dark .dish-category-line text:first-child, .theme-dark .category-order, .theme-dark .area-suggestions view.active, .theme-dark .member-avatar, .theme-dark .admin-role-option.active, .theme-dark .wallet-tab.active { border-color: #526071 !important; background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .checkout-line-main > text:first-child, .theme-dark .order-goods > view text:first-child { border-left-color: #ff9d75 !important; }
+.theme-dark.dish-form-sheet, .theme-dark.stock-sheet, .theme-dark.coin-sheet, .theme-dark.admin-role-sheet, .theme-dark.member-sheet, .theme-dark .form-modal { background: #1c212a !important; color: #eef1f6 !important; }
+.theme-dark .dish-form-section, .theme-dark .field-input, .theme-dark .form-row input, .theme-dark .form-block textarea, .theme-dark .coin-form-block textarea, .theme-dark .coin-amount-input, .theme-dark .admin-status-row, .theme-dark .table-enable-row { border-color: #394352 !important; background: #272e39 !important; color: #eef1f6 !important; }
+
+.theme-ocean .detail-price, .theme-ocean .cart-total > view, .theme-ocean .checkout-total > view, .theme-ocean .total-line text:last-child, .theme-ocean .order-amount > text:nth-child(2), .theme-ocean .order-amount > text:last-child, .theme-ocean .order-detail-entry, .theme-ocean .required-dot, .theme-ocean .table-selector-icon, .theme-ocean .table-selector > text, .theme-ocean .dish-price-line text:first-child, .theme-ocean .dish-price-line text:nth-child(2), .theme-ocean .dish-card-actions .edit-action, .theme-ocean .dish-picker-field > text, .theme-ocean .category-order, .theme-ocean .empty-icon, .theme-ocean .wallet-tab.active { color: #277fc7 !important; }
+.theme-ocean .detail-desc-icon, .theme-ocean .pay-button, .theme-ocean .action-button.primary-action, .theme-ocean .business-toggle.resume, .theme-ocean .save-button, .theme-ocean .save-admin-button, .theme-ocean .primary-empty-action, .theme-ocean .add-table-button, .theme-ocean .manager-hero, .theme-ocean .category-overview, .theme-ocean .dish-hero, .theme-ocean .user-hero, .theme-ocean .wallet-hero, .theme-ocean .type-tab > view, .theme-ocean .order-tabs .tab > view, .theme-ocean .progress-line view, .theme-ocean .progress-node.active > text:first-child, .theme-ocean .payment-alert > view:first-child, .theme-ocean .admin-role-option.active .role-check, .theme-ocean .profile-avatar-preview view { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; border-color: #3f9ddd !important; }
+.theme-ocean .detail-description, .theme-ocean .required-dot, .theme-ocean .type-tab.active, .theme-ocean .checkout-line-image, .theme-ocean .orders-hero > view:last-child, .theme-ocean .payment-alert, .theme-ocean .member-actions .primary-action, .theme-ocean .filter-chip.active, .theme-ocean .dish-filter-chip.active, .theme-ocean .dish-category-line text:first-child, .theme-ocean .category-order, .theme-ocean .area-suggestions view.active, .theme-ocean .member-avatar, .theme-ocean .admin-role-option.active, .theme-ocean .wallet-tab.active { border-color: #b9dcef !important; background: #e8f4fc !important; color: #277fc7 !important; }
+.theme-ocean .checkout-line-main > text:first-child, .theme-ocean .order-goods > view text:first-child { border-left-color: #277fc7 !important; }
+
+.theme-forest .detail-price, .theme-forest .cart-total > view, .theme-forest .checkout-total > view, .theme-forest .total-line text:last-child, .theme-forest .order-amount > text:nth-child(2), .theme-forest .order-amount > text:last-child, .theme-forest .order-detail-entry, .theme-forest .required-dot, .theme-forest .table-selector-icon, .theme-forest .table-selector > text, .theme-forest .dish-price-line text:first-child, .theme-forest .dish-price-line text:nth-child(2), .theme-forest .dish-card-actions .edit-action, .theme-forest .dish-picker-field > text, .theme-forest .category-order, .theme-forest .empty-icon, .theme-forest .wallet-tab.active { color: #368664 !important; }
+.theme-forest .detail-desc-icon, .theme-forest .pay-button, .theme-forest .action-button.primary-action, .theme-forest .business-toggle.resume, .theme-forest .save-button, .theme-forest .save-admin-button, .theme-forest .primary-empty-action, .theme-forest .add-table-button, .theme-forest .manager-hero, .theme-forest .category-overview, .theme-forest .dish-hero, .theme-forest .user-hero, .theme-forest .wallet-hero, .theme-forest .type-tab > view, .theme-forest .order-tabs .tab > view, .theme-forest .progress-line view, .theme-forest .progress-node.active > text:first-child, .theme-forest .payment-alert > view:first-child, .theme-forest .admin-role-option.active .role-check, .theme-forest .profile-avatar-preview view { background: linear-gradient(135deg, #57a57c, #287752) !important; border-color: #57a57c !important; }
+.theme-forest .detail-description, .theme-forest .required-dot, .theme-forest .type-tab.active, .theme-forest .checkout-line-image, .theme-forest .orders-hero > view:last-child, .theme-forest .payment-alert, .theme-forest .member-actions .primary-action, .theme-forest .filter-chip.active, .theme-forest .dish-filter-chip.active, .theme-forest .dish-category-line text:first-child, .theme-forest .category-order, .theme-forest .area-suggestions view.active, .theme-forest .member-avatar, .theme-forest .admin-role-option.active, .theme-forest .wallet-tab.active { border-color: #c3dfcb !important; background: #e8f5eb !important; color: #368664 !important; }
+.theme-forest .checkout-line-main > text:first-child, .theme-forest .order-goods > view text:first-child { border-left-color: #368664 !important; }
+
+.theme-rose .detail-price, .theme-rose .cart-total > view, .theme-rose .checkout-total > view, .theme-rose .total-line text:last-child, .theme-rose .order-amount > text:nth-child(2), .theme-rose .order-amount > text:last-child, .theme-rose .order-detail-entry, .theme-rose .required-dot, .theme-rose .table-selector-icon, .theme-rose .table-selector > text, .theme-rose .dish-price-line text:first-child, .theme-rose .dish-price-line text:nth-child(2), .theme-rose .dish-card-actions .edit-action, .theme-rose .dish-picker-field > text, .theme-rose .category-order, .theme-rose .empty-icon, .theme-rose .wallet-tab.active { color: #c9647a !important; }
+.theme-rose .detail-desc-icon, .theme-rose .pay-button, .theme-rose .action-button.primary-action, .theme-rose .business-toggle.resume, .theme-rose .save-button, .theme-rose .save-admin-button, .theme-rose .primary-empty-action, .theme-rose .add-table-button, .theme-rose .manager-hero, .theme-rose .category-overview, .theme-rose .dish-hero, .theme-rose .user-hero, .theme-rose .wallet-hero, .theme-rose .type-tab > view, .theme-rose .order-tabs .tab > view, .theme-rose .progress-line view, .theme-rose .progress-node.active > text:first-child, .theme-rose .payment-alert > view:first-child, .theme-rose .admin-role-option.active .role-check, .theme-rose .profile-avatar-preview view { background: linear-gradient(135deg, #de829a, #bc506b) !important; border-color: #de829a !important; }
+.theme-rose .detail-description, .theme-rose .required-dot, .theme-rose .type-tab.active, .theme-rose .checkout-line-image, .theme-rose .orders-hero > view:last-child, .theme-rose .payment-alert, .theme-rose .member-actions .primary-action, .theme-rose .filter-chip.active, .theme-rose .dish-filter-chip.active, .theme-rose .dish-category-line text:first-child, .theme-rose .category-order, .theme-rose .area-suggestions view.active, .theme-rose .member-avatar, .theme-rose .admin-role-option.active, .theme-rose .wallet-tab.active { border-color: #efd0d8 !important; background: #fff0f3 !important; color: #c9647a !important; }
+.theme-rose .checkout-line-main > text:first-child, .theme-rose .order-goods > view text:first-child { border-left-color: #c9647a !important; }
+
+/* 主题复查收口：补齐加载态、管理卡片、二级标签、订单详情和原生表单控件。 */
+.theme-dark.detail-loading { min-height: 100vh; background: #12151b !important; }
+.theme-dark .shimmer, .theme-dark.shimmer { background: #303846 !important; }
+.theme-dark .detail-loading-card,
+.theme-dark .admin-nav > view,
+.theme-dark .admin-order,
+.theme-dark .admin-order-empty,
+.theme-dark .order-filter-panel,
+.theme-dark .order-processing-loading,
+.theme-dark .admin-dish-card,
+.theme-dark .dish-skeleton-card,
+.theme-dark .category-card,
+.theme-dark .category-skeleton,
+.theme-dark .table-search,
+.theme-dark .table-card,
+.theme-dark .table-skeleton,
+.theme-dark .wallet-tabs,
+.theme-dark .record-card,
+.theme-dark .record-skeleton,
+.theme-dark .detail-footer { background: #1c212a !important; border-color: #303846 !important; box-shadow: 0 9rpx 26rpx rgba(0,0,0,.2); }
+.theme-dark .business-control { border-color: #355847 !important; background: linear-gradient(145deg, #20382d, #1b2c24) !important; }
+.theme-dark .business-control.paused { border-color: #514535 !important; background: linear-gradient(145deg, #302b24, #242321) !important; }
+.theme-dark .business-control.paused .business-control-icon { color: #f0d391 !important; background: #4b3d29 !important; }
+.theme-dark .filter,
+.theme-dark .admin-order-goods,
+.theme-dark .admin-payment-summary,
+.theme-dark .order-goods-wrap,
+.theme-dark .dish-description,
+.theme-dark .dish-image-editor,
+.theme-dark .dish-form-field > input,
+.theme-dark .dish-switch-field,
+.theme-dark .dish-textarea-field textarea,
+.theme-dark .notice-textarea textarea,
+.theme-dark .stock-input,
+.theme-dark .member-metrics > view,
+.theme-dark .coin-mode-tabs > view,
+.theme-dark .coin-mode-tabs > view > text,
+.theme-dark .coin-preview,
+.theme-dark .table-enable-row,
+.theme-dark .form-modal,
+.theme-dark .admin-status-row,
+.theme-dark .order-processing-head > view:last-child,
+.theme-dark .admin-order-id text:last-child,
+.theme-dark .dish-sort-badge,
+.theme-dark .category-edit-entry,
+.theme-dark .search-clear,
+.theme-dark .record-main > view text:last-child,
+.theme-dark .cancel-button,
+.theme-dark .profile-sheet-head > view:last-child,
+.theme-dark .dish-form-head > view:last-child,
+.theme-dark .stock-sheet-head > view:last-child,
+.theme-dark .table-sheet-head > view:last-child,
+.theme-dark .admin-sheet-head > view:last-child,
+.theme-dark .coin-sheet-head > view:last-child,
+.theme-dark .theme-sheet-head > view:last-child,
+.theme-dark .cancelled .status-icon,
+.theme-dark .remove-item,
+.theme-dark .remark-card textarea,
+.theme-dark .order-scene > view:first-child { background: #272e39 !important; border-color: #394352 !important; }
+.theme-dark .dish-action-loading { background: rgba(28,33,42,.82) !important; }
+.theme-dark .stat-divider { background: #394352 !important; }
+.theme-dark .admin-goods-row,
+.theme-dark .admin-payment-summary > view:last-child,
+.theme-dark .table-card-actions,
+.theme-dark .table-card-actions > view + view,
+.theme-dark .info-row + .info-row,
+.theme-dark .goods-line,
+.theme-dark .order-no { border-color: #394352 !important; }
+.theme-dark .store-closed-notice,
+.theme-dark .checkout-store-closed,
+.theme-dark .order-discount,
+.theme-dark .remark,
+.theme-dark .admin-order-discount,
+.theme-dark .admin-order-remark,
+.theme-dark .detail-discount,
+.theme-dark .remark-text,
+.theme-dark .member-discount-line,
+.theme-dark .coin-pay-card,
+.theme-dark .coin-recharge-link,
+.theme-dark .member-level-line,
+.theme-dark .member-level-rule,
+.theme-dark .coin-admin-note,
+.theme-dark .spec-example,
+.theme-dark .member-remark,
+.theme-dark .admin-security-note,
+.theme-dark .member-actions .coin-action { border-color: #5a4c2b !important; background: #302b20 !important; color: #e4c982 !important; }
+.theme-dark .store-closed-notice text,
+.theme-dark .checkout-store-closed text,
+.theme-dark .order-discount text,
+.theme-dark .remark text,
+.theme-dark .admin-order-discount text,
+.theme-dark .admin-order-remark text,
+.theme-dark .detail-discount text,
+.theme-dark .remark-text text,
+.theme-dark .member-discount-line text,
+.theme-dark .coin-pay-card text,
+.theme-dark .coin-recharge-link text,
+.theme-dark .member-level-line text,
+.theme-dark .member-level-rule text,
+.theme-dark .coin-admin-note text,
+.theme-dark .spec-example text,
+.theme-dark .member-remark text,
+.theme-dark .admin-security-note text,
+.theme-dark .member-actions .coin-action text { color: #e4c982 !important; }
+.theme-dark .notice.error,
+.theme-dark .merchant-reject-alert,
+.theme-dark .admin-actions .reject-action,
+.theme-dark .admin-actions .cancel-action,
+.theme-dark .status-pill.off,
+.theme-dark .record-error > view:first-child,
+.theme-dark .detail-error-icon,
+.theme-dark .checkout-failed-icon,
+.theme-dark .reject-reason-text,
+.theme-dark .revoke-admin-button,
+.theme-dark .member-actions .admin-action.self-admin { border-color: #68413d !important; background: #3a292b !important; color: #f1b0a5 !important; }
+.theme-dark .status-pill.ok,
+.theme-dark .dish-status,
+.theme-dark .category-status,
+.theme-dark .table-status,
+.theme-dark .admin-live { border-color: #355847 !important; background: #23382f !important; color: #a8e2b2 !important; }
+.theme-dark .admin-status-pill,
+.theme-dark .order-status { border-color: #465263 !important; background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .admin-status-pill.completed,
+.theme-dark .admin-status-pill.cancelled,
+.theme-dark .order-status.completed,
+.theme-dark .order-status.muted-status { background: #2b3038 !important; color: #b9c2ce !important; }
+.theme-dark .admin-status-pill.paid,
+.theme-dark .admin-status-pill.active,
+.theme-dark .order-status.active-status { background: #253444 !important; color: #9fd0f4 !important; }
+.theme-dark .admin-status-pill.cooking { background: #3a3120 !important; color: #e4c982 !important; }
+.theme-dark .admin-status-pill.rejected { background: #3a292b !important; color: #f1b0a5 !important; }
+.theme-dark .admin-pill,
+.theme-dark .role-icon,
+.theme-dark .member-actions .admin-action { border-color: #4b4560 !important; background: #312c45 !important; color: #c8b1ef !important; }
+.theme-dark .member-actions .admin-action.self-admin { border-color: #3d4654 !important; background: #2b3038 !important; color: #9fa9b7 !important; }
+.theme-dark .record-icon.consume { background: #3a292b !important; color: #f1b0a5 !important; }
+.theme-dark .record-icon.recharge { background: #3a3120 !important; color: #e4c982 !important; }
+.theme-dark .record-icon.refund { background: #23382f !important; color: #a8e2b2 !important; }
+.theme-dark .record-icon.adjustment { background: #253444 !important; color: #9fd0f4 !important; }
+.theme-dark .ingredient-row view,
+.theme-dark .stock-step.plus,
+.theme-dark .coin-pay-status.ready { border-color: #355847 !important; background: #23382f !important; color: #a8e2b2 !important; }
+.theme-dark .stock-step,
+.theme-dark .coin-pay-status.short,
+.theme-dark .occupied-order,
+.theme-dark .occupied-tip { border-color: #68413d !important; background: #3a292b !important; color: #f1b0a5 !important; }
+.theme-dark .occupied-tip text { color: #f1b0a5 !important; }
+.theme-dark .occupied-tip > text { background: #a85a50 !important; color: #fff !important; }
+.theme-dark .status-card.active,
+.theme-dark .status-card.pending { background: linear-gradient(135deg, #4c3a34, #2c292b) !important; }
+.theme-dark .status-card.cancelled { background: linear-gradient(135deg, #2b3038, #232830) !important; color: #b9c2ce !important; }
+.theme-dark .status-step { border-color: #7a645b !important; background: #5a4035 !important; color: #fff !important; }
+.theme-dark .status-step.active { border-color: #fff !important; background: #fff !important; color: #dd6642 !important; }
+.theme-dark .status-step.active text { color: #dd6642 !important; }
+.theme-dark .tab,
+.theme-dark .filter-chip,
+.theme-dark .dish-filter-chip,
+.theme-dark .wallet-tab,
+.theme-dark .type-tab,
+.theme-dark .theme-option,
+.theme-dark .admin-role-option { border-color: #394352 !important; background: #252c36 !important; color: #aeb7c5 !important; }
+.theme-dark .tab.active,
+.theme-dark .filter-chip.active,
+.theme-dark .dish-filter-chip.active,
+.theme-dark .wallet-tab.active,
+.theme-dark .type-tab.active,
+.theme-dark .theme-option.active,
+.theme-dark .admin-role-option.active { border-color: #ff9d75 !important; background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .coin-mode-tabs > view.active.grant { border-color: #8d7139 !important; background: #3a3120 !important; }
+.theme-dark .coin-mode-tabs > view.active.grant > text { background: #8d7139 !important; color: #fff !important; }
+.theme-dark .coin-mode-tabs > view.active.deduct { border-color: #83504a !important; background: #3a292b !important; }
+.theme-dark .coin-mode-tabs > view.active.deduct > text { background: #a85a50 !important; color: #fff !important; }
+.theme-dark .dish-filter-chip text,
+.theme-dark .manager-tabs .tab > text:last-child { background: #dd6642 !important; color: #fff !important; }
+.theme-dark .theme-option-check { border-color: #4a5565 !important; background: #252c36 !important; }
+.theme-dark .theme-option.active .theme-option-check { border-color: #ff9d75 !important; background: #dd6642 !important; }
+.theme-dark .menu-icon,
+.theme-dark .profile-menu-icon,
+.theme-dark .coin-menu-icon,
+.theme-dark .record-menu-icon,
+.theme-dark .theme-menu-icon,
+.theme-dark .admin-nav > view > text:first-child,
+.theme-dark .admin-entry-icon,
+.theme-dark .avatar-badge,
+.theme-dark .table-symbol,
+.theme-dark .dish-category-line text { background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .admin-entry-icon { background: linear-gradient(135deg, #ff9d75, #dd6642) !important; color: #fff !important; }
+.theme-dark .dish-add-button { background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .dish-add-button text { color: #ffab83 !important; }
+.theme-dark .profile-name-input > text,
+.theme-dark .field-input > text,
+.theme-dark .dish-image-empty text:first-child,
+.theme-dark .detail-price,
+.theme-dark .sum-row text:last-child,
+.theme-dark .pay-value,
+.theme-dark .wallet-tab.active { color: #ffab83 !important; }
+.theme-dark .type-badge { border-color: #526071 !important; background: #2a333f !important; color: #ffab83 !important; }
+.theme-dark .goods-main > text:first-child,
+.theme-dark .admin-goods-row > view text:first-child { border-left-color: #ff9d75 !important; }
+.theme-dark .checkout-retry,
+.theme-dark .detail-retry,
+.theme-dark .detail-reorder,
+.theme-dark .admin-actions .primary-flow,
+.theme-dark .record-error > view:last-child { background: linear-gradient(135deg, #ff9d75, #dd6642) !important; color: #fff !important; }
+.theme-dark .admin-actions .primary-flow.complete { background: linear-gradient(135deg, #42ad86, #278e69) !important; }
+.theme-dark .dish-action-loading view,
+.theme-dark .dish-image-uploading view,
+.theme-dark .loading-spinner,
+.theme-dark .checkout-button .button-spinner { border-color: #526071 !important; border-top-color: #ff9d75 !important; }
+
+.theme-ocean .tab, .theme-ocean .filter-chip, .theme-ocean .dish-filter-chip, .theme-ocean .wallet-tab, .theme-ocean .type-tab, .theme-ocean .theme-option, .theme-ocean .admin-role-option { border-color: #d3e5f3 !important; background: #f5faff !important; color: #6d8193 !important; }
+.theme-ocean .tab.active, .theme-ocean .filter-chip.active, .theme-ocean .dish-filter-chip.active, .theme-ocean .wallet-tab.active, .theme-ocean .type-tab.active, .theme-ocean .theme-option.active, .theme-ocean .admin-role-option.active { border-color: #3d94d6 !important; background: #e8f4fc !important; color: #277fc7 !important; }
+.theme-ocean .dish-filter-chip text, .theme-ocean .manager-tabs .tab > text:last-child { background: #277fc7 !important; color: #fff !important; }
+.theme-ocean .theme-option-check { border-color: #b9dcef !important; background: #fff !important; }
+.theme-ocean .theme-option.active .theme-option-check { border-color: #277fc7 !important; background: #277fc7 !important; }
+.theme-ocean .menu-icon, .theme-ocean .profile-menu-icon, .theme-ocean .coin-menu-icon, .theme-ocean .record-menu-icon, .theme-ocean .theme-menu-icon, .theme-ocean .admin-nav > view > text:first-child, .theme-ocean .avatar-badge { background: #e8f4fc !important; color: #277fc7 !important; }
+.theme-ocean .admin-entry-icon { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; color: #fff !important; }
+.theme-ocean .dish-add-button { border-color: #b9dcef !important; background: #fafdff !important; color: #277fc7 !important; }
+.theme-ocean .profile-name-input > text, .theme-ocean .field-input > text, .theme-ocean .dish-image-empty text:first-child, .theme-ocean .sum-row text:last-child, .theme-ocean .pay-value { color: #277fc7 !important; }
+.theme-ocean .type-badge { border-color: #b9dcef !important; background: #e8f4fc !important; color: #277fc7 !important; }
+.theme-ocean .goods-main > text:first-child, .theme-ocean .admin-goods-row > view text:first-child { border-left-color: #277fc7 !important; }
+.theme-ocean .checkout-retry, .theme-ocean .detail-retry, .theme-ocean .detail-reorder, .theme-ocean .admin-actions .primary-flow, .theme-ocean .record-error > view:last-child { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; color: #fff !important; }
+.theme-ocean .admin-actions .primary-flow.complete { background: linear-gradient(135deg, #42ad86, #278e69) !important; }
+.theme-ocean .status-card.active, .theme-ocean .status-card.pending { background: linear-gradient(135deg, #3f9ddd, #176cb6) !important; }
+.theme-ocean .status-step { background: #176cb6 !important; }
+.theme-ocean .status-step.active { background: #fff !important; color: #277fc7 !important; }
+.theme-ocean .status-step.active text { color: #277fc7 !important; }
+.theme-ocean .dish-action-loading view, .theme-ocean .dish-image-uploading view, .theme-ocean .loading-spinner, .theme-ocean .checkout-button .button-spinner { border-color: #b9dcef !important; border-top-color: #277fc7 !important; }
+
+.theme-forest .tab, .theme-forest .filter-chip, .theme-forest .dish-filter-chip, .theme-forest .wallet-tab, .theme-forest .type-tab, .theme-forest .theme-option, .theme-forest .admin-role-option { border-color: #d4e8da !important; background: #f5fbf6 !important; color: #6d8475 !important; }
+.theme-forest .tab.active, .theme-forest .filter-chip.active, .theme-forest .dish-filter-chip.active, .theme-forest .wallet-tab.active, .theme-forest .type-tab.active, .theme-forest .theme-option.active, .theme-forest .admin-role-option.active { border-color: #4b9b72 !important; background: #e8f5eb !important; color: #368664 !important; }
+.theme-forest .dish-filter-chip text, .theme-forest .manager-tabs .tab > text:last-child { background: #368664 !important; color: #fff !important; }
+.theme-forest .theme-option-check { border-color: #c3dfcb !important; background: #fff !important; }
+.theme-forest .theme-option.active .theme-option-check { border-color: #368664 !important; background: #368664 !important; }
+.theme-forest .menu-icon, .theme-forest .profile-menu-icon, .theme-forest .coin-menu-icon, .theme-forest .record-menu-icon, .theme-forest .theme-menu-icon, .theme-forest .admin-nav > view > text:first-child, .theme-forest .avatar-badge { background: #e8f5eb !important; color: #368664 !important; }
+.theme-forest .admin-entry-icon { background: linear-gradient(135deg, #57a57c, #287752) !important; color: #fff !important; }
+.theme-forest .dish-add-button { border-color: #c3dfcb !important; background: #fbfefc !important; color: #368664 !important; }
+.theme-forest .profile-name-input > text, .theme-forest .field-input > text, .theme-forest .dish-image-empty text:first-child, .theme-forest .sum-row text:last-child, .theme-forest .pay-value { color: #368664 !important; }
+.theme-forest .type-badge { border-color: #c3dfcb !important; background: #e8f5eb !important; color: #368664 !important; }
+.theme-forest .goods-main > text:first-child, .theme-forest .admin-goods-row > view text:first-child { border-left-color: #368664 !important; }
+.theme-forest .checkout-retry, .theme-forest .detail-retry, .theme-forest .detail-reorder, .theme-forest .admin-actions .primary-flow, .theme-forest .record-error > view:last-child { background: linear-gradient(135deg, #57a57c, #287752) !important; color: #fff !important; }
+.theme-forest .admin-actions .primary-flow.complete { background: linear-gradient(135deg, #42ad86, #278e69) !important; }
+.theme-forest .status-card.active, .theme-forest .status-card.pending { background: linear-gradient(135deg, #57a57c, #287752) !important; }
+.theme-forest .status-step { background: #287752 !important; }
+.theme-forest .status-step.active { background: #fff !important; color: #368664 !important; }
+.theme-forest .status-step.active text { color: #368664 !important; }
+.theme-forest .dish-action-loading view, .theme-forest .dish-image-uploading view, .theme-forest .loading-spinner, .theme-forest .checkout-button .button-spinner { border-color: #c3dfcb !important; border-top-color: #368664 !important; }
+
+.theme-rose .tab, .theme-rose .filter-chip, .theme-rose .dish-filter-chip, .theme-rose .wallet-tab, .theme-rose .type-tab, .theme-rose .theme-option, .theme-rose .admin-role-option { border-color: #f0d9df !important; background: #fff7f8 !important; color: #927a80 !important; }
+.theme-rose .tab.active, .theme-rose .filter-chip.active, .theme-rose .dish-filter-chip.active, .theme-rose .wallet-tab.active, .theme-rose .type-tab.active, .theme-rose .theme-option.active, .theme-rose .admin-role-option.active { border-color: #d97a91 !important; background: #fff0f3 !important; color: #c9647a !important; }
+.theme-rose .dish-filter-chip text, .theme-rose .manager-tabs .tab > text:last-child { background: #c9647a !important; color: #fff !important; }
+.theme-rose .theme-option-check { border-color: #efd0d8 !important; background: #fff !important; }
+.theme-rose .theme-option.active .theme-option-check { border-color: #c9647a !important; background: #c9647a !important; }
+.theme-rose .menu-icon, .theme-rose .profile-menu-icon, .theme-rose .coin-menu-icon, .theme-rose .record-menu-icon, .theme-rose .theme-menu-icon, .theme-rose .admin-nav > view > text:first-child, .theme-rose .avatar-badge { background: #fff0f3 !important; color: #c9647a !important; }
+.theme-rose .admin-entry-icon { background: linear-gradient(135deg, #de829a, #bc506b) !important; color: #fff !important; }
+.theme-rose .dish-add-button { border-color: #efd0d8 !important; background: #fffafb !important; color: #c9647a !important; }
+.theme-rose .profile-name-input > text, .theme-rose .field-input > text, .theme-rose .dish-image-empty text:first-child, .theme-rose .sum-row text:last-child, .theme-rose .pay-value { color: #c9647a !important; }
+.theme-rose .type-badge { border-color: #efd0d8 !important; background: #fff0f3 !important; color: #c9647a !important; }
+.theme-rose .goods-main > text:first-child, .theme-rose .admin-goods-row > view text:first-child { border-left-color: #c9647a !important; }
+.theme-rose .checkout-retry, .theme-rose .detail-retry, .theme-rose .detail-reorder, .theme-rose .admin-actions .primary-flow, .theme-rose .record-error > view:last-child { background: linear-gradient(135deg, #de829a, #bc506b) !important; color: #fff !important; }
+.theme-rose .admin-actions .primary-flow.complete { background: linear-gradient(135deg, #42ad86, #278e69) !important; }
+.theme-rose .status-card.active, .theme-rose .status-card.pending { background: linear-gradient(135deg, #de829a, #bc506b) !important; }
+.theme-rose .status-step { background: #bc506b !important; }
+.theme-rose .status-step.active { background: #fff !important; color: #c9647a !important; }
+.theme-rose .status-step.active text { color: #c9647a !important; }
+.theme-rose .dish-action-loading view, .theme-rose .dish-image-uploading view, .theme-rose .loading-spinner, .theme-rose .checkout-button .button-spinner { border-color: #efd0d8 !important; border-top-color: #c9647a !important; }

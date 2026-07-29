@@ -117,6 +117,8 @@ function prepareDishImage(filePath, step) {
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
+    themeAccent: getApp().getThemeAccent(),
     loading: true,
     dishes: [],
     displayDishes: [],
@@ -141,6 +143,7 @@ Page({
   },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     this.loadData();
   },
 

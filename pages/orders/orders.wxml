@@ -1,4 +1,4 @@
-<view class="page orders-page">
+<view class="page orders-page {{themeClass}}">
   <view class="empty-card order-empty order-load-error" wx:if="{{!loading && error}}"><view class="empty-illustration"><text>!</text><view></view></view><view class="empty-title">订单暂时加载失败</view><view class="empty-desc">{{error}}</view><view class="empty-primary" bindtap="retryLoadOrders">重新加载 <text>›</text></view></view>
   <view class="orders-hero"><view><text>我的订单</text><text>每一道菜，都在认真准备</text></view><view>🥢</view></view>
   <view class="tabs order-tabs"><view class="tab {{activeTab === item.value ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="value" data-value="{{item.value}}" bindtap="switchTab"><text>{{item.label}}</text><view wx:if="{{activeTab === item.value}}"></view></view></view>

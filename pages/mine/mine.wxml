@@ -1,4 +1,4 @@
-<view class="mine-page">
+<view class="mine-page {{themeClass}}">
   <view class="mine-hero">
     <view class="mine-decoration one"></view>
     <view class="mine-decoration two"></view>
@@ -53,13 +53,28 @@
     <view class="menu-item" bindtap="openRecharge"><view class="menu-icon coin-menu-icon">金</view><view class="menu-text"><text>虚拟金币充值</text><text>充值后可用于订单全额支付，1金币抵1元</text></view><text class="coin-menu-balance">充值 ›</text></view>
     <view class="menu-item" bindtap="goWalletRecords"><view class="menu-icon record-menu-icon">▤</view><view class="menu-text"><text>消费记录</text><text>查看充值、订单消费、退款和金币调整</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="openProfileEditor"><view class="menu-icon profile-menu-icon">☺</view><view class="menu-text"><text>个人资料</text><text>{{member && member.nickname ? '修改头像和用户名称' : '完善头像和用户名称'}}</text></view><text class="menu-arrow">›</text></view>
+    <view class="menu-item" bindtap="openThemePicker"><view class="menu-icon theme-menu-icon">◐</view><view class="menu-text"><text>主题外观</text><text>根据个人偏好切换浅色或夜间模式</text></view><text class="theme-name">{{themeName}} ›</text></view>
     <view class="menu-item" bindtap="about"><view class="menu-icon blue">i</view><view class="menu-text"><text>关于门店</text><text>查看小程序与门店信息</text></view><text class="menu-arrow">›</text></view>
   </view>
   <view class="mine-footer">微信云开发提供安全服务支持</view>
 </view>
 
-<view wx:if="{{rechargeEditing}}" class="sheet-mask recharge-sheet-mask" bindtap="closeRecharge"></view>
-<view class="recharge-sheet {{rechargeEditing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{themePickerVisible}}" class="sheet-mask theme-sheet-mask {{themeClass}}" bindtap="closeThemePicker"></view>
+<view class="theme-sheet {{themeClass}} {{themePickerVisible ? 'visible' : ''}}" catchtap="stopTap">
+  <view class="sheet-handle"></view>
+  <view class="theme-sheet-head"><view><text>主题外观</text><text>选择更适合当前环境的视觉模式</text></view><view bindtap="closeThemePicker">×</view></view>
+  <view class="theme-options">
+    <view wx:for="{{themeOptions}}" wx:key="value" class="theme-option {{theme === item.value ? 'active' : ''}}" data-theme="{{item.value}}" bindtap="chooseTheme">
+      <view class="theme-option-preview {{item.value}}"><text>{{item.icon}}</text><view></view><view></view></view>
+      <view class="theme-option-copy"><text>{{item.name}}</text><text>{{item.desc}}</text></view>
+      <view class="theme-option-check">{{theme === item.value ? '✓' : ''}}</view>
+    </view>
+  </view>
+  <view class="safe-bottom"></view>
+</view>
+
+<view wx:if="{{rechargeEditing}}" class="sheet-mask recharge-sheet-mask {{themeClass}}" bindtap="closeRecharge"></view>
+<view class="recharge-sheet {{themeClass}} {{rechargeEditing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="profile-sheet-head">
     <view><text>充值虚拟金币</text><text>充值入口统一放在个人中心，1元 = 1金币</text></view>
@@ -76,8 +91,8 @@
   <view class="safe-bottom"></view>
 </view>
 
-<view wx:if="{{profileEditing}}" class="sheet-mask profile-sheet-mask" bindtap="closeProfileEditor"></view>
-<view class="profile-sheet {{profileEditing ? 'visible' : ''}}" catchtap="stopTap">
+<view wx:if="{{profileEditing}}" class="sheet-mask profile-sheet-mask {{themeClass}}" bindtap="closeProfileEditor"></view>
+<view class="profile-sheet {{themeClass}} {{profileEditing ? 'visible' : ''}}" catchtap="stopTap">
   <view class="sheet-handle"></view>
   <view class="profile-sheet-head">
     <view><text>个人资料</text><text>头像和名称仅用于小程序内展示</text></view>

@@ -43,6 +43,8 @@ function normalizeMember(item) {
 
 Page({
   data: {
+    themeClass: getApp().getThemeClass(),
+    themeAccent: getApp().getThemeAccent(),
     loading: true,
     loadingMore: false,
     saving: false,
@@ -78,6 +80,10 @@ Page({
       status: true,
       remark: ''
     }
+  },
+
+  onShow: function () {
+    getApp().syncPageTheme(this);
   },
 
   onLoad: function () {

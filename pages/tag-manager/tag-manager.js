@@ -1,8 +1,8 @@
 var api = require('../../utils/cloud-api');
 
 Page({
-  data: { tab: 'print', admins: [], jobs: [], openid: '', role: 'operator', roles: [{ value: 'operator', label: '运营管理员' }, { value: 'kitchen', label: '后厨管理员' }, { value: 'super_admin', label: '超级管理员' }] },
-  onShow: function () { this.load(); },
+  data: { themeClass: getApp().getThemeClass(), tab: 'print', admins: [], jobs: [], openid: '', role: 'operator', roles: [{ value: 'operator', label: '运营管理员' }, { value: 'kitchen', label: '后厨管理员' }, { value: 'super_admin', label: '超级管理员' }] },
+  onShow: function () { getApp().syncPageTheme(this); this.load(); },
   load: function () { var that = this; api.getPrintJobs().then(function (result) { that.setData({ jobs: result.jobs || [] }); }).catch(function (err) { wx.showToast({ title: err.msg || '打印任务加载失败', icon: 'none' }); }); api.adminList().then(function (result) { that.setData({ admins: result.admins || [] }); }).catch(function () {}); },
   switchTab: function (e) { this.setData({ tab: e.currentTarget.dataset.tab }); },
   onOpenid: function (e) { this.setData({ openid: e.detail.value }); },

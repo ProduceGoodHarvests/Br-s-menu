@@ -27,9 +27,10 @@ function normalize(order) {
 }
 
 Page({
-  data: { loading: true, summary: {}, orders: [], store: { isOpen: true, pauseReason: '' }, storeUpdating: false, typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'rejected', label: '拒绝出餐' }, { value: 'completed', label: '已完成' }] },
+  data: { themeClass: getApp().getThemeClass(), loading: true, summary: {}, orders: [], store: { isOpen: true, pauseReason: '' }, storeUpdating: false, typeFilter: '', statusFilter: '', types: [{ value: '', label: '全部场景' }, { value: 'dine_in', label: '堂食' }, { value: 'takeaway', label: '打包' }, { value: 'pickup', label: '自提' }], statuses: [{ value: '', label: '全部状态' }, { value: 'paid', label: '已支付' }, { value: 'cooking', label: '制作中' }, { value: 'ready', label: '待取餐' }, { value: 'rejected', label: '拒绝出餐' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     if (this.timer) clearInterval(this.timer);
     this.checkAndLoad();
     var that = this;

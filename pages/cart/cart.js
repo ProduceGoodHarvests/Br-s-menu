@@ -2,9 +2,9 @@ var api = require('../../utils/cloud-api');
 var storage = require('../../utils/storage');
 
 Page({
-  data: { items: [], quote: null, quoting: false, error: '', itemCount: 0 },
+  data: { themeClass: getApp().getThemeClass(), items: [], quote: null, quoting: false, error: '', itemCount: 0 },
 
-  onShow: function () { this.loadCart(); },
+  onShow: function () { getApp().syncPageTheme(this); this.loadCart(); },
 
   loadCart: function () {
     var items = storage.getCart();

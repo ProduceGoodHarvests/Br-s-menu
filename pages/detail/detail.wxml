@@ -1,4 +1,4 @@
-<view class="page detail-page" wx:if="{{!loading && dish}}">
+<view class="page detail-page {{themeClass}}" wx:if="{{!loading && dish}}">
   <view class="detail-hero"><image class="hero-image" wx:if="{{dish.img}}" src="{{dish.img}}" mode="aspectFill" /><view class="hero-image placeholder" wx:else>🍲</view><view class="hero-gradient"></view><view class="hero-badge">现点现做</view></view>
   <view class="detail-card">
     <view class="detail-title-row"><view class="detail-title">{{dish.name}}</view><view class="detail-sales">月售 {{dish.sales}}</view></view>
@@ -25,4 +25,4 @@
     <view class="detail-add-button added" wx:else bindtap="goCart"><view><text>已加入，去餐篮</text><text>可继续修改规格或数量</text></view><text>¥{{unitPrice}}</text></view>
   </view>
 </view>
-<view class="detail-loading" wx:else><view class="detail-loading-hero shimmer"></view><view class="detail-loading-card"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view>
+<view class="detail-loading {{themeClass}}" wx:else><view class="detail-loading-hero shimmer"></view><view class="detail-loading-card"><view class="skeleton-line wide shimmer"></view><view class="skeleton-line shimmer"></view><view class="skeleton-line short shimmer"></view></view></view>

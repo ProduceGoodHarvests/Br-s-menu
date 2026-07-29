@@ -3,7 +3,11 @@ var storage = require('../../utils/storage');
 var menu = require('../../utils/menu');
 
 Page({
-  data: { loading: true, dish: null, selections: {}, quantity: 1, unitPrice: '0.00', pricing: false, addedToCart: false },
+  data: { themeClass: getApp().getThemeClass(), loading: true, dish: null, selections: {}, quantity: 1, unitPrice: '0.00', pricing: false, addedToCart: false },
+
+  onShow: function () {
+    getApp().syncPageTheme(this);
+  },
 
   onLoad: function (options) {
     this.goodsId = options.id || '';

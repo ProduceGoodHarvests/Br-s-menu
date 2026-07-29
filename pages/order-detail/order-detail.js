@@ -33,7 +33,7 @@ function normalize(order) {
 }
 
 Page({
-  data: { loading: true, error: '', order: null },
+  data: { themeClass: getApp().getThemeClass(), loading: true, error: '', order: null },
 
   onLoad: function (options) {
     this.orderId = options.id || '';
@@ -42,6 +42,7 @@ Page({
   },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     if (!this.orderId || this.data.loading) return;
     this.loadOrder(true);
     this.startRefresh();

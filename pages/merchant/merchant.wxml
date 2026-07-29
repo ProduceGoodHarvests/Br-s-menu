@@ -1,4 +1,4 @@
-<view class="page admin-page">
+<view class="page admin-page {{themeClass}}">
   <view class="admin-hero {{store.isOpen ? '' : 'paused'}}"><view><text>商家工作台</text><text>{{store.isOpen ? '实时掌握门店订单与经营状态' : '已暂停接收新订单，现有订单可继续处理'}}</text></view><view class="admin-live {{store.isOpen ? '' : 'paused'}}"><view></view>{{store.isOpen ? '营业中' : '暂停营业'}}</view></view>
   <view class="business-control {{store.isOpen ? 'open' : 'paused'}}">
     <view class="business-control-icon">{{store.isOpen ? '◉' : 'Ⅱ'}}</view>

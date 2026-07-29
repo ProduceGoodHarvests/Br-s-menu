@@ -32,9 +32,10 @@ function normalize(order) {
 }
 
 Page({
-  data: { orders: [], visibleOrders: [], loading: true, error: '', activeTab: 'all', skeletons: [1, 2], tabs: [{ value: 'all', label: '全部' }, { value: 'active', label: '进行中' }, { value: 'completed', label: '已完成' }] },
+  data: { themeClass: getApp().getThemeClass(), orders: [], visibleOrders: [], loading: true, error: '', activeTab: 'all', skeletons: [1, 2], tabs: [{ value: 'all', label: '全部' }, { value: 'active', label: '进行中' }, { value: 'completed', label: '已完成' }] },
 
   onShow: function () {
+    getApp().syncPageTheme(this);
     if (this.timer) clearInterval(this.timer);
     this.loadOrders();
     var that = this;

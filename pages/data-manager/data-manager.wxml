@@ -1,4 +1,4 @@
-<view class="page admin-page data-manager-page">
+<view class="page admin-page data-manager-page {{themeClass}}">
   <view class="manager-hero">
     <view>
       <text>基础数据</text>
@@ -217,7 +217,7 @@
   </view>
 </view>
 
-<view wx:if="{{categorySheetVisible}}" class="modal-mask table-sheet-mask" bindtap="closeCategorySheet">
+<view wx:if="{{categorySheetVisible}}" class="modal-mask table-sheet-mask {{themeClass}}" bindtap="closeCategorySheet">
   <view class="form-modal table-form-sheet category-form-sheet" catchtap="preventBubble">
     <view class="sheet-handle"></view>
     <view class="table-sheet-head">
@@ -250,7 +250,7 @@
         <text>在顾客菜单中展示</text>
         <text>{{categoryStatus ? '分类及分类内已上架菜品正常展示' : '分类暂时隐藏，数据和菜品不会删除'}}</text>
       </view>
-      <switch checked="{{categoryStatus}}" color="#ee582e" bindchange="onCategoryEnabledChange" />
+      <switch checked="{{categoryStatus}}" color="{{themeAccent}}" bindchange="onCategoryEnabledChange" />
     </view>
 
     <button class="primary table-save-button" loading="{{categorySaving}}" disabled="{{categorySaving}}" bindtap="saveCategory">
@@ -260,7 +260,7 @@
   </view>
 </view>
 
-<view wx:if="{{tableSheetVisible}}" class="modal-mask table-sheet-mask" bindtap="closeTableSheet">
+<view wx:if="{{tableSheetVisible}}" class="modal-mask table-sheet-mask {{themeClass}}" bindtap="closeTableSheet">
   <view class="form-modal table-form-sheet" catchtap="preventBubble">
     <view class="sheet-handle"></view>
     <view class="table-sheet-head">
@@ -307,7 +307,7 @@
         <text>允许顾客选择</text>
         <text>{{tableStatus === 'disabled' ? '当前停用，不会出现在顾客可选列表' : '当前启用，可正常用于堂食点餐'}}</text>
       </view>
-      <switch checked="{{tableStatus !== 'disabled'}}" color="#ee582e" bindchange="onTableEnabledChange" />
+      <switch checked="{{tableStatus !== 'disabled'}}" color="{{themeAccent}}" bindchange="onTableEnabledChange" />
     </view>
     <view class="occupied-tip" wx:else>
       <text>!</text>

@@ -1,4 +1,4 @@
-<view class="page menu-page">
+<view class="page menu-page {{themeClass}}">
   <view class="store-card">
     <view class="store-topline"><view class="store-open-dot {{store.isOpen ? '' : 'closed'}}"></view><text>{{store.isOpen ? '营业中 · 预计 15-25 分钟出餐' : '暂停营业 · 暂不接收新订单'}}</text></view>
     <view class="store-content">
